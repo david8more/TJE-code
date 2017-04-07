@@ -29,9 +29,15 @@ PlayState* PlayState::getInstance(StateManager* SManager)
 
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
+	Game* game = Game::getInstance();
 	switch (event.keysym.sym)
 	{
-
+	case SDLK_1:
+		game->camera->eye = Vector3(0, 1200, 25);
+		break;
+	case SDLK_2:
+		game->camera->eye = Vector3(-2.23, 1606.68, 3587.43);
+		break;
 	}
 }
 
@@ -84,6 +90,8 @@ void PlayState::render() {
 	//drawGrid(500); //background grid
 
 	world->root->render();
+
+	std::cout << "camera positon: " << game->camera->eye.x << ", " << game->camera->eye.y << ", " << game->camera->eye.z << endl;
 
 	glDisable(GL_BLEND);
 
