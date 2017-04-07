@@ -63,6 +63,7 @@ void PlayState::onEnter()
 
 	world = new World();
 	world->create();
+	world->player->model.rotate(0.2, Vector3(1, 0, 0));
 
 	//create our camera
 	game->camera = new Camera();
@@ -130,14 +131,10 @@ void PlayState::update(double seconds_elapsed) {
 		game->mouse_position.x = center_x;
 		game->mouse_position.y = center_y;
 	}
-
 	
 	if (i % 3 == 0) {
-		world->player->model.traslate(0, 0, (float)i / 100000);
-		
+		world->player->model.traslate(0, (float)i / 1000000, (float)i / 100000);
 	}
-
-	game->camera->eye = game->camera->eye + Vector3(0, 0, 0.005);
 
 	i += 1;
 
