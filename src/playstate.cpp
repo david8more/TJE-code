@@ -93,7 +93,7 @@ void PlayState::render() {
 
 	world->root->render();
 
-	std::cout << "camera eye: " << game->camera->eye.x << ", " << game->camera->eye.y << ", " << game->camera->eye.z << endl;
+	//std::cout << "camera eye: " << game->camera->eye.x << ", " << game->camera->eye.y << ", " << game->camera->eye.z << endl;
 	//std::cout << "camera center: " << game->camera->center.x << ", " << game->camera->center.y << ", " << game->camera->center.z << endl;
 
 	glDisable(GL_BLEND);

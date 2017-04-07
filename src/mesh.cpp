@@ -258,6 +258,44 @@ void Mesh::createQuad(float center_x, float center_y, float w, float h, bool fli
 	normals.push_back( Vector3(0.0f,0.0f,1.0f) );
 }
 
+void Mesh::createBox(float center_x, float center_y, float w, float h, bool flip_uvs)
+{
+	vertices.clear();
+	normals.clear();
+	uvs.clear();
+	colors.clear();
+
+	//create six vertices (3 for upperleft triangle and 3 for lowerright)
+
+	vertices.push_back(Vector3(center_x + w*0.5f, center_y - h*0.5f, 0.0f));
+	vertices.push_back(Vector3(center_x - w*0.5f, center_y - h*0.5f, 0.0f));
+
+	vertices.push_back(Vector3(center_x - w*0.5f, center_y - h*0.5f, 0.0f));
+	vertices.push_back(Vector3(center_x - w*0.5f, center_y + h*0.5f, 0.0f));
+
+	vertices.push_back(Vector3(center_x - w*0.5f, center_y + h*0.5f, 0.0f));
+	vertices.push_back(Vector3(center_x + w*0.5f, center_y + h*0.5f, 0.0f));
+
+	vertices.push_back(Vector3(center_x + w*0.5f, center_y + h*0.5f, 0.0f));
+	vertices.push_back(Vector3(center_x + w*0.5f, center_y - h*0.5f, 0.0f));
+
+	//texture coordinates
+	uvs.push_back(Vector2(1.0f, flip_uvs ? 0.0f : 1.0f));
+	uvs.push_back(Vector2(0.0f, flip_uvs ? 1.0f : 0.0f));
+	uvs.push_back(Vector2(1.0f, flip_uvs ? 1.0f : 0.0f));
+	uvs.push_back(Vector2(0.0f, flip_uvs ? 0.0f : 1.0f));
+	//uvs.push_back(Vector2(0.0f, flip_uvs ? 1.0f : 0.0f));
+	//uvs.push_back(Vector2(1.0f, flip_uvs ? 0.0f : 1.0f));
+
+	//all of them have the same normal
+	normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+	normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+	normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+	normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+	//normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+	//normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+}
+
 
 void Mesh::createPlane(float size)
 {

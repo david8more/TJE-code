@@ -30,9 +30,10 @@ void World::create() {
 	sky->model.scale(10, 10, 10);
 	root->addChild(sky);
 
-	//sea->set("agua.ASE", "data/textures/agua.tga", "simple");
-	//sea->model.setTranslation(1, 1, 1);
-	//root->addChild(sea);
+	sea->set("agua.ASE", "data/textures/agua.tga", "simple");
+	sea->model.setTranslation(1, 25, 1);
+	sea->model.scale(10, 10, 10);
+	root->addChild(sea);
 
 	ground->set("island.ASE", "data/textures/island_color.tga", "texture");
 	ground->model.setTranslation(1, 200, 1);

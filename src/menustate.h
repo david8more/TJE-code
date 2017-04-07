@@ -58,6 +58,8 @@ public:
 	Camera cam2D;
 	Mesh quad;
 
+	Mesh quadSelection;
+
 };
 
 #endif

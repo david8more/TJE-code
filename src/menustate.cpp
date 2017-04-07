@@ -15,6 +15,14 @@
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
 
+typedef struct {
+	int currents;
+	int posx;
+	int posy;
+} sPositions;
+
+std::vector<sPositions> sel_positions;
+
 MenuState* MenuState::getInstance(StateManager* SManager)
 {
 	static MenuState Instance(SManager);
@@ -40,7 +48,7 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 void MenuState::init() {
 
 	texture = new Texture();
-	if (texture->load("data/textures/main.tga"))
+	if (texture->load("data/textures/mainmenu.tga"))
 		cout << "Texture loaded!" << endl;
 	else {
 		cout << "Error in menu: texture has not been loaded" << endl;
@@ -50,6 +58,14 @@ void MenuState::init() {
 	game = Game::getInstance();
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
+
+	// crear un box para la current selection
+	sel_positions.resize(4);
+	for (int i = 0; i < 4; ++i) {
+		sel_positions[i].currents = i;
+		sel_positions[i].posx = game->window_width * 0.53;
+		sel_positions[i].posy = game->window_height * 0.41 + i * 77;
+	}
 }
 
 void MenuState::onEnter()
@@ -89,21 +105,12 @@ void MenuState::render() {
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
 
-	// title
-	drawText(50.0, 50.0, "SKY GLORIES", Vector3(0.8, 0.0, 0.0), 6.0);
-
-	// menu
-	const string menu_items[] = { "play", "options", "how to play", "exit" };
-
-	int p = 0;
-	Vector3 c;
-	for (int i = 0; i < 4; i++) {
-		// highlight current selection
-		if (i == currentSelection) c = Vector3(0.8, 0.0, 0.0);
-		else c = Vector3(0.8, 0.8, 0.0);
-		drawText(75.0, 225.0 + p, menu_items[i], c, 4.0);
-		p += 50.0;
-	}
+	// quad selection
+	glColor3f(1.0, 1.0, 1.0);
+	quadSelection.createBox(sel_positions[currentSelection].posx, sel_positions[currentSelection].posy, game->window_width * 0.35, game->window_height * 0.115, true);
+	quadSelection.render(GL_LINES);
+	quadSelection.createBox(sel_positions[currentSelection].posx + 5, sel_positions[currentSelection].posy + 5, game->window_width * 0.35, game->window_height * 0.115, true);
+	quadSelection.render(GL_LINES);
 
 	glDisable(GL_BLEND);
 }
@@ -166,11 +173,11 @@ void MenuState::selectionChosen()
 	case 0:// play state
 		SManager->changeCurrentState(PlayState::getInstance(SManager));
 		break;
-	case 1: // options state
-		SManager->changeCurrentState(OptionsState::getInstance(SManager));
-		break;
-	case 2: // how to play
+	case 1: // how to play
 		SManager->changeCurrentState(Howto::getInstance(SManager));
+		break;
+	case 2: // options state
+		SManager->changeCurrentState(OptionsState::getInstance(SManager));
 		break;
 	case 3: // exit
 		exit(1);
