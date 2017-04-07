@@ -16,6 +16,7 @@
 //globals
 
 float angle = 0;
+int i = 1;
 World * world = NULL;
 
 PlayState::PlayState(StateManager* SManager) : State(SManager) {}
@@ -33,7 +34,7 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	switch (event.keysym.sym)
 	{
 	case SDLK_1:
-		game->camera->eye = Vector3(0, 1200, 25);
+		game->camera->eye = Vector3(-700, 1200, -700);
 		break;
 	case SDLK_2:
 		game->camera->eye = Vector3(-2.23, 1606.68, 3587.43);
@@ -60,13 +61,13 @@ void PlayState::onEnter()
 	glEnable(GL_CULL_FACE); //render both sides of every triangle
 	glEnable(GL_DEPTH_TEST); //check the occlusions using the Z buffer
 
-	//create our camera
-	game->camera = new Camera();
-	game->camera->lookAt(Vector3(0, 1200, 25), Vector3(50, 50, 50), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
-	game->camera->setPerspective(70, game->window_width / (float)game->window_height, 0.1, 100000); //set the projection, we want to be perspective
-
 	world = new World();
 	world->create();
+
+	//create our camera
+	game->camera = new Camera();
+	game->camera->lookAt(Vector3(1, 1200, -3), Vector3(103, 1453, 1116), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
+	game->camera->setPerspective(70, game->window_width / (float)game->window_height, 0.1, 100000); //set the projection, we want to be perspective
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -91,7 +92,8 @@ void PlayState::render() {
 
 	world->root->render();
 
-	std::cout << "camera positon: " << game->camera->eye.x << ", " << game->camera->eye.y << ", " << game->camera->eye.z << endl;
+	std::cout << "camera eye: " << game->camera->eye.x << ", " << game->camera->eye.y << ", " << game->camera->eye.z << endl;
+	//std::cout << "camera center: " << game->camera->center.x << ", " << game->camera->center.y << ", " << game->camera->center.z << endl;
 
 	glDisable(GL_BLEND);
 
@@ -128,6 +130,16 @@ void PlayState::update(double seconds_elapsed) {
 		game->mouse_position.x = center_x;
 		game->mouse_position.y = center_y;
 	}
+
+	
+	if (i % 3 == 0) {
+		world->player->model.traslate(0, 0, (float)i / 100000);
+		
+	}
+
+	game->camera->eye = game->camera->eye + Vector3(0, 0, 0.005);
+
+	i += 1;
 
 	angle += seconds_elapsed * 10;
 }

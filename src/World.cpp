@@ -21,8 +21,8 @@ World::~World()
 
 void World::create() {
 	player->set("spitfire.ASE", "data/textures/spitfire.tga", "texture");
-	player->model.setTranslation(0, 10, 25);
-	player->model.scale(150, 150, 150);
+	player->model.setTranslation(0, 1200, 0);
+	player->model.scale(1, 1, 1);
 	root->addChild(player);
 
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
