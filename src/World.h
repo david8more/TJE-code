@@ -15,7 +15,11 @@ public:
 	EntityMesh* sky;
 	EntityMesh* sea;
 	EntityMesh* ground;
-	EntityPlayer * player;
+
+	// fighters
+	EntityPlayer* playerAir;
+	EntityMesh* helix;
+	EntityPlayer* playerShip;
 	Entity* root;
 
 	World();

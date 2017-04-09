@@ -247,7 +247,7 @@ void OptionsState::selectionChosen()
 	case 2: // option 3
 		game->fullscreen = !game->fullscreen;
 		SDL_SetWindowFullscreen(game->window, game->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP:0  );
-		break;
+   		break;
 	case 3: // back to menu
 		SManager->changeCurrentState( MenuState::getInstance(SManager) );
 		break;

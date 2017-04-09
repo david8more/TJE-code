@@ -66,11 +66,11 @@ void PlayState::onEnter()
 
 	world = new World();
 	world->create();
-	world->player->model.rotate(0.2, Vector3(1, 0, 0));
+	//world->player->model.rotate(0.2, Vector3(1, 0, 0));
 
 	//create our camera
 	game->camera = new Camera();
-	game->camera->lookAt(Vector3(0, 1250, 0), Vector3(103, 1453, 1116), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
+	game->camera->lookAt(Vector3(0, 500, 500), Vector3(0,0, 0), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
 	game->camera->setPerspective(70, game->window_width / (float)game->window_height, 0.1, 100000); //set the projection, we want to be perspective
 
 	b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, 0);
@@ -96,7 +96,7 @@ void PlayState::render() {
 	game->camera->set();
 
 	//Draw out world
-	//drawGrid(500); //background grid
+	drawGrid(500); //background grid
 
 	world->root->render();
 
@@ -139,8 +139,11 @@ void PlayState::update(double seconds_elapsed) {
 		game->mouse_position.y = center_y;
 	}
 	
+	
+
 	if (i % 3 == 0) {
 		//world->player->model.traslate(0, (float)i / 1000000, (float)i / 100000);
+		//world->helix->model.rotateLocal(0.0001, Vector3(1, 0, 0));
 	}
 
 	i += 1;

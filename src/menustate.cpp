@@ -78,17 +78,6 @@ void MenuState::init() {
 
 	particles.resize(N);
 	positions.resize(N);
-
-	srand(time(NULL));
-
-	for (int i = 0; i < N; ++i) {
-		particles[i] = new Mesh();
-		float randomx = rand() % 100 + 1;
-		float randomy = rand() % 100 + 1;
-		positions[i].posx = game->window_width * randomx / 100;
-		positions[i].posy = game->window_height * randomy / 100;
-		particles[i]->createQuad(game->window_width * randomx /100, game->window_height * randomy /100 , game->window_height*0.0025, game->window_height*0.005, true);
-	}
 }
 
 void MenuState::onEnter()
@@ -104,11 +93,22 @@ void MenuState::onEnter()
 	currentSelection = 0;
 
 	if (game->bkg_music_playing != true && game->music_enabled) {
-		b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, 0);
+		b_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 		//std::cout << "CHANEL" << b_channel << std::endl;
 		BASS_ChannelPlay(b_channel, false); // play it
 		game->bkg_music_playing = true;
+	}
+
+	srand(time(NULL));
+
+	for (int i = 0; i < N; ++i) {
+		particles[i] = new Mesh();
+		float randomx = rand() % 1000 + 1;
+		float randomy = rand() % 1000 + 1;
+		positions[i].posx = game->window_width * randomx / 1000;
+		positions[i].posy = game->window_height * randomy / 1000;
+		particles[i]->createQuad(positions[i].posx, positions[i].posy, game->window_height*0.0025, game->window_height*0.0075, true);
 	}
 }
 
@@ -133,21 +133,20 @@ void MenuState::render() {
 	quadSelection.render(GL_LINES);
 
 	// particles
-	glColor3f(0.2, 0.2, 0.5);
+	glColor3f(0.2, 0.2, 0.4);
 
 	for (int i = 0; i < N; i++) {
 		particles[i]->render(GL_TRIANGLES);
 	}
-
 
 }
 
 void MenuState::update(double time_elapsed) {
 	
 	for (int i = 0; i < N; ++i) {
-		float newPos = positions[i].posy + 10;
+		float newPos = positions[i].posy + 8;
 		if (newPos >= game->window_height) newPos = 0;
-		particles[i]->createQuad(positions[i].posx, newPos, game->window_height*0.0025, game->window_height*0.005, true);
+		particles[i]->createQuad(positions[i].posx, newPos, game->window_height*0.0025, game->window_height*0.0075, true);
 		positions[i].posy = newPos;
 	}
 }
@@ -155,8 +154,7 @@ void MenuState::update(double time_elapsed) {
 void MenuState::onLeave(int fut_state) {
 
 	// solo paramos si vamos al play state
-	if (0
-		) {
+	if (0) {
 		BASS_ChannelStop(b_channel); // stop music
 		//cout << "CHANEL" << b_channel << endl;
 		game->bkg_music_playing = false;
