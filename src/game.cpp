@@ -37,6 +37,7 @@ Game::Game(SDL_Window* window)
 	music_enabled = true; 
 	effects_enabled = true; 
 	fullscreen = false;
+	bkg_music_playing = false;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -48,7 +49,8 @@ void Game::init(void)
 
 	sManager = new StateManager();
 
-	// initialize some states -> put into a loading state later
+	// initialize some states
+	// play state initialized in loading screen
 	MenuState::getInstance(sManager)->init();
 	OptionsState::getInstance(sManager)->init();
 	Howto::getInstance(sManager)->init();

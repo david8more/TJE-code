@@ -11,17 +11,12 @@
 #include "playstate.h"
 #include "howto.h"
 #include <cmath>
+#include <ctime>
 
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
 
-typedef struct {
-	int currents;
-	int posx;
-	int posy;
-} sPositions;
-
-std::vector<sPositions> sel_positions;
+int N = 250;
 
 MenuState* MenuState::getInstance(StateManager* SManager)
 {
@@ -34,9 +29,11 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 	switch (event.keysym.sym)
 	{
 	case SDLK_DOWN:
+	case SDLK_s:
 		selectionDown();
 		break;
 	case SDLK_UP:
+	case SDLK_w:
 		selectionUp();
 		break;
 	case SDLK_RETURN:
@@ -47,15 +44,22 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 
 void MenuState::init() {
 
+	//Inicializamos BASS  (id_del_device, muestras por segundo, ...)
+	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
+
+	// Cargamos texturas de menú
 	texture = new Texture();
-	if (texture->load("data/textures/mainmenu.tga"))
+	if (texture->load("data/textures/mainv1.tga"))
 		cout << "Texture loaded!" << endl;
 	else {
 		cout << "Error in menu: texture has not been loaded" << endl;
 		exit(1);
 	}
 
+	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
+
+	// configuración inicial
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 
@@ -63,8 +67,27 @@ void MenuState::init() {
 	sel_positions.resize(4);
 	for (int i = 0; i < 4; ++i) {
 		sel_positions[i].currents = i;
-		sel_positions[i].posx = game->window_width * 0.53;
-		sel_positions[i].posy = game->window_height * 0.41 + i * 77;
+		sel_positions[i].posy = game->window_height * 0.34 + i * game->window_height * 0.1025;
+		sel_positions[i].wid = game->window_width * 0.025;
+	}
+
+	sel_positions[0].posx = game->window_width * 0.445;
+	sel_positions[1].posx = game->window_width * 0.39;
+	sel_positions[2].posx = game->window_width * 0.427;
+	sel_positions[3].posx = game->window_width * 0.457;
+
+	particles.resize(N);
+	positions.resize(N);
+
+	srand(time(NULL));
+
+	for (int i = 0; i < N; ++i) {
+		particles[i] = new Mesh();
+		float randomx = rand() % 100 + 1;
+		float randomy = rand() % 100 + 1;
+		positions[i].posx = game->window_width * randomx / 100;
+		positions[i].posy = game->window_height * randomy / 100;
+		particles[i]->createQuad(game->window_width * randomx /100, game->window_height * randomy /100 , game->window_height*0.0025, game->window_height*0.005, true);
 	}
 }
 
@@ -80,14 +103,10 @@ void MenuState::onEnter()
 
 	currentSelection = 0;
 
-	//Inicializamos BASS  (id_del_device, muestras por segundo, ...)
-	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
-
 	if (game->bkg_music_playing != true && game->music_enabled) {
-		b_sample = BASS_SampleLoad(false, "data/sounds/bkg_menu.wav", 0L, 0, 1, 0);
+		b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, 0);
 		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-		//cout << "CHANEL" << b_channel << endl;
-
+		//std::cout << "CHANEL" << b_channel << std::endl;
 		BASS_ChannelPlay(b_channel, false); // play it
 		game->bkg_music_playing = true;
 	}
@@ -104,24 +123,40 @@ void MenuState::render() {
 	texture->bind();
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
+	glDisable(GL_BLEND);
 
 	// quad selection
 	glColor3f(1.0, 1.0, 1.0);
-	quadSelection.createBox(sel_positions[currentSelection].posx, sel_positions[currentSelection].posy, game->window_width * 0.35, game->window_height * 0.115, true);
+	quadSelection.createQuad(sel_positions[currentSelection].posx, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
 	quadSelection.render(GL_LINES);
-	quadSelection.createBox(sel_positions[currentSelection].posx + 5, sel_positions[currentSelection].posy + 5, game->window_width * 0.35, game->window_height * 0.115, true);
+	quadSelection.createQuad(sel_positions[currentSelection].posx + game->window_width * 0.0025, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
 	quadSelection.render(GL_LINES);
 
-	glDisable(GL_BLEND);
+	// particles
+	glColor3f(0.2, 0.2, 0.5);
+
+	for (int i = 0; i < N; i++) {
+		particles[i]->render(GL_TRIANGLES);
+	}
+
+
 }
 
 void MenuState::update(double time_elapsed) {
-
+	
+	for (int i = 0; i < N; ++i) {
+		float newPos = positions[i].posy + 10;
+		if (newPos >= game->window_height) newPos = 0;
+		particles[i]->createQuad(positions[i].posx, newPos, game->window_height*0.0025, game->window_height*0.005, true);
+		positions[i].posy = newPos;
+	}
 }
 
 void MenuState::onLeave(int fut_state) {
 
-	if (fut_state == 1) {
+	// solo paramos si vamos al play state
+	if (0
+		) {
 		BASS_ChannelStop(b_channel); // stop music
 		//cout << "CHANEL" << b_channel << endl;
 		game->bkg_music_playing = false;
@@ -137,7 +172,7 @@ void MenuState::selectionUp()
 	if (!game->effects_enabled)
 		return;
 
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul.wav", 0L, 0, 1, 0);
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul2.wav", 0L, 0, 1, 0);
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 
@@ -152,7 +187,7 @@ void MenuState::selectionDown()
 	if (!game->effects_enabled)
 		return;
 
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul.wav", 0L, 0, 1, 0);
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul2.wav", 0L, 0, 1, 0);
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 

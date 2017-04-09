@@ -20,22 +20,22 @@ World::~World()
 }
 
 void World::create() {
-	player->set("spitfire.ASE", "data/textures/spitfire.tga", "texture");
-	player->model.setTranslation(0, 1200, 0);
-	player->model.scale(1, 1, 1);
+	player->set("spitfire.ASE", "data/textures/spitfire.tga", "color");
+	player->model.setTranslation(0, 1250 , 0);
+	//player->model.scale(50, 50, 50);
 	root->addChild(player);
 
-	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
+	sky->set("cielo.ASE", "data/textures/cielo.tga", "color");
 	sky->model.setTranslation(1, 1, 1);
 	sky->model.scale(10, 10, 10);
 	root->addChild(sky);
 
-	sea->set("agua.ASE", "data/textures/agua.tga", "simple");
+	sea->set("agua.ASE", "data/textures/agua.tga", "color");
 	sea->model.setTranslation(1, 25, 1);
 	sea->model.scale(10, 10, 10);
 	root->addChild(sea);
 
-	ground->set("island.ASE", "data/textures/island_color.tga", "texture");
+	ground->set("island.ASE", "data/textures/island_color.tga", "color");
 	ground->model.setTranslation(1, 200, 1);
 	ground->model.scale(2, 2, 2);
 	root->addChild(ground);

@@ -15,6 +15,18 @@ class Mesh;
 class Camera;
 class Game;
 
+typedef struct {
+	int currents;
+	int posx;
+	int posy;
+	int wid;
+} sPositions;
+
+typedef struct {
+	float posx;
+	float posy;
+} sParticles;
+
 class MenuState : public State {
 protected:
 	MenuState(StateManager* SManager);
@@ -59,7 +71,11 @@ public:
 	Mesh quad;
 
 	Mesh quadSelection;
+	// posiciones de cada rectangulo de selección 
+	std::vector<sPositions> sel_positions;
 
+	std::vector<Mesh*> particles;
+	std::vector<sParticles> positions;
 };
 
 #endif

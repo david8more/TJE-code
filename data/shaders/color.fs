@@ -5,7 +5,12 @@ varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_color;
 
+uniform sampler2D u_texture;
+
 void main()
 {
-	gl_FragColor = vec4(v_normal, 1.0);
+	vec4 color = texture2D(u_texture, v_uv);
+	vec3 light = vec3(0.15, 0.15, 0.25);
+	color.xyz *= light;
+	gl_FragColor = color;
 }

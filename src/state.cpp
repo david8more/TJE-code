@@ -103,7 +103,7 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 void OptionsState::init(){
 	
 	texture = new Texture();
-	if (texture->load("data/textures/main.tga"))
+	if (texture->load("data/textures/optionsv1.tga"))
 		cout << "Texture loaded!" << endl;
 	else {
 		cout << "Error: texture has not been loaded" << endl;
@@ -146,9 +146,6 @@ void OptionsState::render() {
 	texture->bind();
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
-
-	// title
-	drawText(50.0, 75.0, "Options", Vector3(0.8, 0.0, 0.0), 4.0);
 
 	// menu
 	const string submenu_items[] = {"Music", "Effects", "Fullscreen", "back"};
@@ -194,7 +191,7 @@ void OptionsState::update(double seconds_elapsed) {
 }
 
 void OptionsState::onLeave( int fut_state ){
-
+	std::cout << "Options saved correctly" << endl;
 }
 
 void OptionsState::selectionUp()
@@ -206,7 +203,7 @@ void OptionsState::selectionUp()
 	if (!game->effects_enabled)
 		return;
 
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul.wav", 0L, 0, 1, 0);
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul2.wav", 0L, 0, 1, 0);
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 }
@@ -220,7 +217,7 @@ void OptionsState::selectionDown()
 	if (!game->effects_enabled)
 		return;
 
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul.wav", 0L, 0, 1, 0);
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menul2.wav", 0L, 0, 1, 0);
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 }

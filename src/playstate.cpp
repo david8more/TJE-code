@@ -43,11 +43,14 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 }
 
 void PlayState::init() {
-
+	
 }
 
 void PlayState::onEnter()
 {
+	//Inicializamos BASS  (id_del_device, muestras por segundo, ...)
+	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
+
 	cout << "$ Entering play state -- ..." << endl;
 	Game* game = Game::getInstance();
 
@@ -59,7 +62,7 @@ void PlayState::onEnter()
 
 	//OpenGL flags
 	glEnable(GL_CULL_FACE); //render both sides of every triangle
-	glEnable(GL_DEPTH_TEST); //check the occlusions using the Z buffer
+	glEnable(GL_DEPTH_TEST); //check the occlusi  ons using the Z buffer
 
 	world = new World();
 	world->create();
@@ -67,8 +70,12 @@ void PlayState::onEnter()
 
 	//create our camera
 	game->camera = new Camera();
-	game->camera->lookAt(Vector3(1, 1200, -3), Vector3(103, 1453, 1116), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
+	game->camera->lookAt(Vector3(0, 1250, 0), Vector3(103, 1453, 1116), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
 	game->camera->setPerspective(70, game->window_width / (float)game->window_height, 0.1, 100000); //set the projection, we want to be perspective
+
+	b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, 0);
+	b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+	BASS_ChannelPlay(b_channel, false); // play it
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -133,7 +140,7 @@ void PlayState::update(double seconds_elapsed) {
 	}
 	
 	if (i % 3 == 0) {
-		world->player->model.traslate(0, (float)i / 1000000, (float)i / 100000);
+		//world->player->model.traslate(0, (float)i / 1000000, (float)i / 100000);
 	}
 
 	i += 1;
@@ -142,7 +149,7 @@ void PlayState::update(double seconds_elapsed) {
 }
 
 void PlayState::onLeave(int fut_state) {
-
+	BASS_ChannelStop(b_channel); // stop music
 }
 
 bool PlayState::isGameOver() {
