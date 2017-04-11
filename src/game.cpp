@@ -6,6 +6,8 @@
 #include "shader.h"
 #include "state.h"
 #include "menustate.h"
+#include "playstate.h"
+#include "loadingstate.h"
 #include "howto.h"
 #include "bass.h"
 
@@ -51,11 +53,9 @@ void Game::init(void)
 
 	// initialize some states
 	// play state initialized in loading screen
-	MenuState::getInstance(sManager)->init();
-	OptionsState::getInstance(sManager)->init();
-	Howto::getInstance(sManager)->init();
 
-	sManager->changeCurrentState(MenuState::getInstance(sManager));
+	LoadingState::getInstance(sManager)->init();
+	sManager->changeCurrentState(LoadingState::getInstance(sManager));
 }
 
 //what to do when the image has to be draw
@@ -94,10 +94,15 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: 
-			if(sManager->stateID() == 0) exit(1);
+			if(sManager->stateID() == 0 || sManager->stateID() == -1) exit(1);
 			sManager->changeCurrentState( MenuState::getInstance(sManager) );
 			break;
 	}
+}
+
+void Game::onKeyDown(SDL_KeyboardEvent event)
+{
+	sManager->onKeyDown(event);
 }
 
 

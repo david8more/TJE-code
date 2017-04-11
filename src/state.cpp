@@ -25,6 +25,7 @@ void State::render() {}
 void State::update(double t) {}
 
 void State::onKeyPressed( SDL_KeyboardEvent event ) {}
+void State::onKeyDown(SDL_KeyboardEvent event) {}
 void State::OnChar( WPARAM wChar ) {}
 int State::stateID() { return -1; }
 
@@ -64,6 +65,10 @@ void StateManager::onKeyPressed( SDL_KeyboardEvent event ) {
 	current_state->onKeyPressed( event );
 }
 
+void StateManager::onKeyDown(SDL_KeyboardEvent event) {
+	current_state->onKeyDown(event);
+}
+
 void StateManager::OnChar( WPARAM wChar ) {
 	current_state->OnChar( wChar );
 }
@@ -98,6 +103,11 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 		selectionChosen();
 		break;
 	}
+}
+
+void OptionsState::onKeyDown(SDL_KeyboardEvent event)
+{
+	
 }
 
 void OptionsState::init(){

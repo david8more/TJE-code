@@ -49,6 +49,8 @@ public:
 	bool mouse_locked; //tells if the mouse is locked (not seen)
 	
 	Camera* camera; //our global camera
+	Camera* fixed_camera;
+	Camera* current_camera;
 
 	bool fullscreen;
 
@@ -58,6 +60,7 @@ public:
 	void update( double dt );
 
 	void onKeyPressed( SDL_KeyboardEvent event );
+	void onKeyDown(SDL_KeyboardEvent event);
 	void onMouseButton( SDL_MouseButtonEvent event );
     void onResize( SDL_Event e );
     

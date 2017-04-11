@@ -11,6 +11,15 @@ class EntityPlayer;
 class World
 {
 public:
+
+	static World* instance;
+
+	// SINGLETON
+	static World* getInstance() {
+		return instance;
+	}
+
+
 	//Meshes
 	EntityMesh* sky;
 	EntityMesh* sea;

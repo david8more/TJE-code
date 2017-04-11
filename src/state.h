@@ -28,6 +28,7 @@ public:
 	virtual void update(double t);
 
 	virtual void onKeyPressed( SDL_KeyboardEvent event );
+	virtual void onKeyDown(SDL_KeyboardEvent event);
 	virtual void OnChar( WPARAM );
 	virtual int stateID();
 
@@ -69,6 +70,7 @@ public:
 	void update( double time_elapsed );
 	// 'Events' function, they are simply redirected to the active state.
 	void onKeyPressed( SDL_KeyboardEvent event );
+	void onKeyDown(SDL_KeyboardEvent event);
 	void OnChar( WPARAM wChar);
 	int stateID();
 };
@@ -91,6 +93,7 @@ public:
 	void render();
 	void update( double elapsed_time );
 	void onKeyPressed( SDL_KeyboardEvent event );
+	void onKeyDown(SDL_KeyboardEvent event);
 	int stateID() { return 2; }
 
 	// The player went up or down in the menu

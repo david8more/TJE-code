@@ -16,7 +16,7 @@
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
 
-int N = 250;
+int N = 100;
 
 MenuState* MenuState::getInstance(StateManager* SManager)
 {
@@ -93,7 +93,7 @@ void MenuState::onEnter()
 	currentSelection = 0;
 
 	if (game->bkg_music_playing != true && game->music_enabled) {
-		b_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
+		b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 		//std::cout << "CHANEL" << b_channel << std::endl;
 		BASS_ChannelPlay(b_channel, false); // play it
