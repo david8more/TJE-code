@@ -16,11 +16,11 @@
 //globals
 
 BulletManager* bManager = new BulletManager();
+World * world = new World();
 
 float angle = 0;
 int i = 1;
 bool update_ = true;
-World * world = NULL;
 bool shooting = false;
 bool overused = false;
 int shootingtime = 0;
@@ -46,8 +46,10 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		viewtarget = Vector3(0, 5, 0);
 		break;
 	case SDLK_2:
-		viewpos = Vector3(0, 0.75, -1.5);
-		viewtarget = Vector3(0, 0.5, 0);
+		// arreglar la vista del p38
+		if (world->worldInfo.playerModel == 0) { viewpos = Vector3(0.f, 0.75f, -1.5f); viewtarget = Vector3(0.f, 0.5f, 0.f); }
+		else if (world->worldInfo.playerModel == 1) { viewpos = Vector3(0.f, 0.75f, -1.5f); viewtarget = Vector3(0.f, 0.5f, 0.f); } // <------
+		else if (world->worldInfo.playerModel == 2) { viewpos = Vector3(0.f, 1.f, -0.5f); viewtarget = Vector3(0.f, 1.f, 0.f); }
 		break;
 	case SDLK_SPACE:
 		shooting = true;
@@ -83,8 +85,6 @@ void PlayState::onKeyDown(SDL_KeyboardEvent event)
 void PlayState::init() {
 
 	Game* game = Game::getInstance();
-	//world = World::getInstance();
-	world = new World();
 	world->create();
 
 	game->current_camera = new Camera();
@@ -96,6 +96,7 @@ void PlayState::init() {
 
 	game->current_camera = game->camera;
 
+	// posicion y direccion de la vista seleccionada
 	viewpos = Vector3(0, 5, -15);
 	viewtarget = Vector3(0, 5, 0);
 
@@ -106,9 +107,7 @@ void PlayState::init() {
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width * 0.1, game->window_height*0.1, true);
 
 	crosshair_tex = new Texture();
-	if (crosshair_tex->load("data/textures/crosshair.tga"))
-		cout << "Texture loaded!" << endl;
-	else {
+	if (!crosshair_tex->load("data/textures/crosshair.tga")){
 		cout << "Error in playstate: texture(CROSSHAIR) has not been loaded" << endl;
 		exit(1);
 	}
@@ -149,7 +148,6 @@ void PlayState::render() {
 	i++;
 
 	Game* game = Game::getInstance();
-	//std::cout << game->mouse_position.x << " - " << game->mouse_position.y << endl;
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -162,7 +160,7 @@ void PlayState::render() {
 
 	glEnable(GL_BLEND);
 
-	world->root->render();
+	world->root->render(game->current_camera);
 	bManager->render();
 
 	// RENDER INTERFACE
@@ -200,8 +198,6 @@ void PlayState::render() {
 	if(overused) drawText(game->window_width*0.1, game->window_height*0.75, "ALERT: ENGINE OVERUSED. COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
 	
 	glDisable(GL_BLEND);
-
-	//SDL_GL_SwapWindow(game->window);
 	
 	// **** FINISHED RENDER INTERFACE
 
@@ -278,9 +274,6 @@ void PlayState::update(double seconds_elapsed) {
 		game->current_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 		world->playerAir->update(seconds_elapsed);
 	}
-	
-	//rotar helice
-	//world->helix->model.rotateLocal(90 * speed * seconds_elapsed * DEG2RAD, Vector3(0, 0, 1));
 
 	angle += seconds_elapsed * 10;
 }

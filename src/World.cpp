@@ -27,12 +27,25 @@ World::~World()
 
 void World::create() {
 
-	// PLAYER 
+	// PLAYER AIRPLANE ************************************************************************************
 
-	playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+	switch (worldInfo.playerModel) {
+	case 0:
+		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		break;
+	case 1:
+		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
+		break;
+	case 2:
+		playerAir->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
+		break;
+	}
+
 	playerAir->model.setScale(3, 3, 3);
 	playerAir->model.traslate(0, 500, 500);
 	root->addChild(playerAir);
+
+	// PLAYER SHIP ************************************************************************************
 
 	playerShip->set("barco.ASE", "data/textures/barco.tga", "simple");
 	playerAir->model.setScale(1, 1, 1);
@@ -69,6 +82,8 @@ void World::create() {
 	cannonTwo->model.traslate(0, 0.01, 0);
 	root->addChild(cannonTwo);
 
+	// *****************************************************************************************
+
 	// WORLD
 
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
@@ -92,4 +107,6 @@ void World::create() {
 	enemyShip->model = playerShip->model * enemyShip->model;
 	enemyShip->model.traslate(100, 0, 100);
 	root->addChild(enemyShip);
+
+	collision_enemies.push_back(enemyShip);
 }

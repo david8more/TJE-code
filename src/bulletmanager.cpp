@@ -5,6 +5,7 @@
 #include "bullet.h"
 #include "mesh.h"
 #include "game.h"
+#include "world.h"
 #include "framework.h"
 
 BulletManager* BulletManager::instance = NULL;
@@ -79,6 +80,8 @@ void BulletManager::render() {
 
 void BulletManager::update(float elapsed_time) {
 	
+	World* world = World::getInstance();
+
 	for (int i = 0; i < bullet_vector.size(); i++) {
 
 		bullet_vector[i].ttl -= elapsed_time;
@@ -93,4 +96,5 @@ void BulletManager::update(float elapsed_time) {
 		bullet_vector[i].position.y += bullet_vector[i].velocity.y * elapsed_time / 2;
 		bullet_vector[i].position.z += bullet_vector[i].velocity.z * elapsed_time / 2;
 	}
+
 }

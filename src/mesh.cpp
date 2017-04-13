@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 
+#define DEBUG 0
+
 Mesh::Mesh()
 {
 	vertices_vbo_id = 0;
@@ -356,7 +358,7 @@ bool Mesh::loadASE(const char* name) {
 
 	if (file != NULL) {
 		fread(&header, sizeof(sBinHeader), 1, file);
-		std::cout << "NUM FACES from bin: " << header.num_faces << std::endl;
+		if (DEBUG) std::cout << "NUM FACES from bin: " << header.num_faces << std::endl;
 		
 		vertices.resize(header.num_faces * 3);
 		uvs.resize(header.num_tfaces * 3);
@@ -370,7 +372,7 @@ bool Mesh::loadASE(const char* name) {
 		uploadToVRAM();
 
 		long time0 = getTime();
-		std::cout << "Parsing time " << (time0 - time) * 0.001 << std::endl;
+		if (DEBUG) std::cout << "Parsing time " << (time0 - time) * 0.001 << std::endl;
 
 		return true;
 	}
@@ -388,11 +390,11 @@ bool Mesh::loadASE(const char* name) {
 
 	t.seek("*MESH_NUMVERTEX");
 	int num_vertex = t.getint();
-	std::cout << "#Mesh vertex: " << num_vertex << std::endl;
+	if (DEBUG) std::cout << "#Mesh vertex: " << num_vertex << std::endl;
 
 	t.seek("*MESH_NUMFACES");
 	int num_faces = t.getint();
-	std::cout << "#Mesh faces: " << num_faces << std::endl;
+	if (DEBUG) std::cout << "#Mesh faces: " << num_faces << std::endl;
 
 	//colors.resize(num_faces * 3);
 
@@ -429,7 +431,7 @@ bool Mesh::loadASE(const char* name) {
 
 	t.seek("*MESH_NUMTVERTEX");
 	int num_tvertex = t.getint();
-	std::cout << "#Mesh t-vertex: " << num_tvertex << std::endl;
+	if (DEBUG) std::cout << "#Mesh t-vertex: " << num_tvertex << std::endl;
 
 	std::vector< Vector2 > unique_tvertices;
 	unique_tvertices.resize(num_tvertex);
@@ -448,7 +450,7 @@ bool Mesh::loadASE(const char* name) {
 
 	t.seek("*MESH_NUMTVFACES");
 	int num_tfaces = t.getint();
-	std::cout << "#Mesh t-faces: " << num_tfaces << std::endl;
+	if (DEBUG) std::cout << "#Mesh t-faces: " << num_tfaces << std::endl;
 
 	for (int i = 0; i < num_tfaces; ++i) {
 		t.seek("*MESH_TFACE");
@@ -481,7 +483,7 @@ bool Mesh::loadASE(const char* name) {
 	}
 
 	long time2 = getTime();
-	std::cout << "Parsing time " << (time2 - time) * 0.001 << std::endl;
+	if(DEBUG) std::cout << "Parsing time " << (time2 - time) * 0.001 << std::endl;
 
 	header.num_faces = num_faces;
 	header.num_tfaces = num_tfaces;
@@ -497,4 +499,26 @@ bool Mesh::loadASE(const char* name) {
 	uploadToVRAM();
 
 	return true;
+}
+
+// colisiones (coldet)
+void Mesh::createCollisionModel() {
+
+	//para crear una instancia usamos la función newCollisionModel3D ya que coldet no permite hacer un new directamente CollisionModel3D*
+/*	collision_model = newCollisionModel3D();
+
+	//esto acelera el proceso si sabemos cuantos triangulos hay porque evita tener que ir reallocando los datos
+	// num triangulos = num vertices / 3 (por las caras!!!)
+	collision_model->setTriangleNumber(vertices.size() / 3);
+
+	//agregamos uno a uno todos los triangulos de la mesh pasandole las coordenadas de los tres vertices que forman cada triangulo
+	for (int i = 0; i < vertices.size(); i += 3) {
+		collision_model->addTriangle(vertices[i].x, vertices[i].y, vertices[i].z,
+			vertices[i+1].x, vertices[i+1].y, vertices[i+1].z,
+			vertices[i+2].x, vertices[i+2].y, vertices[i+2].z);
+	}
+
+	//una vez tiene todos los triangulos llamamos a finalize para que cree el arbol interno optimizado
+	collision_model->finalize();
+	*/
 }

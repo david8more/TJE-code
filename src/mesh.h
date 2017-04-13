@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "framework.h"
+#include "extra/coldet.h"
 
 class Shader;
 
@@ -23,6 +24,8 @@ public:
 	unsigned int uvs_vbo_id;
 	unsigned int colors_vbo_id;
 
+	CollisionModel3D* collision_model;
+
 	Mesh();
 	Mesh( const Mesh& m );
 	~Mesh();
@@ -38,6 +41,8 @@ public:
 	void createBox(float center_x, float center_y, float w, float h, bool flip_uvs = false);
 
 	bool loadASE(const char* filename);
+
+	void createCollisionModel();
 };
 
 #endif

@@ -19,6 +19,8 @@ public:
 		return instance;
 	}
 
+	// colisionables??
+	std::vector<EntityMesh*> collision_enemies;
 
 	//Meshes
 	EntityMesh* sky;
@@ -26,6 +28,13 @@ public:
 	EntityMesh* ground;
 
 	// fighters
+	typedef struct {
+		int playerModel;
+		int rivalModel;
+	}sWorldInfo;
+
+	sWorldInfo worldInfo;
+
 	EntityPlayer* playerAir;
 	EntityPlayer* playerShip;
 	EntityMesh* enemyShip;

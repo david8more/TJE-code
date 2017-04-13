@@ -113,9 +113,7 @@ void OptionsState::onKeyDown(SDL_KeyboardEvent event)
 void OptionsState::init(){
 	
 	texture = new Texture();
-	if (texture->load("data/textures/optionsv1.tga"))
-		cout << "Texture loaded!" << endl;
-	else {
+	if (!texture->load("data/textures/optionsv1.tga")){
 		cout << "Error: texture has not been loaded" << endl;
 		exit(1);
 	}

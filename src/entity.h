@@ -27,7 +27,7 @@ public:
 	Texture* texture;
 	Shader *shader;
 
-	virtual void render();
+	virtual void render(Camera * camera);
 	virtual void update(float elapsed_time);
 	void removeChild(Entity* entity);
 	void addChild(Entity* entity);
@@ -54,7 +54,7 @@ public:
 	~EntityMesh();
 
 	void set(const char * mesh, const char * texture, const char * shader);
-	void render();
+	void render(Camera * camera);
 	void update(float elapsed_time);
 
 };
@@ -69,7 +69,7 @@ public:
 	~EntityPlayer();
 
 	void set(const char * mesh, const char * texture, const char * shader);
-	void render();
+	void render(Camera * camera);
 	void update(float elapsed_time);
 	void m60Shoot();
 	void missileShoot();

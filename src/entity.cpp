@@ -7,6 +7,7 @@
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
+#include "world.h"
 
 // ENTITY
 
@@ -21,9 +22,9 @@ Vector3 Entity::getPosition() {
 	return model * Vector3();
 }
 
-void Entity::render() {
+void Entity::render(Camera * camera) {
 	for (int i = 0; i < children.size(); i++) {
-		children[i]->render();
+		children[i]->render(camera);
 	}
 }
 
@@ -65,9 +66,7 @@ void EntityMesh::set(const char * meshf, const char * texturef, const char * sha
 	mesh->uploadToVRAM();
 
 	texture = new Texture();
-	if (texture->load(texturef))
-		cout << "Texture loaded!" << endl;
-	else {
+	if (!texture->load(texturef)){
 		cout << "Error: texture has not been loaded" << endl;
 		exit(1);
 	}
@@ -77,17 +76,16 @@ void EntityMesh::set(const char * meshf, const char * texturef, const char * sha
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	if (!shader->load(vs, fs))
 	{
-		std::cout << "shader not found or error" << std::endl;
+		std::cout << "Error at shader loading" << std::endl;
 		exit(0);
 	}
 
 	
 }
 
-void EntityMesh::render() {
+void EntityMesh::render(Camera * camera) {
 	
-	Game* game = Game::getInstance();
-	Matrix44 mvp = model * game->camera->viewprojection_matrix;
+	Matrix44 mvp = model * camera->viewprojection_matrix;
 
 	shader->enable();
 	shader->setMatrix44("u_model", model);
@@ -125,9 +123,7 @@ void EntityPlayer::set(const char * meshf, const char * texturef, const char * s
 	mesh->uploadToVRAM();
 
 	texture = new Texture();
-	if (texture->load(texturef))
-		cout << "Texture loaded!" << endl;
-	else {
+	if (!texture->load(texturef)){
 		cout << "Error: texture has not been loaded" << endl;
 		exit(1);
 	}
@@ -137,16 +133,15 @@ void EntityPlayer::set(const char * meshf, const char * texturef, const char * s
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	if (!shader->load(vs, fs))
 	{
-		std::cout << "shader not found or error" << std::endl;
+		std::cout << "Error at shader loading" << std::endl;
 		exit(0);
 	}
 
 }
 
-void EntityPlayer::render() {
+void EntityPlayer::render(Camera * camera) {
 
-	Game* game = Game::getInstance();
-	Matrix44 mvp = model * game->camera->viewprojection_matrix;
+	Matrix44 mvp = model * camera->viewprojection_matrix;
 
 	shader->enable();
 	shader->setMatrix44("u_model", model);
@@ -159,8 +154,30 @@ void EntityPlayer::render() {
 
 void EntityPlayer::update(float elapsed_time) {
 	BulletManager* bManager = BulletManager::getInstance();
+	World* world = World::getInstance();
 
 	bManager->update(elapsed_time);
+
+	// colisiona alguna bala con los enemigos?
+	/*for (int i = 0; i < bManager->bullet_vector.size(); i++) {
+		if (bManager->bullet_vector[i].ttl < 0.0) continue;
+
+		for (int j = 0; j < world->collision_enemies.size(); j++) {
+
+			//si queremos especificar la model de la mesh usamos setTransform
+			world->collision_enemies[j]->mesh->collision_model->setTransform(world->collision_enemies[j]->model.m);
+			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
+			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
+			//al origen del rayo o nos conformamos con saber si colisiona. 
+
+			Vector3 front = bManager->bullet_vector[i].last_position - bManager->bullet_vector[i].position;
+
+			if (world->collision_enemies[j]->mesh->collision_model->rayCollision(bManager->bullet_vector[i].last_position.v,
+				front.v, false) == true) {
+				std::cout << "colisiona";
+			}
+		}
+	}*/
 }
 
 void EntityPlayer::m60Shoot() {

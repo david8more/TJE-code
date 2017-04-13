@@ -57,7 +57,7 @@ void Game::init(void)
 	MenuState::getInstance(sManager)->init();
 	OptionsState::getInstance(sManager)->init();
 	Howto::getInstance(sManager)->init();
-	PlayState::getInstance(sManager)->init();
+	LoadingState::getInstance(sManager)->init();
 	sManager->changeCurrentState(MenuState::getInstance(sManager));
 }
 

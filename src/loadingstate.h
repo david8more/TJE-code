@@ -43,9 +43,6 @@ public:
 	Game* game;
 	Camera cam2D;
 	Mesh quad;
-	Mesh dots;
-
-	int changing_dot;
 };
 
 #endif

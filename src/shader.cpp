@@ -5,6 +5,8 @@
 
 #include "texture.h"
 
+#define DEBUG 0
+
 //typedef unsigned int GLhandleARB;
 
 #ifdef LOAD_EXTENSIONS_MANUALLY
@@ -75,7 +77,7 @@ bool Shader::load(const std::string& vsf, const std::string& psf)
 	vs_filename = vsf;
 	ps_filename = psf;
 	
-    std::cout << " * Shader: Vertex: " << vsf << "  Pixel: " << psf << std::endl;
+    if(DEBUG) std::cout << " * Shader: Vertex: " << vsf << "  Pixel: " << psf << std::endl;
 	std::string vsm,psm;
 	if (!readFile(vsf,vsm) || !readFile(psf,psm))
 		return false;

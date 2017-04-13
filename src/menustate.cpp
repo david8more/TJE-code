@@ -50,9 +50,7 @@ void MenuState::init() {
 
 	// Cargamos texturas de menú
 	texture = new Texture();
-	if (texture->load("data/textures/mainv1.tga"))
-		cout << "Texture loaded!" << endl;
-	else {
+	if (!texture->load("data/textures/mainv1.tga")){
 		cout << "Error in menu: texture has not been loaded" << endl;
 		exit(1);
 	}
@@ -80,7 +78,7 @@ void MenuState::init() {
 
 void MenuState::onEnter()
 {
-	cout << "$ Entering menu state --" << endl;
+	cout << "$ Entering menu state" << endl;
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -161,10 +159,8 @@ void MenuState::update(double time_elapsed) {
 
 void MenuState::onLeave(int fut_state) {
 
-	// solo paramos si vamos al play state
 	if (0) {
 		BASS_ChannelStop(b_channel); // stop music
-		//cout << "CHANEL" << b_channel << endl;
 		game->bkg_music_playing = false;
 	}
 }
@@ -201,7 +197,6 @@ void MenuState::selectionDown()
 
 void MenuState::selectionChosen()
 {
-	cout << currentSelection << endl;
 	if (game->effects_enabled)
 	{
 		s_sample = BASS_SampleLoad(false, "data/sounds/sel_menul.wav", 0L, 0, 1, 0);
@@ -212,7 +207,7 @@ void MenuState::selectionChosen()
 	switch (currentSelection)
 	{
 	case 0:// play state
-		SManager->changeCurrentState(PlayState::getInstance(SManager));
+		SManager->changeCurrentState(LoadingState::getInstance(SManager));
 		break;
 	case 1: // how to play
 		SManager->changeCurrentState(Howto::getInstance(SManager));
