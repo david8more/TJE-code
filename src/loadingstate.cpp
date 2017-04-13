@@ -25,7 +25,7 @@ LoadingState* LoadingState::getInstance(StateManager* SManager)
 
 void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	SManager->changeCurrentState(MenuState::getInstance(SManager));
+	SManager->changeCurrentState(PlayState::getInstance(SManager));
 
 	switch (event.keysym.sym)
 	{
@@ -60,10 +60,6 @@ void LoadingState::onEnter()
 	if (!loaded) return;
 
 	cout << "$ Entering loading state -- ..." << endl;
-
-	MenuState::getInstance(this->SManager)->init();
-	OptionsState::getInstance(this->SManager)->init();
-	Howto::getInstance(this->SManager)->init();
 	PlayState::getInstance(this->SManager)->init();
 }
 
@@ -80,11 +76,6 @@ void LoadingState::render() {
 	texture->unbind();
 	glDisable(GL_BLEND);
 
-	if (!loaded) {
-		loaded = true;
-		onEnter();
-	}
-
 	glColor3f(1.0, 1.0, 1.0);
 
 	dots.vertices.resize(10);
@@ -100,6 +91,11 @@ void LoadingState::render() {
 
 	dots.render(GL_POINTS);
 	dots.colors.clear();
+
+	if (!loaded) {
+		loaded = true;
+		onEnter();
+	}
 }
 
 void LoadingState::update(double time_elapsed) {

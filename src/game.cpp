@@ -54,8 +54,11 @@ void Game::init(void)
 	// initialize some states
 	// play state initialized in loading screen
 
-	LoadingState::getInstance(sManager)->init();
-	sManager->changeCurrentState(LoadingState::getInstance(sManager));
+	MenuState::getInstance(sManager)->init();
+	OptionsState::getInstance(sManager)->init();
+	Howto::getInstance(sManager)->init();
+	PlayState::getInstance(sManager)->init();
+	sManager->changeCurrentState(MenuState::getInstance(sManager));
 }
 
 //what to do when the image has to be draw

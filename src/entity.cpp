@@ -6,6 +6,7 @@
 #include "texture.h"
 #include "entity.h"
 #include "shader.h"
+#include "bulletmanager.h"
 
 // ENTITY
 
@@ -157,5 +158,22 @@ void EntityPlayer::render() {
 }
 
 void EntityPlayer::update(float elapsed_time) {
+	BulletManager* bManager = BulletManager::getInstance();
 
+	bManager->update(elapsed_time);
+}
+
+void EntityPlayer::m60Shoot() {
+	BulletManager* bManager = BulletManager::getInstance();
+
+	Game* game = Game::getInstance();
+	bManager->createBullet(model*Vector3(1.85, -0.25, 10), model.rotateVector(Vector3(-15, 0, 1000)), 1, 10.0, 0, 1);
+	bManager->createBullet(model*Vector3(-2, -0.25, 10), model.rotateVector(Vector3(-15, 0, 1000)), 1, 10.0, 0, 2);
+}
+
+void EntityPlayer::missileShoot() {
+	BulletManager* bManager = BulletManager::getInstance();
+
+	Game* game = Game::getInstance();
+	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(-15, 0, 1000)), 1, 100.0, 0, 3);
 }

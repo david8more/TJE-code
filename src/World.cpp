@@ -5,14 +5,18 @@
 #include "game.h"
 #include "shader.h"
 
+World* World::instance = NULL;
+
 World::World()
 {
+	instance = this;
+
 	sky = new EntityMesh();
 	sea = new EntityMesh();
 	ground = new EntityMesh();
 	playerAir = new EntityPlayer();
 	playerShip = new EntityPlayer();
-	helix = new EntityMesh();
+	enemyShip = new EntityMesh();
 	root = new Entity();
 }
 
@@ -22,6 +26,8 @@ World::~World()
 }
 
 void World::create() {
+
+	// PLAYER 
 
 	playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 	playerAir->model.setScale(3, 3, 3);
@@ -63,17 +69,7 @@ void World::create() {
 	cannonTwo->model.traslate(0, 0.01, 0);
 	root->addChild(cannonTwo);
 
-	/*EntityMesh* aux = new EntityMesh();
-
-	aux->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
-	aux->model.traslate(0, 500, 500);
-	root->addChild(aux);
-
-	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
-	helix->model.setScale(0.75, 0.75, 0.75);
-	helix->model = helix->model * aux->model;
-	helix->model.traslate(0, 0, 3.5);
-	root->addChild(helix);*/
+	// WORLD
 
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 	sky->model.setScale(13, 13, 13);
@@ -89,4 +85,11 @@ void World::create() {
 	ground->model.setScale(2, 2, 2);
 	ground->model.traslateLocal(0, -1000, 0);
 	root->addChild(ground);
+
+	// ENEMIES
+
+	enemyShip->set("barco.ASE", "data/textures/barco.tga", "color");
+	enemyShip->model = playerShip->model * enemyShip->model;
+	enemyShip->model.traslate(100, 0, 100);
+	root->addChild(enemyShip);
 }

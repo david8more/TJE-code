@@ -42,6 +42,11 @@ public:
 	Vector3 viewpos;
 	Vector3 viewtarget;
 
+	//GUI
+	Camera cam2D;
+	Mesh quad;
+	Texture * crosshair_tex;
+
 	// background music
 	int b_sample;
 	int b_channel;

@@ -27,8 +27,8 @@ public:
 
 	// fighters
 	EntityPlayer* playerAir;
-	EntityMesh* helix;
 	EntityPlayer* playerShip;
+	EntityMesh* enemyShip;
 	Entity* root;
 
 	World();

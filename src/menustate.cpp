@@ -9,6 +9,7 @@
 #include "bass.h"
 #include "menustate.h"
 #include "playstate.h"
+#include "loadingstate.h"
 #include "howto.h"
 #include <cmath>
 #include <ctime>
@@ -75,9 +76,6 @@ void MenuState::init() {
 	sel_positions[1].posx = game->window_width * 0.39;
 	sel_positions[2].posx = game->window_width * 0.427;
 	sel_positions[3].posx = game->window_width * 0.457;
-
-	particles.resize(N);
-	positions.resize(N);
 }
 
 void MenuState::onEnter()
@@ -102,14 +100,17 @@ void MenuState::onEnter()
 
 	srand(time(NULL));
 
+	vParticles.resize(N);
+
 	for (int i = 0; i < N; ++i) {
-		particles[i] = new Mesh();
 		float randomx = rand() % 1000 + 1;
 		float randomy = rand() % 1000 + 1;
-		positions[i].posx = game->window_width * randomx / 1000;
-		positions[i].posy = game->window_height * randomy / 1000;
-		particles[i]->createQuad(positions[i].posx, positions[i].posy, game->window_height*0.0025, game->window_height*0.0075, true);
+		vParticles[i].posx = game->window_width * randomx / 1000;
+		vParticles[i].posy = game->window_height * randomy / 1000;
+		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
+		mParticles.colors.push_back(Vector4(0, 0, 1, 1));
 	}
+
 }
 
 void MenuState::render() {
@@ -133,21 +134,28 @@ void MenuState::render() {
 	quadSelection.render(GL_LINES);
 
 	// particles
-	glColor3f(0.2, 0.2, 0.4);
-
-	for (int i = 0; i < N; i++) {
-		particles[i]->render(GL_TRIANGLES);
+	
+	for (int i = 0; i < N; ++i) {
+		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
+		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
 	}
+
+	glPointSize(2);
+	mParticles.render(GL_POINTS);
 
 }
 
 void MenuState::update(double time_elapsed) {
 	
+	mParticles.clear();
+
 	for (int i = 0; i < N; ++i) {
-		float newPos = positions[i].posy + 8;
-		if (newPos >= game->window_height) newPos = 0;
-		particles[i]->createQuad(positions[i].posx, newPos, game->window_height*0.0025, game->window_height*0.0075, true);
-		positions[i].posy = newPos;
+		float newPos = vParticles[i].posy + 450 * time_elapsed;
+		if (newPos >= game->window_height) newPos = newPos - game->window_height;
+		vParticles[i].posy = newPos;
+		
+		vParticles[i].posx += 100 * time_elapsed;
+		if (vParticles[i].posx >= game->window_width) vParticles[i].posx -= game->window_width;
 	}
 }
 

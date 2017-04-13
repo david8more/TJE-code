@@ -71,7 +71,8 @@ public:
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render();
 	void update(float elapsed_time);
-
+	void m60Shoot();
+	void missileShoot();
 };
 
 #endif

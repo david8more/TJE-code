@@ -74,8 +74,8 @@ public:
 	// posiciones de cada rectangulo de selección 
 	std::vector<sPositions> sel_positions;
 
-	std::vector<Mesh*> particles;
-	std::vector<sParticles> positions;
+	Mesh mParticles;
+	std::vector<sParticles> vParticles;
 };
 
 #endif
