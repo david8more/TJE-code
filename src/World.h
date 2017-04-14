@@ -7,10 +7,14 @@
 class Entity;
 class EntityMesh;
 class EntityPlayer;
+class EntityEnemy;
 
 class World
 {
 public:
+
+	World();
+	~World();
 
 	static World* instance;
 
@@ -19,15 +23,6 @@ public:
 		return instance;
 	}
 
-	// colisionables??
-	std::vector<EntityMesh*> collision_enemies;
-
-	//Meshes
-	EntityMesh* sky;
-	EntityMesh* sea;
-	EntityMesh* ground;
-
-	// fighters
 	typedef struct {
 		int playerModel;
 		int rivalModel;
@@ -35,15 +30,28 @@ public:
 
 	sWorldInfo worldInfo;
 
-	EntityPlayer* playerAir;
-	EntityPlayer* playerShip;
-	EntityMesh* enemyShip;
+	// colisionables??
+	std::vector<EntityEnemy*> collision_enemies;
+
 	Entity* root;
 
-	World();
-	~World();
+	//world constants
+	EntityMesh* sky;
+	EntityMesh* sea;
+	EntityMesh* ground;
+
+	// fighters
+	EntityPlayer* playerAir;
+	EntityPlayer* playerShip;
 
 	void create();
+	void addPlayer();
+	void addPlayerConst();
+	void addEnemies();
+	void addWorldConst();
+
+	void reset();
+	bool isGameOver();
 };
 
 #endif

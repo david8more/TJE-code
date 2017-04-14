@@ -1,0 +1,7 @@
+M60_SHOT
+
+	10
+
+MISSILE_SHOT
+
+	50

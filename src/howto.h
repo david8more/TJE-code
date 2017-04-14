@@ -29,7 +29,7 @@ public:
 	void render();
 	void update(double elapsed_time);
 	void onKeyPressed(SDL_KeyboardEvent event);
-	int stateID() { return 3; }
+	int stateID() { return 2; }
 
 	static Howto* getInstance(StateManager* SManager);
 

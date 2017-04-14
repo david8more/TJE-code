@@ -5,19 +5,19 @@
 #include "texture.h"
 #include "rendertotexture.h"
 #include "shader.h"
-#include "state.h"
+#include "optionsstate.h"
 #include "bass.h"
 #include "menustate.h"
 #include "playstate.h"
-#include "loadingstate.h"
+#include "preplay.h"
 #include "howto.h"
 #include <cmath>
 #include <ctime>
 
+#define N 100 // lluvia
+
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
-
-int N = 100;
 
 MenuState* MenuState::getInstance(StateManager* SManager)
 {
@@ -113,6 +113,11 @@ void MenuState::onEnter()
 
 void MenuState::render() {
 
+	//set the clear color (the background color)
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	// Clear the window and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
@@ -139,7 +144,7 @@ void MenuState::render() {
 	}
 
 	glPointSize(2);
-	mParticles.render(GL_POINTS);
+	mParticles.render(GL_POINTS); // renderizar de una vez toda la lluvia
 
 }
 
@@ -207,7 +212,7 @@ void MenuState::selectionChosen()
 	switch (currentSelection)
 	{
 	case 0:// play state
-		SManager->changeCurrentState(LoadingState::getInstance(SManager));
+		SManager->changeCurrentState(PreplayState::getInstance(SManager));
 		break;
 	case 1: // how to play
 		SManager->changeCurrentState(Howto::getInstance(SManager));

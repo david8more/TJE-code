@@ -7,7 +7,7 @@
 
 #include <vector>
 #include "framework.h"
-#include "extra/coldet.h"
+#include "extra/coldet/coldet.h"
 
 class Shader;
 
@@ -40,7 +40,7 @@ public:
 	void createQuad(float center_x, float center_y, float w, float h, bool flip_uvs = false);
 	void createBox(float center_x, float center_y, float w, float h, bool flip_uvs = false);
 
-	bool loadASE(const char* filename);
+	bool loadASE(const char* filename, bool createCollisionModel);
 
 	void createCollisionModel();
 };

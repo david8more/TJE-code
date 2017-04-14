@@ -337,7 +337,7 @@ typedef struct {
 	int num_tfaces;
 } sBinHeader;
 
-bool Mesh::loadASE(const char* name) {
+bool Mesh::loadASE(const char* name, bool createCModel) {
 
 	vertices.clear();
 	normals.clear();
@@ -370,6 +370,7 @@ bool Mesh::loadASE(const char* name) {
 		fclose(file);
 
 		uploadToVRAM();
+		if(createCModel) createCollisionModel();
 
 		long time0 = getTime();
 		if (DEBUG) std::cout << "Parsing time " << (time0 - time) * 0.001 << std::endl;
@@ -477,9 +478,6 @@ bool Mesh::loadASE(const char* name) {
 		Vector3 N1(A, C, B);
 
 		normals[i] = N1;
-		
-
-		//colors[i] = Vector4(vertices[i], 1.0);
 	}
 
 	long time2 = getTime();
@@ -497,6 +495,7 @@ bool Mesh::loadASE(const char* name) {
 
 	fclose(wfile);
 	uploadToVRAM();
+	if (createCModel) createCollisionModel();
 
 	return true;
 }
@@ -505,7 +504,7 @@ bool Mesh::loadASE(const char* name) {
 void Mesh::createCollisionModel() {
 
 	//para crear una instancia usamos la función newCollisionModel3D ya que coldet no permite hacer un new directamente CollisionModel3D*
-/*	collision_model = newCollisionModel3D();
+	collision_model = newCollisionModel3D();
 
 	//esto acelera el proceso si sabemos cuantos triangulos hay porque evita tener que ir reallocando los datos
 	// num triangulos = num vertices / 3 (por las caras!!!)
@@ -520,5 +519,5 @@ void Mesh::createCollisionModel() {
 
 	//una vez tiene todos los triangulos llamamos a finalize para que cree el arbol interno optimizado
 	collision_model->finalize();
-	*/
+	
 }

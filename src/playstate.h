@@ -34,10 +34,8 @@ public:
 	void onLeave(int fut_state);
 
 	void onKeyPressed(SDL_KeyboardEvent event);
-	void onKeyDown(SDL_KeyboardEvent event);
-	bool isGameOver();
-	void reset();
-	int stateID() { return 1; }
+	void onKeyUp(SDL_KeyboardEvent event);
+	int stateID() { return 4; }
 
 	Vector3 viewpos;
 	Vector3 viewtarget;
@@ -55,10 +53,6 @@ public:
 	bool engine_on;
 	int e_sample;
 	int e_channel;
-
-	//gun sound
-	int g_sample;
-	int g_channel;
 };
 
 #endif

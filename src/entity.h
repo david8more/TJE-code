@@ -19,6 +19,7 @@ public:
 
 	Matrix44 model;
 	unsigned int uid;
+	bool visible;
 	string name;
 	Entity* parent;
 	vector<Entity*> children;
@@ -29,7 +30,7 @@ public:
 
 	virtual void render(Camera * camera);
 	virtual void update(float elapsed_time);
-	void removeChild(Entity* entity);
+	void removeChild(unsigned int uid);
 	void addChild(Entity* entity);
 	Matrix44 getGlobalMatrix();
 	Vector3 getPosition();
@@ -60,19 +61,35 @@ public:
 };
 
 // *******************************************************************
-// adding mesh and texture to get the visual representation
-
 class EntityPlayer : public Entity {
 public:
 
 	EntityPlayer();
 	~EntityPlayer();
 
+	int life;
+
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
 	void m60Shoot();
 	void missileShoot();
+};
+
+// *******************************************************************
+class EntityEnemy : public Entity {
+public:
+
+	EntityEnemy();
+	~EntityEnemy();
+
+	int life;
+
+	void set(const char * mesh, const char * texture, const char * shader);
+	void render(Camera * camera);
+	void update(float elapsed_time);
+	//void m60Shoot();
+	//void missileShoot();
 };
 
 #endif

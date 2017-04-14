@@ -11,7 +11,7 @@
 BulletManager* BulletManager::instance = NULL;
 
 BulletManager::BulletManager() {
-	bullet_vector.resize(200);
+	bullet_vector.resize(30);
 	last_free = 0;
 
 
@@ -56,10 +56,10 @@ void BulletManager::render() {
 
 		switch (bullet_vector[i].type) {
 		case 1:
-			bullets.colors.push_back(Vector4(1, 0, 0, 1));
+			bullets.colors.push_back(Vector4(0.f, 0.f, 0.f, 1.f));
 			break;
 		case 2:
-			bullets.colors.push_back(Vector4(0, 1, 0, 1));
+			bullets.colors.push_back(Vector4(1.f, 0.f, 0.f, 1.f));
 			break;
 		case 3:
 			bullets.colors.push_back(Vector4(1, 0, 1, 1));

@@ -2,20 +2,20 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "rendertotexture.h"
 #include "shader.h"
-#include "state.h"
+#include "optionsstate.h"
 #include "menustate.h"
 #include "playstate.h"
-#include "loadingstate.h"
+#include "preplay.h"
 #include "howto.h"
+#include "endingstate.h"
 #include "bass.h"
 
 #include <cmath>
 
-//some globals
-RenderToTexture* rt = NULL;
+#define DEBUG 0
 
+//some globals
 Game* Game::instance = NULL;
 
 // fps
@@ -51,13 +51,13 @@ void Game::init(void)
 
 	sManager = new StateManager();
 
-	// initialize some states
-	// play state initialized in loading screen
-
+	// initialize states
 	MenuState::getInstance(sManager)->init();
 	OptionsState::getInstance(sManager)->init();
 	Howto::getInstance(sManager)->init();
-	LoadingState::getInstance(sManager)->init();
+	PreplayState::getInstance(sManager)->init();
+	PlayState::getInstance(sManager)->init();
+	EndingState::getInstance(sManager)->init();
 	sManager->changeCurrentState(MenuState::getInstance(sManager));
 }
 
@@ -67,17 +67,19 @@ void Game::render(void)
 	// render current state
 	sManager->render();
 
-	// time elapsed
-	string stime = "TIME ELAPSED: " + std::to_string( time );
-	drawText(5,5, stime, Vector3(1,1,1), 2 );
+	if (DEBUG) {
+		// time elapsed
+		string stime = "TIME ELAPSED: " + std::to_string(time);
+		drawText(5, 5, stime, Vector3(1, 1, 1), 2);
 
-	// calcular fps
-	double currentTime = time;
-	nbFrames++;
+		// calcular fps
+		double currentTime = time;
+		nbFrames++;
 
-	ss.str("");
-	ss << "FPS: " << fps;
-	drawText(5, 25, ss.str(), Vector3(1,1,1), 2 );
+		ss.str("");
+		ss << "FPS: " << fps;
+		drawText(5, 25, ss.str(), Vector3(1, 1, 1), 2);
+	}
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -97,15 +99,18 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: 
-			if(sManager->stateID() == 0 || sManager->stateID() == -1) exit(1);
+			if(sManager->stateID() == 0) exit(1);
 			sManager->changeCurrentState( MenuState::getInstance(sManager) );
+			break;
+		case SDLK_5:
+			sManager->changeCurrentState(EndingState::getInstance(sManager));
 			break;
 	}
 }
 
-void Game::onKeyDown(SDL_KeyboardEvent event)
+void Game::onKeyUp(SDL_KeyboardEvent event)
 {
-	sManager->onKeyDown(event);
+	sManager->onKeyUp(event);
 }
 
 

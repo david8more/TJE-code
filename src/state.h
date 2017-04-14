@@ -28,7 +28,7 @@ public:
 	virtual void update(double t);
 
 	virtual void onKeyPressed( SDL_KeyboardEvent event );
-	virtual void onKeyDown(SDL_KeyboardEvent event);
+	virtual void onKeyUp(SDL_KeyboardEvent event);
 	virtual void OnChar( WPARAM );
 	virtual int stateID();
 
@@ -70,56 +70,9 @@ public:
 	void update( double time_elapsed );
 	// 'Events' function, they are simply redirected to the active state.
 	void onKeyPressed( SDL_KeyboardEvent event );
-	void onKeyDown(SDL_KeyboardEvent event);
+	void onKeyUp(SDL_KeyboardEvent event);
 	void OnChar( WPARAM wChar);
 	int stateID();
-};
-
-// *********************************************************************************************************
-// *********************************************************************************************************
-
-class OptionsState : public State {
-protected:
-	OptionsState();
-	OptionsState( StateManager* SManager );
-
-public:
-
-	~OptionsState();
-	
-	void init();
-	void onEnter();
-	void onLeave( int fut_state );
-	void render();
-	void update( double elapsed_time );
-	void onKeyPressed( SDL_KeyboardEvent event );
-	void onKeyDown(SDL_KeyboardEvent event);
-	int stateID() { return 2; }
-
-	// The player went up or down in the menu
-	void selectionUp();
-	void selectionDown();
-
-	// The player validated the current selection
-	void selectionChosen();
-	
-	static OptionsState* getInstance( StateManager* SManager );
-
-	// background texture
-	Texture* texture;
-
-	// needed instances to render
-	Game* game;
-	Camera cam2D;
-	Mesh quad;
-
-	// BASS
-	int s_sample;
-	int s_channel;
-	int b_channel;
-
-	// Index of the current selected menu item
-	int currentSelection;
 };
 
 #endif

@@ -104,7 +104,7 @@ void mainLoop()
 						game->onKeyPressed( sdlEvent.key );
 						break;
 					case SDL_KEYUP:
-						game->onKeyDown(sdlEvent.key);
+						game->onKeyUp(sdlEvent.key);
 						break;
 					case SDL_WINDOWEVENT:
 						switch (sdlEvent.window.event) {

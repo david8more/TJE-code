@@ -60,7 +60,7 @@ public:
 	void update( double dt );
 
 	void onKeyPressed( SDL_KeyboardEvent event );
-	void onKeyDown(SDL_KeyboardEvent event);
+	void onKeyUp(SDL_KeyboardEvent event);
 	void onMouseButton( SDL_MouseButtonEvent event );
     void onResize( SDL_Event e );
     

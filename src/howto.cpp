@@ -35,7 +35,7 @@ void Howto::onKeyPressed(SDL_KeyboardEvent event)
 void Howto::init() {
 
 	texture = new Texture();
-	if (!texture->load("data/textures/optionsv1.tga")){
+	if (!texture->load("data/textures/terrain.tga")){
 		cout << "Error: texture has not been loaded" << endl;
 		exit(1);
 	}

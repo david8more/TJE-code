@@ -1,0 +1,38 @@
+GOLD_TIME
+
+	POINTS
+
+		100
+
+	TIME
+
+		60
+
+SILVER_TIME
+
+	POINTS
+
+		100
+
+	TIME
+
+		90
+
+BRONZE_TIME
+
+	POINTS
+
+		75
+
+	TIME
+
+		120
+NO_MEDAL_TIME
+
+	POINTS
+
+		50
+
+	TIME
+
+		1000
