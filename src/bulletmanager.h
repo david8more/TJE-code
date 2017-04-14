@@ -6,16 +6,17 @@
 
 class BulletManager {
 
+private:
+	BulletManager();
+	~BulletManager();
 public:
 
 	static BulletManager* instance;
 
 	static BulletManager* getInstance() {
+		if (instance == NULL) instance = new BulletManager();
 		return instance;
 	}
-
-	BulletManager();
-	~BulletManager();
 
 	std::vector<Bullet> bullet_vector;
 	int last_free;

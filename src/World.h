@@ -11,15 +11,19 @@ class EntityEnemy;
 
 class World
 {
-public:
+
+private:
 
 	World();
 	~World();
 
+public:
+	
 	static World* instance;
 
 	// SINGLETON
 	static World* getInstance() {
+		if (instance == NULL) instance = new World();
 		return instance;
 	}
 

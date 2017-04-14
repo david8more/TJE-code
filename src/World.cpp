@@ -4,6 +4,7 @@
 #include "entity.h"
 #include "game.h"
 #include "shader.h"
+#include "playstate.h"
 
 World* World::instance = NULL;
 
@@ -21,9 +22,7 @@ World::World()
 
 World::~World()
 {
-	delete(sky); delete(sea); delete(ground); delete(playerAir); delete(playerShip);
-	for (int i = 0; i < root->children.size(); i++) delete(root->children[i]);
-	delete(root);
+
 }
 
 void World::create() {
@@ -58,6 +57,7 @@ void World::addPlayer() {
 	}
 
 	playerAir->life = 250;
+	playerAir->missilesLeft = 5;
 	playerAir->model.setScale(3, 3, 3);
 	playerAir->model.traslate(0, 500, 500);
 	root->addChild(playerAir);
@@ -69,6 +69,7 @@ void World::addPlayerConst() {
 
 	playerShip->set("barco.ASE", "data/textures/barco.tga", "simple");
 	playerShip->model.traslateLocal(5500, -2100, 5500);
+	playerShip->life = 750;
 	root->addChild(playerShip);
 
 	EntityMesh* turretOne = new EntityMesh();;
@@ -139,17 +140,22 @@ void World::addEnemies() {
 	EntityEnemy* enemyAir = new EntityEnemy();
 
 	enemyAir->life = 150;
-	enemyAir->set("spitfire.ASE", "data/textures/spitfire.tga", "color");
+	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemyAir->model.setScale(3, 3, 3);
-	//enemyAir->model = playerShip->model * enemyAir->model;
 	enemyAir->model.traslate(0, 500, 500);
 	root->addChild(enemyAir);
 
 	collision_enemies.push_back(enemyAir);
-}
 
-void World::reset() {
+	EntityEnemy* enemy2Air = new EntityEnemy();
 
+	enemy2Air->life = 150;
+	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
+	enemy2Air->model.setScale(3, 3, 3);
+	enemy2Air->model.traslate(500, 500, 500);
+	root->addChild(enemy2Air);
+
+	collision_enemies.push_back(enemy2Air);
 }
 
 bool World::isGameOver() {
@@ -165,4 +171,8 @@ bool World::isGameOver() {
 
 	// si todos sigue igual:
 	return false;
+}
+
+void World::reset() {
+	
 }

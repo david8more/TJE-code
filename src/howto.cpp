@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "rendertotexture.h"
+#include "texturemanager.h"
 #include "shader.h"
 #include "state.h"
 #include "bass.h"
@@ -34,11 +34,7 @@ void Howto::onKeyPressed(SDL_KeyboardEvent event)
 
 void Howto::init() {
 
-	texture = new Texture();
-	if (!texture->load("data/textures/terrain.tga")){
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture("data/textures/terrain.tga");
 
 	game = Game::getInstance();
 

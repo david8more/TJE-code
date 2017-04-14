@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "rendertotexture.h"
+#include "texturemanager.h"
 #include "shader.h"
 #include "optionsstate.h"
 #include "bass.h"
@@ -49,11 +49,7 @@ void MenuState::init() {
 	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
 
 	// Cargamos texturas de menú
-	texture = new Texture();
-	if (!texture->load("data/textures/mainv1.tga")){
-		cout << "Error in menu: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture("data/textures/mainv1.tga");
 
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();

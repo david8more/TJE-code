@@ -3,7 +3,9 @@
 #include "game.h"
 #include "utils.h"
 #include "mesh.h"
+#include "meshmanager.h"
 #include "texture.h"
+#include "texturemanager.h"
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
@@ -64,17 +66,11 @@ EntityMesh::~EntityMesh() {}
 //meshfile sin path, texturefile con path
 void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf ) {
 
-	mesh = new Mesh();
-
-	if (!mesh->loadASE(meshf, false))
-		exit(0);
+	mesh = MeshManager::getInstance()->getMesh(meshf, false);
 	mesh->uploadToVRAM();
 
-	texture = new Texture();
-	if (!texture->load(texturef)){
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture(texturef);
+
 	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
@@ -121,17 +117,11 @@ EntityPlayer::~EntityPlayer() {}
 //meshfile sin path, texturefile con path
 void EntityPlayer::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	mesh = new Mesh();
-
-	if (!mesh->loadASE(meshf, false))
-		exit(0);
+	mesh = MeshManager::getInstance()->getMesh(meshf, false);
 	mesh->uploadToVRAM();
 
-	texture = new Texture();
-	if (!texture->load(texturef)){
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture(texturef);
+
 	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
@@ -141,7 +131,6 @@ void EntityPlayer::set(const char * meshf, const char * texturef, const char * s
 		std::cout << "Error at shader loading" << std::endl;
 		exit(0);
 	}
-
 }
 
 void EntityPlayer::render(Camera * camera) {
@@ -154,12 +143,10 @@ void EntityPlayer::render(Camera * camera) {
 	shader->setTexture("u_texture", texture);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
-
 }
 
 void EntityPlayer::update(float elapsed_time) {
 	BulletManager* bManager = BulletManager::getInstance();
-	Game* game = Game::getInstance();
 	World* world = World::getInstance();
 
 	// colisiona alguna bala con los enemigos?
@@ -177,8 +164,8 @@ void EntityPlayer::update(float elapsed_time) {
 
 			Vector3 front = bManager->bullet_vector[i].last_position - bManager->bullet_vector[i].position;
 
-			if (world->collision_enemies[j]->mesh->collision_model->rayCollision(bManager->bullet_vector[i].last_position.v,
-				front.v, false) == false) continue;
+			if (!world->collision_enemies[j]->mesh->collision_model->rayCollision(bManager->bullet_vector[i].last_position.v,
+				front.v, false)) continue;
 			
 			// collision made
 			bManager->bullet_vector[i].free = true; // liberar espacio de la bala
@@ -188,13 +175,12 @@ void EntityPlayer::update(float elapsed_time) {
 				BASS_ChannelPlay(channel, false); // play it
 			}
 			world->collision_enemies[j]->life -= bManager->bullet_vector[i].damage;
-			if (world->collision_enemies[j]->life <= 0) {
+			world->collision_enemies[j]->life = max(world->collision_enemies[j]->life, 0);
+			if (world->collision_enemies[j]->life == 0) {
 				world->collision_enemies[j]->visible = false;
 				world->collision_enemies[j]->model.setTranslation(0.f, -15000.f, 0.f);
-			}
-			
+			}	
 		}
-
 	}
 
 	bManager->update(elapsed_time);
@@ -202,7 +188,6 @@ void EntityPlayer::update(float elapsed_time) {
 
 void EntityPlayer::m60Shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	Game* game = Game::getInstance();
 	bManager->createBullet(model*Vector3(1.85f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 20.0, 0, 1);
 	bManager->createBullet(model*Vector3(-2.f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 20.0, 0, 1);
 
@@ -213,8 +198,8 @@ void EntityPlayer::m60Shoot() {
 
 void EntityPlayer::missileShoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	Game* game = Game::getInstance();
-	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 100.0, 0, 3);
+	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 100.f, 0, 3);
+	this->missilesLeft--;
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
@@ -236,17 +221,15 @@ EntityEnemy::~EntityEnemy() {}
 //meshfile sin path, texturefile con path
 void EntityEnemy::set(const char * meshf, const char * texturef, const char * shaderf) {
 
+	//mesh = MeshManager::getInstance()->getMesh(meshf, true);
 	mesh = new Mesh();
-
-	if (!mesh->loadASE(meshf, true))
+	if (!mesh->loadASE(meshf, true)) {
 		exit(0);
+	}
 	mesh->uploadToVRAM();
 
-	texture = new Texture();
-	if (!texture->load(texturef)) {
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture(texturef);
+
 	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";

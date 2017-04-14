@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
+#include "texturemanager.h"
 #include "shader.h"
 #include "optionsstate.h"
 #include "bass.h"
@@ -42,11 +43,7 @@ void OptionsState::onKeyUp(SDL_KeyboardEvent event)
 
 void OptionsState::init(){
 	
-	texture = new Texture();
-	if (!texture->load("data/textures/optionsv1.tga")){
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture("data/textures/optionsv1.tga");
 
 	game = Game::getInstance();
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);

@@ -4,10 +4,13 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
+#include "texturemanager.h"
 #include "shader.h"
 #include "state.h"
 #include "bass.h"
 #include "endingstate.h"
+#include "menustate.h"
+#include "world.h"
 #include <cmath>
 
 EndingState::EndingState(StateManager* SManager) : State(SManager) {}
@@ -21,16 +24,14 @@ EndingState* EndingState::getInstance(StateManager* SManager)
 
 void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	exit(1);
+	World* world = World::getInstance();
+	world->reset();
+	//exit(1);
 }
 
 void EndingState::init() {
 
-	texture = new Texture();
-	if (!texture->load("data/textures/terrain.tga")){
-		cout << "Error: texture has not been loaded" << endl;
-		exit(1);
-	}
+	texture = TextureManager::getInstance()->getTexture("data/textures/terrain.tga");
 
 	game = Game::getInstance();
 
@@ -44,15 +45,14 @@ void EndingState::onEnter()
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
+	glColor3f(1.f, 1.f, 1.f);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 void EndingState::onLeave(int fut_state)
 {
-
+	
 }
 
 void EndingState::render() {
@@ -72,6 +72,8 @@ void EndingState::render() {
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
 	glDisable(GL_BLEND);
+
+	glColor3f(1.f, 1.f, 1.f);
 }
 
 void EndingState::update(double time_elapsed) {

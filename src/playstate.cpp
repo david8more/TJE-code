@@ -18,8 +18,8 @@
 
 //globals
 
-BulletManager* bManager = new BulletManager();
-World * world = new World();
+BulletManager* bManager = NULL;
+World * world = NULL;
 
 int i = 1;
 bool update_ = true;
@@ -64,6 +64,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_SPACE:
 		shooting = true;
 		break;
+	case SDLK_0:
+		world->playerAir->missilesLeft++;
+		break;
 	}
 }
 
@@ -77,7 +80,7 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 		break;
 	case SDLK_m:
 		if (shooting) break;
-		world->playerAir->missileShoot();
+		if(world->playerAir->missilesLeft > 0) world->playerAir->missileShoot(); 
 		break;
 	case SDLK_k:
 		if (shooting) break;
@@ -88,6 +91,8 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 void PlayState::init() {
 
 	Game* game = Game::getInstance();
+	bManager = BulletManager::getInstance();
+	world = World::getInstance();
 	world->create();
 
 	//create our camera
@@ -107,7 +112,7 @@ void PlayState::init() {
 
 	// GUI
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width * 0.1, game->window_height*0.1, true);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 50, 50);
 
 	crosshair_tex = new Texture();
 	if (!crosshair_tex->load("data/textures/crosshair.tga")){
@@ -123,7 +128,7 @@ void PlayState::onEnter()
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -152,7 +157,6 @@ void PlayState::render() {
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -164,16 +168,19 @@ void PlayState::render() {
 	world->root->render(game->current_camera);
 	bManager->render();
 
-	// RENDER INTERFACE
+	// RENDER INTERFACE ****************************************************************
 
-	/*glDisable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
 	// render quad with texture applied
-	cam2D.set();
+	/*cam2D.set();
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 	crosshair_tex->bind();
 	quad.render(GL_TRIANGLES);
 	crosshair_tex->unbind();*/
+
+	// M60 HUD
 
 	std::stringstream ss;
 	Vector3 v;
@@ -197,8 +204,14 @@ void PlayState::render() {
 	ss << "%";
 	drawText(game->window_width*0.8, game->window_height*0.95, ss.str(), v, 2.0); // % engine !!!
 	if(overused) drawText(game->window_width*0.1, game->window_height*0.75, "ALERT: ENGINE OVERUSED. COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
+
+	// MISSILES HUD
+
+	ss.str("");
+	ss << "Missiles left: " << world->playerAir->missilesLeft;
+	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0); // % engine !!!
 	
-	// pintar vidas
+	// vidas enemigas
 
 	ss.str("");
 	ss << world->collision_enemies[0]->life;
@@ -208,8 +221,8 @@ void PlayState::render() {
 	drawText(game->window_width*0.1, game->window_height*0.2, ss.str(), Vector3(1, 0, 0), 3.0);
 
 	glDisable(GL_BLEND);
-	
-	// **** FINISHED RENDER INTERFACE
+
+	// FINISHED RENDER INTERFACE ****************************************************************
 
 	if (!overused && shootingtime > 30) {
 		overused = true;
@@ -218,7 +231,7 @@ void PlayState::render() {
 
 	if (!shooting || overused || i % 10 != 0) return;
 
-	shootingtime += 1;
+	shootingtime++;
 	world->playerAir->m60Shoot();
 }
 
