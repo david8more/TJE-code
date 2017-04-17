@@ -43,7 +43,10 @@ public:
 	void onKeyPressed(SDL_KeyboardEvent event);
 	int stateID() { return 0; }
 
-	static MenuState* getInstance(StateManager* SManager);
+	static MenuState* getInstance(StateManager* SManager) {
+		static MenuState Instance(SManager);
+		return &Instance;
+	}
 
 	// The player went up or down in the menu
 	void selectionUp();
@@ -62,13 +65,21 @@ public:
 	int b_channel;
 	bool music_on;
 
+	// needed instances to render
+
 	// background texture
 	Texture* texture;
+	Mesh backgroundQuad;
 
-	// needed instances to render
 	Game* game;
 	Camera cam2D;
+
 	Mesh quad;
+	Mesh quad2;
+	Texture* smokeTexture;
+
+	Mesh loadingQuad;
+	Texture* loadingTexture;
 
 	Mesh quadSelection;
 	// posiciones de cada rectangulo de selección 

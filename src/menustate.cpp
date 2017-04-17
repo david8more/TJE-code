@@ -14,34 +14,13 @@
 #include <cmath>
 #include <ctime>
 
-#define N 100 // lluvia
+#define N 50 // lluvia
+#define PARTICLES 1
+float x = 200.f; float y = 200.f;
+bool loaded = false;
 
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
-
-MenuState* MenuState::getInstance(StateManager* SManager)
-{
-	static MenuState Instance(SManager);
-	return &Instance;
-}
-
-void MenuState::onKeyPressed(SDL_KeyboardEvent event)
-{
-	switch (event.keysym.sym)
-	{
-	case SDLK_DOWN:
-	case SDLK_s:
-		selectionDown();
-		break;
-	case SDLK_UP:
-	case SDLK_w:
-		selectionUp();
-		break;
-	case SDLK_RETURN:
-		selectionChosen();
-		break;
-	}
-}
 
 void MenuState::init() {
 
@@ -50,13 +29,16 @@ void MenuState::init() {
 
 	// Cargamos texturas de menú
 	texture = TextureManager::getInstance()->getTexture("data/textures/mainv1.tga");
+	smokeTexture = TextureManager::getInstance()->getTexture("data/textures/smoke_alpha.tga");
+	loadingTexture = TextureManager::getInstance()->getTexture("data/textures/loading.tga");
 
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
 
 	// configuración inicial
+	loadingQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
+	backgroundQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 
 	// crear un box para la current selection
 	sel_positions.resize(4);
@@ -94,6 +76,8 @@ void MenuState::onEnter()
 
 	srand(time(NULL));
 
+	if (!PARTICLES) return;
+	
 	vParticles.resize(N);
 
 	for (int i = 0; i < N; ++i) {
@@ -102,12 +86,20 @@ void MenuState::onEnter()
 		vParticles[i].posx = game->window_width * randomx / 1000;
 		vParticles[i].posy = game->window_height * randomy / 1000;
 		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-		mParticles.colors.push_back(Vector4(0, 0, 1, 1));
+		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
+		mParticles.colors.push_back(Vector4(1.0, 1.0, 1.0, 1.0));
+		mParticles.colors.push_back(Vector4(1.0, 1.0, 1.0, 1.0));
 	}
 
 }
 
 void MenuState::render() {
+
+	if (rand() % 3) x+=0.25;
+	else x-=0.25;
+
+	if (rand() % 2) y+=0.25;
+	else y-=0.25;
 
 	//set the clear color (the background color)
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -117,44 +109,110 @@ void MenuState::render() {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
-	// render quad with texture applied
 	cam2D.set();
-	glEnable(GL_BLEND);
+	glColor4f(1.f, 1.f, 1.f, 1.f);
+	
+	// fondo
 	texture->bind();
-	quad.render(GL_TRIANGLES);
+	backgroundQuad.render(GL_TRIANGLES);
 	texture->unbind();
+
+	// smoke
+	quad.createQuad(x, y, game->window_width, game->window_height, true);
+	quad2.createQuad(x + 100.f, y + 150.f, game->window_width, game->window_height, true);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	smokeTexture->bind();
+	quad.render(GL_TRIANGLES);
+	quad2.render(GL_TRIANGLES);
+	smokeTexture->unbind();
 	glDisable(GL_BLEND);
 
+
 	// quad selection
-	glColor3f(1.0, 1.0, 1.0);
 	quadSelection.createQuad(sel_positions[currentSelection].posx, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
 	quadSelection.render(GL_LINES);
 	quadSelection.createQuad(sel_positions[currentSelection].posx + game->window_width * 0.0025, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
 	quadSelection.render(GL_LINES);
 
 	// particles
-	
-	for (int i = 0; i < N; ++i) {
-		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
-	}
 
-	glPointSize(2);
-	mParticles.render(GL_POINTS); // renderizar de una vez toda la lluvia
+	if (PARTICLES) mParticles.render(GL_LINES); // renderizar de una vez toda la lluvia
+	
+	// loading screen
+	if (loaded) return;
+
+	loadingTexture->bind();
+	loadingQuad.render(GL_TRIANGLES);
+	loadingTexture->unbind();
+	drawText(game->window_width*0.35, game->window_height*0.75, "[Press any key to continue]", Vector3(1.f, 1.f, 1.f), game->window_width*0.002);
 
 }
 
 void MenuState::update(double time_elapsed) {
 	
+	if (!PARTICLES) return;
+
 	mParticles.clear();
 
 	for (int i = 0; i < N; ++i) {
-		float newPos = vParticles[i].posy + 450 * time_elapsed;
-		if (newPos >= game->window_height) newPos = newPos - game->window_height;
-		vParticles[i].posy = newPos;
-		
-		vParticles[i].posx += 100 * time_elapsed;
-		if (vParticles[i].posx >= game->window_width) vParticles[i].posx -= game->window_width;
+
+		float newPosX = vParticles[i].posx + 75 * time_elapsed;
+		float newPosY = vParticles[i].posy + 250 * time_elapsed;
+		if (newPosY >= game->window_height) {
+			newPosY = newPosY - game->window_height;
+			if (newPosX >= game->window_width) {
+				mParticles.vertices.push_back(Vector3(0, 0, 0));
+				vParticles[i].posx = newPosX - game->window_width;
+				vParticles[i].posy = newPosY;
+			}
+			else {
+				mParticles.vertices.push_back(Vector3(vParticles[i].posx, 0, 0));
+				vParticles[i].posx = newPosX;
+				vParticles[i].posy = newPosY;
+			}
+		}
+		else {
+			if (newPosX >= game->window_width) {
+				mParticles.vertices.push_back(Vector3(0, vParticles[i].posy, 0));
+				vParticles[i].posx = newPosX - game->window_width;
+				vParticles[i].posy = newPosY;
+			}
+			else {
+				mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
+				vParticles[i].posx = newPosX;
+				vParticles[i].posy = newPosY;
+				
+			}
+		}
+
+		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
+
+		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
+		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
+	}
+}
+
+void MenuState::onKeyPressed(SDL_KeyboardEvent event)
+{
+	if (!loaded) {
+		loaded = !loaded;
+		return;
+	}
+
+	switch (event.keysym.sym)
+	{
+	case SDLK_DOWN:
+	case SDLK_s:
+		selectionDown();
+		break;
+	case SDLK_UP:
+	case SDLK_w:
+		selectionUp();
+		break;
+	case SDLK_RETURN:
+		selectionChosen();
+		break;
 	}
 }
 

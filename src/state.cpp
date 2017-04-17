@@ -26,6 +26,7 @@ void State::update(double t) {}
 
 void State::onKeyPressed( SDL_KeyboardEvent event ) {}
 void State::onKeyUp(SDL_KeyboardEvent event) {}
+void State::onMouseButton(SDL_MouseButtonEvent event) {}
 void State::OnChar( WPARAM wChar ) {}
 int State::stateID() { return -1; }
 
@@ -71,6 +72,10 @@ void StateManager::onKeyUp(SDL_KeyboardEvent event) {
 
 void StateManager::OnChar( WPARAM wChar ) {
 	current_state->OnChar( wChar );
+}
+
+void StateManager::onMouseButton(SDL_MouseButtonEvent event) {
+	current_state->onMouseButton(event);
 }
 
 int StateManager::stateID() {

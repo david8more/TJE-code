@@ -136,8 +136,6 @@ void PreplayState::render() {
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	cam3D->set();
 
-	glEnable(GL_BLEND);
-
 	//Draw out world
 	drawGrid(500); //background grid
 
@@ -179,7 +177,6 @@ void PreplayState::render() {
 	drawText(game->window_width*0.4, game->window_height*0.935, "A/D - Move", Vector3(1.f, 1.f, 1.f), 2.0);
 	drawText(game->window_width*0.7, game->window_height*0.935, "ENTER - Select", Vector3(1.f, 1.f, 1.f), 2.0);
 	
-	glDisable(GL_BLEND);
 }
 
 void PreplayState::update(double time_elapsed) {

@@ -188,8 +188,8 @@ void EntityPlayer::update(float elapsed_time) {
 
 void EntityPlayer::m60Shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	bManager->createBullet(model*Vector3(1.85f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 20.0, 0, 1);
-	bManager->createBullet(model*Vector3(-2.f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 20.0, 0, 1);
+	bManager->createBullet(model*Vector3(1.85f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 5.0, 0, 1);
+	bManager->createBullet(model*Vector3(-2.f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 5.0, 0, 1);
 
 	int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
@@ -198,7 +198,7 @@ void EntityPlayer::m60Shoot() {
 
 void EntityPlayer::missileShoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 100.f, 0, 3);
+	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 200.f, 0, 3);
 	this->missilesLeft--;
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);

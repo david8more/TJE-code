@@ -1,7 +1,7 @@
 M60_SHOT
 
-	20
+	5
 
 MISSILE_SHOT
 
-	100
+	200

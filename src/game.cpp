@@ -121,6 +121,8 @@ void Game::onMouseButton( SDL_MouseButtonEvent event )
 		mouse_locked = !mouse_locked;
 		SDL_ShowCursor(!mouse_locked);
 	}
+
+	sManager->onMouseButton(event);
 }
 
 void Game::setWindowSize(int width, int height)

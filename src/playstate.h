@@ -25,20 +25,46 @@ protected:
 public:
 
 	~PlayState();
-	static PlayState* getInstance(StateManager* SManager);
+
+	static PlayState* getInstance(StateManager* SManager) {
+		static PlayState Instance(SManager);
+		return &Instance;
+	}
 
 	void init();
 	void onEnter();
 	void render();
 	void update(double elapsed_time);
+	void renderHUD();
 	void onLeave(int fut_state);
 
 	void onKeyPressed(SDL_KeyboardEvent event);
 	void onKeyUp(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
 	int stateID() { return 4; }
+	void setView();
 
 	Vector3 viewpos;
 	Vector3 viewtarget;
+	int current_view;
+
+	// saber cuanto sumamos a la cámara dependiendo
+	// del avion que usamos
+	typedef struct {
+		int view;
+		int model;
+		float qnt;
+	}sTransZoom;
+
+	std::vector<sTransZoom> vTranslations;
+
+	void sTransZoomCreator(int view, int model, float qnt) {
+		sTransZoom toPush;
+		toPush.model = model;
+		toPush.view = view;
+		toPush.qnt = qnt;
+		vTranslations.push_back(toPush);
+	}
 
 	//GUI
 	Camera cam2D;
@@ -53,6 +79,13 @@ public:
 	bool engine_on;
 	int e_sample;
 	int e_channel;
+
+	// m60 attributes
+	float timer;
+	int bulletTimer;
+	bool shooting;
+	bool overused;
+	int shootingtime;
 };
 
 #endif

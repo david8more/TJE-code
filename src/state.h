@@ -29,6 +29,7 @@ public:
 
 	virtual void onKeyPressed( SDL_KeyboardEvent event );
 	virtual void onKeyUp(SDL_KeyboardEvent event);
+	virtual void onMouseButton(SDL_MouseButtonEvent event);
 	virtual void OnChar( WPARAM );
 	virtual int stateID();
 
@@ -71,6 +72,7 @@ public:
 	// 'Events' function, they are simply redirected to the active state.
 	void onKeyPressed( SDL_KeyboardEvent event );
 	void onKeyUp(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
 	void OnChar( WPARAM wChar);
 	int stateID();
 };
