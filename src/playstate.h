@@ -82,10 +82,10 @@ public:
 
 	// m60 attributes
 	float timer;
-	int bulletTimer;
 	bool shooting;
 	bool overused;
 	int shootingtime;
+	float cadencia;
 };
 
 #endif

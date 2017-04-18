@@ -90,11 +90,14 @@ void PreplayState::init() {
 	bMesh = new EntityMesh();
 	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "color");
 	bMesh->model.setTranslation(0.f, -500.f, 0.f);
+	bMesh->model.scale(30.f, 30.f, 30.f);
 
 	// ground
 	gMesh = new EntityMesh();
 	gMesh->set("terrain.ASE", "data/textures/terrain.tga", "color");
-	gMesh->model = gMesh->model * bMesh->model;
+	//gMesh->model = gMesh->model * bMesh->model;
+	gMesh->model.setTranslation(0.f, -500.f, 0.f);
+	bMesh->model.scale(0.25f, 0.25f, 0.25f);
 
 	// rendering properties
 
@@ -136,8 +139,7 @@ void PreplayState::render() {
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	cam3D->set();
 
-	//Draw out world
-	drawGrid(500); //background grid
+	std::string planeInfo;
 
 	switch (playerModel) {
 	case 0:

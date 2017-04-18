@@ -48,6 +48,8 @@ public:
 		return &Instance;
 	}
 
+	bool inCurrentSelection(int selection);
+
 	// The player went up or down in the menu
 	void selectionUp();
 	void selectionDown();
@@ -74,19 +76,20 @@ public:
 	Game* game;
 	Camera cam2D;
 
-	Mesh quad;
-	Mesh quad2;
+	Mesh smoke_quad;
+	Mesh smoke_quad2;
 	Texture* smokeTexture;
 
-	Mesh loadingQuad;
-	Texture* loadingTexture;
+	// para representar la current selection necesitamos 4 quads y 8 texturas distintas
 
-	Mesh quadSelection;
-	// posiciones de cada rectangulo de selección 
-	std::vector<sPositions> sel_positions;
+	Mesh PG_QUAD;
+	Mesh HT_QUAD;
+	Mesh OPT_QUAD;
+	Mesh E_QUAD;
 
-	Mesh mParticles;
-	std::vector<sParticles> vParticles;
+	// pra las texturas la cogeremos al usarla
+
+	Texture* SELECTION_TEX;
 };
 
 #endif

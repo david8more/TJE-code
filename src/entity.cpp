@@ -188,8 +188,32 @@ void EntityPlayer::update(float elapsed_time) {
 
 void EntityPlayer::m60Shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	bManager->createBullet(model*Vector3(1.85f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 5.0, 0, 1);
-	bManager->createBullet(model*Vector3(-2.f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 5.0, 0, 1);
+	int planeModel = World::getInstance()->worldInfo.playerModel;
+	
+	Vector3 cannon_pos1;
+	Vector3 cannon_pos2;
+
+	switch (planeModel) {
+	case 0:
+		cannon_pos1 = Vector3(1.85f, -0.25f, 5.f);
+		cannon_pos2 = Vector3(-2.f, -0.25f, 5.f);
+		break;
+	case 1:
+		cannon_pos1 = Vector3(2.60f, -0.25f, 10.f);
+		cannon_pos2 = Vector3(-2.75f, -0.25f, 10.f);
+		break;
+	case 2:
+		cannon_pos1 = Vector3(0.f, -0.50f, 10.f);
+		cannon_pos2 = Vector3(0.f, 0.f, -99.f); // -99.f implica que no hay
+		break;
+	case 3:
+		cannon_pos1 = Vector3(2.40f, -0.25f, 5.f);
+		cannon_pos2 = Vector3(-2.55f, -0.25f, 5.f);
+		break;
+	}
+
+	bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
+	if(cannon_pos2.z != -99.f) bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 
 	int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
@@ -198,7 +222,8 @@ void EntityPlayer::m60Shoot() {
 
 void EntityPlayer::missileShoot() {
 	BulletManager* bManager = BulletManager::getInstance();
-	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, 200.f, 0, 3);
+	
+	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageMissile, 0, 3);
 	this->missilesLeft--;
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
@@ -240,6 +265,7 @@ void EntityEnemy::set(const char * meshf, const char * texturef, const char * sh
 		exit(0);
 	}
 
+	//Shader::Load(vs.c_str(), fs.c_str());
 }
 
 void EntityEnemy::render(Camera * camera) {

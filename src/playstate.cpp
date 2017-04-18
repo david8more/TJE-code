@@ -84,7 +84,7 @@ void PlayState::onEnter()
 
 	//m60 init
 	timer = shootingtime = 0;
-	bulletTimer = 1;
+	cadencia = 0;
 	shooting = overused = false;
 
 	// Sounds
@@ -98,6 +98,7 @@ void PlayState::onEnter()
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
+
 }
 
 void PlayState::render() {
@@ -121,17 +122,15 @@ void PlayState::update(double seconds_elapsed) {
 
 	// overusing
 
-	bulletTimer++;
+	if (!overused && shootingtime > 30) overused = true;
 
-	if (!overused && shootingtime > 30) {
-		overused = true;
-		std::cout << "overused" << endl;
-	}
-
-	if (shooting && !overused && bulletTimer % 10 == 0) {
+	if (shooting && !overused && cadencia <= 0){
 		shootingtime++;
 		world->playerAir->m60Shoot();
+		cadencia = world->playerAir->cadence;
 	}
+
+	if (cadencia > 0) cadencia -= seconds_elapsed * 100;
 
 	// cooling system timer
 	if (overused) timer += seconds_elapsed;

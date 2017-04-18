@@ -19,6 +19,7 @@
 
 class Texture;
 
+
 class Shader
 {
 	int last_slot;

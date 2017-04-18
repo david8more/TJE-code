@@ -69,6 +69,9 @@ public:
 
 	int life;
 	int missilesLeft;
+	float cadence;
+	float damageM60;
+	float damageMissile;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);

@@ -14,10 +14,7 @@
 #include <cmath>
 #include <ctime>
 
-#define N 50 // lluvia
-#define PARTICLES 1
 float x = 200.f; float y = 200.f;
-bool loaded = false;
 
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
@@ -28,30 +25,15 @@ void MenuState::init() {
 	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
 
 	// Cargamos texturas de menú
-	texture = TextureManager::getInstance()->getTexture("data/textures/mainv1.tga");
+	texture = TextureManager::getInstance()->getTexture("data/textures/mainv2.tga");
 	smokeTexture = TextureManager::getInstance()->getTexture("data/textures/smoke_alpha.tga");
-	loadingTexture = TextureManager::getInstance()->getTexture("data/textures/loading.tga");
 
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
 
 	// configuración inicial
-	loadingQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 	backgroundQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-
-	// crear un box para la current selection
-	sel_positions.resize(4);
-	for (int i = 0; i < 4; ++i) {
-		sel_positions[i].currents = i;
-		sel_positions[i].posy = game->window_height * 0.34 + i * game->window_height * 0.1025;
-		sel_positions[i].wid = game->window_width * 0.025;
-	}
-
-	sel_positions[0].posx = game->window_width * 0.445;
-	sel_positions[1].posx = game->window_width * 0.39;
-	sel_positions[2].posx = game->window_width * 0.427;
-	sel_positions[3].posx = game->window_width * 0.457;
 }
 
 void MenuState::onEnter()
@@ -69,28 +51,9 @@ void MenuState::onEnter()
 	if (game->bkg_music_playing != true && game->music_enabled) {
 		b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-		//std::cout << "CHANEL" << b_channel << std::endl;
 		BASS_ChannelPlay(b_channel, false); // play it
 		game->bkg_music_playing = true;
 	}
-
-	srand(time(NULL));
-
-	if (!PARTICLES) return;
-	
-	vParticles.resize(N);
-
-	for (int i = 0; i < N; ++i) {
-		float randomx = rand() % 1000 + 1;
-		float randomy = rand() % 1000 + 1;
-		vParticles[i].posx = game->window_width * randomx / 1000;
-		vParticles[i].posy = game->window_height * randomy / 1000;
-		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-		mParticles.colors.push_back(Vector4(1.0, 1.0, 1.0, 1.0));
-		mParticles.colors.push_back(Vector4(1.0, 1.0, 1.0, 1.0));
-	}
-
 }
 
 void MenuState::render() {
@@ -110,7 +73,7 @@ void MenuState::render() {
 	glDisable(GL_DEPTH_TEST);
 
 	cam2D.set();
-	glColor4f(1.f, 1.f, 1.f, 1.f);
+	glColor4f(1.f, 1.f, 1.f, 0.f);
 	
 	// fondo
 	texture->bind();
@@ -118,88 +81,61 @@ void MenuState::render() {
 	texture->unbind();
 
 	// smoke
-	quad.createQuad(x, y, game->window_width, game->window_height, true);
-	quad2.createQuad(x + 100.f, y + 150.f, game->window_width, game->window_height, true);
+	smoke_quad.createQuad(x, y, game->window_width, game->window_height, true);
+	smoke_quad2.createQuad(x + 100.f, y + 150.f, game->window_width, game->window_height, true);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	smokeTexture->bind();
-	quad.render(GL_TRIANGLES);
-	quad2.render(GL_TRIANGLES);
+	smoke_quad.render(GL_TRIANGLES);
+	smoke_quad2.render(GL_TRIANGLES);
 	smokeTexture->unbind();
 	glDisable(GL_BLEND);
 
+	PG_QUAD.createQuad(inCurrentSelection(0) ? game->window_width*0.225:game->window_width*0.2,
+		game->window_height*0.4,
+		inCurrentSelection(0) ? game->window_width*0.25: game->window_width*0.2,
+		game->window_height*0.075, true);
+	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(0) ? "data/textures/menu/PG_SELECTION.tga":"data/textures/menu/PG_NON_SELECTION.tga");
+	SELECTION_TEX->bind();
+	PG_QUAD.render(GL_TRIANGLES);
+	SELECTION_TEX->unbind();
 
-	// quad selection
-	quadSelection.createQuad(sel_positions[currentSelection].posx, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
-	quadSelection.render(GL_LINES);
-	quadSelection.createQuad(sel_positions[currentSelection].posx + game->window_width * 0.0025, sel_positions[currentSelection].posy, sel_positions[currentSelection].wid, sel_positions[currentSelection].wid, true);
-	quadSelection.render(GL_LINES);
+	HT_QUAD.createQuad(inCurrentSelection(1) ? game->window_width*0.225 : game->window_width*0.2,
+		game->window_height*0.5,
+		inCurrentSelection(1) ? game->window_width*0.25 : game->window_width*0.2,
+		game->window_height*0.075, true);	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(1) ? "data/textures/menu/HT_SELECTION.tga": "data/textures/menu/HT_NON_SELECTION.tga");
+	SELECTION_TEX->bind();
+	HT_QUAD.render(GL_TRIANGLES);
+	SELECTION_TEX->unbind();
 
-	// particles
+	OPT_QUAD.createQuad(inCurrentSelection(2) ? game->window_width*0.225 : game->window_width*0.2,
+		game->window_height*0.6,
+		inCurrentSelection(2) ? game->window_width*0.25 : game->window_width*0.2,
+		game->window_height*0.075, true);	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(2) ? "data/textures/menu/OPT_SELECTION.tga": "data/textures/menu/OPT_NON_SELECTION.tga");
+	SELECTION_TEX->bind();
+	OPT_QUAD.render(GL_TRIANGLES);
+	SELECTION_TEX->unbind();
 
-	if (PARTICLES) mParticles.render(GL_LINES); // renderizar de una vez toda la lluvia
-	
-	// loading screen
-	if (loaded) return;
-
-	loadingTexture->bind();
-	loadingQuad.render(GL_TRIANGLES);
-	loadingTexture->unbind();
-	drawText(game->window_width*0.35, game->window_height*0.75, "[Press any key to continue]", Vector3(1.f, 1.f, 1.f), game->window_width*0.002);
-
+	E_QUAD.createQuad(inCurrentSelection(3) ? game->window_width*0.225 : game->window_width*0.2,
+		game->window_height*0.7,
+		inCurrentSelection(3) ? game->window_width*0.25 : game->window_width*0.2,
+		game->window_height*0.075, true);	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(3) ? "data/textures/menu/EX_SELECTION.tga": "data/textures/menu/EX_NON_SELECTION.tga");
+	SELECTION_TEX->bind();
+	E_QUAD.render(GL_TRIANGLES);
+	SELECTION_TEX->unbind();
 }
 
 void MenuState::update(double time_elapsed) {
 	
-	if (!PARTICLES) return;
+}
 
-	mParticles.clear();
-
-	for (int i = 0; i < N; ++i) {
-
-		float newPosX = vParticles[i].posx + 75 * time_elapsed;
-		float newPosY = vParticles[i].posy + 250 * time_elapsed;
-		if (newPosY >= game->window_height) {
-			newPosY = newPosY - game->window_height;
-			if (newPosX >= game->window_width) {
-				mParticles.vertices.push_back(Vector3(0, 0, 0));
-				vParticles[i].posx = newPosX - game->window_width;
-				vParticles[i].posy = newPosY;
-			}
-			else {
-				mParticles.vertices.push_back(Vector3(vParticles[i].posx, 0, 0));
-				vParticles[i].posx = newPosX;
-				vParticles[i].posy = newPosY;
-			}
-		}
-		else {
-			if (newPosX >= game->window_width) {
-				mParticles.vertices.push_back(Vector3(0, vParticles[i].posy, 0));
-				vParticles[i].posx = newPosX - game->window_width;
-				vParticles[i].posy = newPosY;
-			}
-			else {
-				mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-				vParticles[i].posx = newPosX;
-				vParticles[i].posy = newPosY;
-				
-			}
-		}
-
-		mParticles.vertices.push_back(Vector3(vParticles[i].posx, vParticles[i].posy, 0));
-
-		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
-		mParticles.colors.push_back(Vector4(0.25, 0.25, 0.75, 1.0));
-	}
+bool MenuState::inCurrentSelection(int selection) {
+	if (currentSelection == selection) return true;
+	else return false;
 }
 
 void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	if (!loaded) {
-		loaded = !loaded;
-		return;
-	}
-
 	switch (event.keysym.sym)
 	{
 	case SDLK_DOWN:

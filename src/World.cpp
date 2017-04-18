@@ -44,20 +44,38 @@ void World::addPlayer() {
 	switch (worldInfo.playerModel) {
 	case 0:
 		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		playerAir->life = 250;
+		playerAir->cadence = 15.f;
+		playerAir->missilesLeft = 2;
+		playerAir->damageM60 = 20;
+		playerAir->damageMissile = 300;
 		break;
 	case 1:
 		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
+		playerAir->life = 300;
+		playerAir->cadence = 10.f;
+		playerAir->missilesLeft = 4;
+		playerAir->damageM60 = 5;
+		playerAir->damageMissile = 150;
 		break;
 	case 2:
 		playerAir->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
+		playerAir->life = 150;
+		playerAir->cadence = 30.f;
+		playerAir->missilesLeft = 5;
+		playerAir->damageM60 = 20;
+		playerAir->damageMissile = 300;
 		break;
 	case 3:
 		playerAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
+		playerAir->life = 400;
+		playerAir->cadence = 20.f;
+		playerAir->missilesLeft = 2;
+		playerAir->damageM60 = 20;
+		playerAir->damageMissile = 300;
 		break;
 	}
 
-	playerAir->life = 250;
-	playerAir->missilesLeft = 5;
 	playerAir->model.setScale(3, 3, 3);
 	playerAir->model.traslate(0, 500, 500);
 	root->addChild(playerAir);
