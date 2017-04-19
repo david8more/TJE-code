@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "shader.h"
 #include "state.h"
 #include "bass.h"
@@ -107,7 +106,7 @@ void SelectionState::init() {
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.95, game->window_width, game->window_height * 0.1, true);
 
-	texture = TextureManager::getInstance()->getTexture("data/textures/indications.tga");
+	texture = Texture::Get("data/textures/indications.tga");
 
 	// SET PLANE INFO STRINGS
 

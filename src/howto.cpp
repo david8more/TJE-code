@@ -4,7 +4,6 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "shader.h"
 #include "state.h"
 #include "bass.h"
@@ -34,7 +33,7 @@ void Howto::onKeyPressed(SDL_KeyboardEvent event)
 
 void Howto::init() {
 
-	texture = TextureManager::getInstance()->getTexture("data/textures/terrain.tga");
+	texture = Texture::Get("data/textures/terrain.tga");
 
 	game = Game::getInstance();
 

@@ -11,6 +11,8 @@
 	glGenerateMipmapEXT_func glGenerateMipmapEXT = NULL;
 #endif
 
+std::map<std::string, Texture*> Texture::s_Textures;
+
 Texture::Texture()
 {
 	width = 0;
@@ -75,6 +77,19 @@ bool Texture::load(const char* filename, bool mipmaps)
 		return true;
 	}
 	return false;
+}
+
+Texture* Texture::Get(const char* filename)
+{
+	std::string name = std::string(filename);
+	std::map<std::string, Texture*>::iterator it = s_Textures.find(name);
+	if (it != s_Textures.end())
+		return it->second;
+
+	Texture* t = new Texture();
+	if (!t->load(filename)) exit(1);
+	s_Textures[name] = t;
+	return t;
 }
 
 void Texture::bind()

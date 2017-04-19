@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "shader.h"
 #include "state.h"
 #include "bass.h"
@@ -62,7 +61,7 @@ void PlayState::init() {
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 50, 50);
 
-	crosshair_tex = TextureManager::getInstance()->getTexture("data/textures/crosshair.tga");
+	crosshair_tex = Texture::Get("data/textures/crosshair.tga");
 }
 
 void PlayState::onEnter()

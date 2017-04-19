@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "shader.h"
 #include "optionsstate.h"
 #include "bass.h"
@@ -22,7 +21,7 @@ OptionsState* OptionsState::getInstance(StateManager* SManager)
 
 void OptionsState::init(){
 	
-	texture = TextureManager::getInstance()->getTexture("data/textures/main.tga");
+	texture = Texture::Get("data/textures/main.tga");
 
 	game = Game::getInstance();
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);

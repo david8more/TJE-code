@@ -5,7 +5,6 @@
 #include "mesh.h"
 #include "meshmanager.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
@@ -76,7 +75,7 @@ void EntityMesh::set(const char * meshf, const char * texturef, const char * sha
 	mesh = MeshManager::getInstance()->getMesh(meshf, false);
 	mesh->uploadToVRAM();
 
-	texture = TextureManager::getInstance()->getTexture(texturef);
+	texture = Texture::Get(texturef);
 
 	shader = new Shader();
 	std::string shader_string(shaderf);
@@ -127,7 +126,7 @@ void EntityPlayer::set(const char * meshf, const char * texturef, const char * s
 	mesh = MeshManager::getInstance()->getMesh(meshf, false);
 	mesh->uploadToVRAM();
 
-	texture = TextureManager::getInstance()->getTexture(texturef);
+	texture = Texture::Get(texturef);
 
 	shader = new Shader();
 	std::string shader_string(shaderf);
@@ -263,7 +262,7 @@ void EntityEnemy::set(const char * meshf, const char * texturef, const char * sh
 	}
 	mesh->uploadToVRAM();
 
-	texture = TextureManager::getInstance()->getTexture(texturef);
+	texture = Texture::Get(texturef);
 
 	shader = new Shader();
 	std::string shader_string(shaderf);

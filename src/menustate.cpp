@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "mesh.h"
 #include "texture.h"
-#include "texturemanager.h"
 #include "shader.h"
 #include "optionsstate.h"
 #include "bass.h"
@@ -25,7 +24,7 @@ void MenuState::init() {
 	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
 
 	// Cargamos texturas de menú
-	texture = TextureManager::getInstance()->getTexture("data/textures/main.tga");
+	texture = Texture::Get("data/textures/main.tga");
 
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
@@ -88,7 +87,7 @@ void MenuState::render() {
 		game->window_height*0.4,
 		inCurrentSelection(0) ? 225:180,
 		40.f, true);
-	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(0) ? "data/textures/menu/PG_SELECTION.tga":"data/textures/menu/PG_NON_SELECTION.tga");
+	SELECTION_TEX = Texture::Get(inCurrentSelection(0) ? "data/textures/menu/PG_SELECTION.tga":"data/textures/menu/PG_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	PG_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
@@ -97,7 +96,7 @@ void MenuState::render() {
 		game->window_height*0.5,
 		inCurrentSelection(1) ? 225 : 180,
 		40.f, true);
-	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(1) ? "data/textures/menu/HT_SELECTION.tga": "data/textures/menu/HT_NON_SELECTION.tga");
+	SELECTION_TEX = Texture::Get(inCurrentSelection(1) ? "data/textures/menu/HT_SELECTION.tga": "data/textures/menu/HT_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	HT_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
@@ -106,7 +105,7 @@ void MenuState::render() {
 		game->window_height*0.6,
 		inCurrentSelection(2) ? 225 : 180,
 		40.f, true);
-	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(2) ? "data/textures/menu/OPT_SELECTION.tga": "data/textures/menu/OPT_NON_SELECTION.tga");
+	SELECTION_TEX = Texture::Get(inCurrentSelection(2) ? "data/textures/menu/OPT_SELECTION.tga": "data/textures/menu/OPT_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	OPT_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
@@ -115,7 +114,7 @@ void MenuState::render() {
 		game->window_height*0.7,
 		inCurrentSelection(3) ? 225 : 180,
 		40.f, true);
-	SELECTION_TEX = TextureManager::getInstance()->getTexture(inCurrentSelection(3) ? "data/textures/menu/EX_SELECTION.tga": "data/textures/menu/EX_NON_SELECTION.tga");
+	SELECTION_TEX = Texture::Get(inCurrentSelection(3) ? "data/textures/menu/EX_SELECTION.tga": "data/textures/menu/EX_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	E_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
