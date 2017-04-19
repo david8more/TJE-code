@@ -6,7 +6,7 @@
 #include "optionsstate.h"
 #include "menustate.h"
 #include "playstate.h"
-#include "preplay.h"
+#include "selectionstate.h"
 #include "howto.h"
 #include "endingstate.h"
 #include "bass.h"
@@ -38,8 +38,10 @@ Game::Game(SDL_Window* window)
 	mouse_locked = false;
 	music_enabled = true; 
 	effects_enabled = true; 
-	fullscreen = false;
 	bkg_music_playing = false;
+	
+	fullscreen = false;
+	gameMode = NORMAL;
 }
 
 //Here we have already GL working, so we can create meshes and textures

@@ -120,7 +120,7 @@ void PlayState::render() {
 
 void PlayState::update(double seconds_elapsed) {
 
-	// overusing
+	// overusing y cadencia
 
 	if (!overused && shootingtime > 30) overused = true;
 
@@ -139,6 +139,8 @@ void PlayState::update(double seconds_elapsed) {
 		timer = shootingtime = 0;
 		overused = false;
 	}
+
+	// ********************************************************************
 
 	Game* game = Game::getInstance();
 
@@ -318,28 +320,30 @@ void PlayState::onLeave(int fut_state) {
 void PlayState::setView() {
 	switch (current_view)
 	{
-	case 0: // full plane view
-		if (world->worldInfo.playerModel == 0) { // spitfire
+	case FULLVIEW:
+		if (world->worldInfo.playerModel == SPITFIRE) {
 			world->playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 		}
 		viewpos = Vector3(0, 5, -15);
 		viewtarget = Vector3(0, 5, 10.f);
 		break;
-	case 1: // cabine view
-				 // arreglar la vista del p38!!!!!
-		if (world->worldInfo.playerModel == 0) { // spitfire
+
+	case CABINEVIEW:
+		
+		// arreglar la vista del p38!!!!!
+		if (world->worldInfo.playerModel == SPITFIRE) {
 			viewpos = Vector3(0.f, 0.7f, -1.45f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
 			world->playerAir->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 
 		}
-		else if (world->worldInfo.playerModel == 1) { // <---- p38
+		else if (world->worldInfo.playerModel == P38) {
 			viewpos = Vector3(0.f, 0.75f, -1.5f); viewtarget = Vector3(0.f, 0.5f, 0.f);
 		} 
-		else if (world->worldInfo.playerModel == 2) {
+		else if (world->worldInfo.playerModel == WILDCAT) {
 			viewpos = Vector3(0.f, 1.f, -0.5f); viewtarget = Vector3(0.f, 1.f, 0.f);
 		}
-		else if (world->worldInfo.playerModel == 3) {
+		else if (world->worldInfo.playerModel == BOMBER) {
 			viewpos = Vector3(0.5f, 0.f, 2.5f); viewtarget = Vector3(0.f, 1.f, 10.f);
 		}
 

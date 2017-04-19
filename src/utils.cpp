@@ -24,11 +24,6 @@ long getTime()
 	#endif
 }
 
-std::string valueIfBool(bool a, std::string v1, std::string v2) {
-	if (a) return v1;
-	else return v2;
-}
-
 //Draw the grid
 void drawGrid(float dist)
 {

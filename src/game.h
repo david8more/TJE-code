@@ -5,6 +5,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#define NORMAL false
+#define HARD true
+
 #include "includes.h"
 #include "camera.h"
 #include "state.h"
@@ -30,6 +33,8 @@ public:
 	long frame;
 	int fps;
 	float elapsed_time;
+
+	int gameMode; // difficulty
 
 	// State Delegator Instance
 	StateManager* sManager;

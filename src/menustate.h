@@ -1,6 +1,10 @@
 #ifndef MENUSTATE_H
 #define MENUSTATE_H
 
+#define PLAYSTATE 0
+#define HOWTOPLAY 1
+#define OPTIONS 2
+
 #include "framework.h"
 #include "texture.h"
 #include "game.h"
@@ -75,10 +79,6 @@ public:
 
 	Game* game;
 	Camera cam2D;
-
-	Mesh smoke_quad;
-	Mesh smoke_quad2;
-	Texture* smokeTexture;
 
 	// para representar la current selection necesitamos 4 quads y 8 texturas distintas
 

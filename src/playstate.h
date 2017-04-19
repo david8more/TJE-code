@@ -1,6 +1,13 @@
 #ifndef PLAYSTATE_H
 #define PLAYSTATE_H
 
+#define SPITFIRE 0
+#define P38 1
+#define WILDCAT 2
+#define BOMBER 3
+#define FULLVIEW 0
+#define CABINEVIEW 1
+
 #include "framework.h"
 #include "texture.h"
 #include "game.h"

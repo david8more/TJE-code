@@ -12,7 +12,6 @@
 
 //General functions **************
 long getTime();
-std::string valueIfBool(bool a, std::string v1, std::string v2);
 
 //generic purposes fuctions
 void drawGrid(float dist);

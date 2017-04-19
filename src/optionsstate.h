@@ -1,6 +1,11 @@
 #ifndef OPTIONSSTATE_H
 #define OPTIONSSTATE_H
 
+#define MUSIC 0
+#define EFFECTS 1
+#define FULLSCREEN 2
+#define GAMEMODE 3
+
 #include "framework.h"
 #include "texture.h"
 #include "game.h"
