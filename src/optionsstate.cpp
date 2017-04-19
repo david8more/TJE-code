@@ -113,15 +113,19 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 	switch (event.keysym.sym)
 	{
 	case SDLK_DOWN:
+	case SDLK_s:
 		selectionDown();
 		break;
 	case SDLK_UP:
+	case SDLK_w:
 		selectionUp();
 		break;
 	case SDLK_LEFT:
+	case SDLK_a:
 		selectionChosen();
 		break;
 	case SDLK_RIGHT:
+	case SDLK_d:
 		selectionChosen();
 		break;
 	}

@@ -109,9 +109,15 @@ void PlayState::render() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	game->current_camera->set();
+	
+	glDisable(GL_DEPTH_TEST);
+	world->sky->model.setIdentity();
+	world->sky->model.traslate((world->playerAir->model * Vector3()).x, (world->playerAir->model * Vector3()).y, (world->playerAir->model * Vector3()).z);
+	world->sky->render(game->current_camera);
+	glEnable(GL_DEPTH_TEST);
 
 	world->root->render(game->current_camera);
 	bManager->render();

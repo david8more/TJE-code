@@ -199,7 +199,7 @@ void MenuState::selectionChosen()
 	switch (currentSelection)
 	{
 	case PLAYSTATE:
-		SManager->changeCurrentState(PreplayState::getInstance(SManager));
+		SManager->changeCurrentState(SelectionState::getInstance(SManager));
 		break;
 	case HOWTOPLAY:
 		SManager->changeCurrentState(Howto::getInstance(SManager));

@@ -18,13 +18,13 @@ class Mesh;
 class Camera;
 class Game;
 
-class PreplayState : public State {
+class SelectionState : public State {
 protected:
-	PreplayState(StateManager* SManager);
+	SelectionState(StateManager* SManager);
 
 public:
 
-	~PreplayState();
+	~SelectionState();
 
 	void init();
 	void render();
@@ -35,7 +35,7 @@ public:
 
 	int stateID() { return 3; }
 
-	static PreplayState* getInstance(StateManager* SManager);
+	static SelectionState* getInstance(StateManager* SManager);
 
 	// background texture
 	Texture* texture;

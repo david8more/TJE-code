@@ -11,6 +11,8 @@
 #include "bulletmanager.h"
 #include "world.h"
 #include "bass.h"
+#include <cassert>
+#include <algorithm>
 
 // ENTITY
 
@@ -20,17 +22,12 @@ Entity::Entity() {
 
 Entity::~Entity() {}
 
-void Entity::removeChild(unsigned int uid) {
-	
-}
-
 Vector3 Entity::getPosition() { 
 	return model * Vector3();
 }
 
 void Entity::render(Camera * camera) {
 	for (int i = 0; i < children.size(); i++) {
-		if(children[i]->visible != false)
 			children[i]->render(camera);
 	}
 }
@@ -44,6 +41,16 @@ void Entity::update(float elapsed_time) {
 void Entity::addChild(Entity * entity) {
 	entity->parent = this;
 	children.push_back( entity );
+}
+
+void Entity::removeChild(Entity* entity) {
+
+	auto it = std::find(children.begin(), children.end(), entity);
+	if (it == children.end()) return;
+
+	children.erase(it);
+	entity->parent = NULL;
+	entity->model = entity->model * this->getGlobalMatrix();
 }
 
 Matrix44 Entity::getGlobalMatrix() {
@@ -75,26 +82,26 @@ void EntityMesh::set(const char * meshf, const char * texturef, const char * sha
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-	if (!shader->load(vs, fs))
-	{
-		std::cout << "Error at shader loading" << std::endl;
-		exit(0);
-	}
 
-	
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+	assert(shader);
 }
 
 void EntityMesh::render(Camera * camera) {
 	
-	Matrix44 mvp = model * camera->viewprojection_matrix;
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
 
 	shader->enable();
-	shader->setMatrix44("u_model", model);
+	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
 	shader->setTexture("u_texture", texture);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 			
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->render(camera);
+	}
 }
 
 void EntityMesh::update( float elapsed_time ) {
@@ -126,23 +133,26 @@ void EntityPlayer::set(const char * meshf, const char * texturef, const char * s
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-	if (!shader->load(vs, fs))
-	{
-		std::cout << "Error at shader loading" << std::endl;
-		exit(0);
-	}
+	
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+	assert(shader);
 }
 
 void EntityPlayer::render(Camera * camera) {
 
-	Matrix44 mvp = model * camera->viewprojection_matrix;
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
 
 	shader->enable();
-	shader->setMatrix44("u_model", model);
+	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
 	shader->setTexture("u_texture", texture);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
+
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->render(camera);
+	}
 }
 
 void EntityPlayer::update(float elapsed_time) {
@@ -259,13 +269,9 @@ void EntityEnemy::set(const char * meshf, const char * texturef, const char * sh
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-	if (!shader->load(vs, fs))
-	{
-		std::cout << "Error at shader loading" << std::endl;
-		exit(0);
-	}
-
-	//Shader::Load(vs.c_str(), fs.c_str());
+	
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+	assert(shader);
 }
 
 void EntityEnemy::render(Camera * camera) {

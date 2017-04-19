@@ -130,6 +130,9 @@ void mainLoop()
 		game->frame++;
 		if ((game->frame % 10) == 0)
 			game->fps = 1.0 / elapsed_time;
+
+		if (elapsed_time > 0.1) elapsed_time = 0.1;
+
 		game->update(elapsed_time); 
 
 		//check errors in opengl only when working in debug

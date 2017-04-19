@@ -57,7 +57,7 @@ void Game::init(void)
 	MenuState::getInstance(sManager)->init();
 	OptionsState::getInstance(sManager)->init();
 	Howto::getInstance(sManager)->init();
-	PreplayState::getInstance(sManager)->init();
+	SelectionState::getInstance(sManager)->init();
 	PlayState::getInstance(sManager)->init();
 	EndingState::getInstance(sManager)->init();
 	sManager->changeCurrentState(MenuState::getInstance(sManager));

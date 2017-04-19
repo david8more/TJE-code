@@ -42,7 +42,6 @@ public:
 	//world constants
 	EntityMesh* sky;
 	EntityMesh* sea;
-	EntityMesh* ground;
 
 	// fighters
 	EntityPlayer* playerAir;
@@ -52,6 +51,7 @@ public:
 	void addPlayer();
 	void addPlayerConst();
 	void addEnemies();
+	void setGameMode();
 	void addWorldConst();
 
 	void reset();

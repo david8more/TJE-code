@@ -24,24 +24,12 @@ public:
 	Entity* parent;
 	vector<Entity*> children;
 
-	Mesh* mesh;
-	Texture* texture;
-	Shader *shader;
-
 	virtual void render(Camera * camera);
 	virtual void update(float elapsed_time);
-	void removeChild(unsigned int uid);
+	void removeChild(Entity* entity);
 	void addChild(Entity* entity);
 	Matrix44 getGlobalMatrix();
 	Vector3 getPosition();
-
-	string& getName() {
-		return name;
-	}
-
-	void setName( string name ) {
-		this->name = name;
-	}
 	
 };
 
@@ -53,6 +41,10 @@ public:
 
 	EntityMesh();
 	~EntityMesh();
+
+	Mesh* mesh;
+	Texture* texture;
+	Shader *shader;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
@@ -66,6 +58,10 @@ public:
 
 	EntityPlayer();
 	~EntityPlayer();
+
+	Mesh* mesh;
+	Texture* texture;
+	Shader *shader;
 
 	int life;
 	int missilesLeft;
@@ -86,6 +82,10 @@ public:
 
 	EntityEnemy();
 	~EntityEnemy();
+
+	Mesh* mesh;
+	Texture* texture;
+	Shader *shader;
 
 	int life;
 
