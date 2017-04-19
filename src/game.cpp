@@ -3,12 +3,12 @@
 #include "mesh.h"
 #include "texture.h"
 #include "shader.h"
-#include "optionsstate.h"
-#include "menustate.h"
-#include "playstate.h"
-#include "selectionstate.h"
-#include "howto.h"
-#include "endingstate.h"
+#include "states/optionsstate.h"
+#include "states/menustate.h"
+#include "states/playstate.h"
+#include "states/selectionstate.h"
+#include "states/howto.h"
+#include "states/endingstate.h"
 #include "bass.h"
 
 #include <cmath>

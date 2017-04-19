@@ -5,10 +5,10 @@
 #include "mesh.h"
 #include "texture.h"
 #include "shader.h"
-#include "states/state.h";
+#include "states/state.h"
 #include "bass.h"
-#include "states/endingstate.h"
-#include "states/menustate.h"
+#include "endingstate.h"
+#include "menustate.h"
 #include "world.h"
 #include <cmath>
 
@@ -24,8 +24,8 @@ EndingState* EndingState::getInstance(StateManager* SManager)
 void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	World* world = World::getInstance();
-	//world->reset();
-	exit(1);
+	world->reset();
+	//exit(1);
 }
 
 void EndingState::init() {

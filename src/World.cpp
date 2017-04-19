@@ -4,7 +4,7 @@
 #include "entity.h"
 #include "game.h"
 #include "shader.h"
-#include "playstate.h"
+#include "states/playstate.h"
 
 World* World::instance = NULL;
 

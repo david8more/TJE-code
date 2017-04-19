@@ -10,7 +10,7 @@
 
 #include "includes.h"
 #include "camera.h"
-#include "state.h"
+#include "states/state.h"
 
 class StateManager;
 
