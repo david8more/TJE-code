@@ -5,11 +5,11 @@
 #define HOWTOPLAY 1
 #define OPTIONS 2
 
-#include "framework.h"
-#include "texture.h"
-#include "game.h"
-#include "mesh.h"
-#include "camera.h"
+#include "../framework.h"
+#include "../texture.h"
+#include "../game.h"
+#include "../mesh.h"
+#include "../camera.h"
 #include <iostream>
 
 using namespace std;
@@ -18,18 +18,6 @@ class StateManager;
 class Mesh;
 class Camera;
 class Game;
-
-typedef struct {
-	int currents;
-	int posx;
-	int posy;
-	int wid;
-} sPositions;
-
-typedef struct {
-	float posx;
-	float posy;
-} sParticles;
 
 class MenuState : public State {
 protected:

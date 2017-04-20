@@ -1,11 +1,11 @@
 #ifndef SELECTIONSTATE_H
 #define SELECTIONSTATE_H
 
-#include "framework.h"
-#include "texture.h"
-#include "game.h"
-#include "mesh.h"
-#include "camera.h"
+#include "../framework.h"
+#include "../texture.h"
+#include "../game.h"
+#include "../mesh.h"
+#include "../camera.h"
 #include <iostream>
 #include <cmath>
 #include <ctime>

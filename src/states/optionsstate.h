@@ -5,12 +5,13 @@
 #define EFFECTS 1
 #define FULLSCREEN 2
 #define GAMEMODE 3
+#define FRIENDLYFIRE 4
 
-#include "framework.h"
-#include "texture.h"
-#include "game.h"
-#include "mesh.h"
-#include "camera.h"
+#include "../framework.h"
+#include "../texture.h"
+#include "../game.h"
+#include "../mesh.h"
+#include "../camera.h"
 #include <iostream>
 
 using namespace std;

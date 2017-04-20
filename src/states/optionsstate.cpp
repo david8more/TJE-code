@@ -1,11 +1,11 @@
-#include "camera.h"
-#include "game.h"
-#include "utils.h"
-#include "mesh.h"
-#include "texture.h"
-#include "shader.h"
+#include "../camera.h"
+#include "../game.h"
+#include "../utils.h"
+#include "../mesh.h"
+#include "../texture.h"
+#include "../shader.h"
 #include "optionsstate.h"
-#include "bass.h"
+#include "../bass.h"
 #include "menustate.h"
 
 #include <cmath>
@@ -64,13 +64,13 @@ void OptionsState::render() {
 	glDisable(GL_BLEND);
 
 	// menu
-	const string submenu_items[] = {"Music", "Effects", "Fullscreen", "Game mode", "back"};
+	const string submenu_items[] = {"Music", "Effects", "Fullscreen", "Game mode", "Friendly fire", "Back"};
 
 	int p = 0;
 	string enable;
 
 	Vector3 c;
-	for(int i = 0; i < 5; i++) {
+	for(int i = 0; i < 6; i++) {
 		// highlight current selection
 		if(i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
 		else c = Vector3(0.15, 0.15, 0.15);
@@ -78,19 +78,23 @@ void OptionsState::render() {
 		{
 		case MUSIC: 
 			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(275.0,225.0 + p, game->music_enabled ? "YES":"NO", c, 3.0);
+			drawText(300.0,225.0 + p, game->music_enabled ? "OF COURSE":"NAH", c, 3.0);
 			break;
 		case EFFECTS: 
 			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(275.0, 225.0 + p, game->effects_enabled ? "YES" : "NO", c, 3.0);
+			drawText(300.0, 225.0 + p, game->effects_enabled ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		case FULLSCREEN:
 			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(275.0, 225.0 + p, game->fullscreen ? "YES" : "NO", c, 3.0);
+			drawText(300.0, 225.0 + p, game->fullscreen ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		case GAMEMODE:
 			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(275.0, 225.0 + p, game->gameMode ? "HARD" : "NORMAL", c, 3.0);
+			drawText(300.0, 225.0 + p, game->gameMode ? "CRUISER" : "HUMAN", c, 3.0);
+			break; 
+		case FRIENDLYFIRE:
+			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
+			drawText(300.0, 225.0 + p, 0 ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		default:
 			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
@@ -121,11 +125,14 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 		break;
 	case SDLK_LEFT:
 	case SDLK_a:
-		selectionChosen();
+		if (currentSelection != 5) selectionChosen();
 		break;
 	case SDLK_RIGHT:
 	case SDLK_d:
-		selectionChosen();
+		if (currentSelection != 5) selectionChosen();
+		break;
+	case SDLK_RETURN:
+		if(currentSelection == 5) selectionChosen();
 		break;
 	}
 }
@@ -144,7 +151,7 @@ void OptionsState::selectionUp()
 {
 	currentSelection--;
 	if (currentSelection==-1)
-		currentSelection = 4;
+		currentSelection = 5;
 
 	if (!game->effects_enabled)
 		return;
@@ -157,7 +164,7 @@ void OptionsState::selectionUp()
 void OptionsState::selectionDown()
 {
 	currentSelection++;
-	if (currentSelection==5)
+	if (currentSelection==6)
 		currentSelection = 0;
 
 	if (!game->effects_enabled)
@@ -185,6 +192,12 @@ void OptionsState::selectionChosen()
 			BASS_ChannelStop(b_channel); // stop music 
 			game->bkg_music_playing = false;
 		}
+		else {
+			int b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
+			b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+			BASS_ChannelPlay(b_channel, false); // play it
+			game->bkg_music_playing = true;
+		}
 		break;
 	case EFFECTS:
 		game->effects_enabled = !game->effects_enabled;
@@ -195,6 +208,9 @@ void OptionsState::selectionChosen()
    		break;
 	case GAMEMODE:
 		game->gameMode = !game->gameMode;
+		break; 
+	case FRIENDLYFIRE:
+
 		break;
 	default: // back to menu
 		SManager->changeCurrentState(MenuState::getInstance(SManager));

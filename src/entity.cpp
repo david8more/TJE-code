@@ -72,12 +72,11 @@ EntityMesh::~EntityMesh() {}
 //meshfile sin path, texturefile con path
 void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf ) {
 
-	mesh = MeshManager::getInstance()->getMesh(meshf, false);
+	mesh = Mesh::Get(meshf, false);
 	mesh->uploadToVRAM();
 
 	texture = Texture::Get(texturef);
 
-	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
@@ -123,12 +122,11 @@ EntityPlayer::~EntityPlayer() {}
 //meshfile sin path, texturefile con path
 void EntityPlayer::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	mesh = MeshManager::getInstance()->getMesh(meshf, false);
+	mesh = Mesh::Get(meshf, false);
 	mesh->uploadToVRAM();
 
 	texture = Texture::Get(texturef);
 
-	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
@@ -186,8 +184,7 @@ void EntityPlayer::update(float elapsed_time) {
 			world->collision_enemies[j]->life -= bManager->bullet_vector[i].damage;
 			world->collision_enemies[j]->life = max(world->collision_enemies[j]->life, 0);
 			if (world->collision_enemies[j]->life == 0) {
-				world->collision_enemies[j]->visible = false;
-				world->collision_enemies[j]->model.setTranslation(0.f, -15000.f, 0.f);
+				world->root->removeChild(world->collision_enemies[j]);
 			}	
 		}
 	}
@@ -255,7 +252,7 @@ EntityEnemy::~EntityEnemy() {}
 //meshfile sin path, texturefile con path
 void EntityEnemy::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	//mesh = MeshManager::getInstance()->getMesh(meshf, true);
+	/*mesh = Mesh::Get(meshf, true);*/
 	mesh = new Mesh();
 	if (!mesh->loadASE(meshf, true)) {
 		exit(0);
@@ -264,7 +261,6 @@ void EntityEnemy::set(const char * meshf, const char * texturef, const char * sh
 
 	texture = Texture::Get(texturef);
 
-	shader = new Shader();
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";

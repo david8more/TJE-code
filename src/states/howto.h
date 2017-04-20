@@ -1,11 +1,11 @@
 #ifndef HOWTO_H
 #define HOWTO_H
 
-#include "framework.h"
-#include "texture.h"
-#include "game.h"
-#include "mesh.h"
-#include "camera.h"
+#include "../framework.h"
+#include "../texture.h"
+#include "../game.h"
+#include "../mesh.h"
+#include "../camera.h"
 #include <iostream>
 
 using namespace std;

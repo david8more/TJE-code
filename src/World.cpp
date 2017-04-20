@@ -147,8 +147,8 @@ void World::addWorldConst() {
 	sea->model.setIdentity();
 	root->addChild(sea);
 
-	for (int i = -4; i <= 4; i++) {
-		for (int j = -4; j <= 4; j++) {
+	for (int i = -2; i <= 2; i++) {
+		for (int j = -2; j <= 2; j++) {
 			EntityMesh* ground = new EntityMesh();
 			ground->set("island.ASE", "data/textures/island.tga", "simple");
 			ground->model.setIdentity();

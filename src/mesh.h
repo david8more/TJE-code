@@ -6,6 +6,7 @@
 #define MESH_H
 
 #include <vector>
+#include <map>
 #include "framework.h"
 #include "extra/coldet/coldet.h"
 
@@ -43,6 +44,9 @@ public:
 	bool loadASE(const char* filename, bool createCollisionModel);
 
 	void createCollisionModel();
+
+	static Mesh* Get(const char* filename, bool createCModel);
+	static std::map<std::string, Mesh*> s_Meshes;
 };
 
 #endif

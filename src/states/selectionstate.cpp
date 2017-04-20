@@ -1,16 +1,16 @@
-﻿#include "camera.h"
-#include "game.h"
-#include "utils.h"
-#include "mesh.h"
-#include "texture.h"
-#include "shader.h"
+﻿#include "../camera.h"
+#include "../game.h"
+#include "../utils.h"
+#include "../mesh.h"
+#include "../texture.h"
+#include "../shader.h"
 #include "state.h"
-#include "bass.h"
+#include "../bass.h"
 #include "selectionstate.h"
 #include "playstate.h"
-#include "entity.h"
-#include "world.h"
-#include "extra/textparser.h"
+#include "../entity.h"
+#include "../world.h"
+#include "../extra/textparser.h"
 
 #include <algorithm>
 
@@ -139,9 +139,6 @@ void SelectionState::init() {
 			selectionHelp[i][j] = a;
 		}
 	}
-
-	//hide the cursor
-	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
 }
 
 void SelectionState::onEnter()
@@ -156,6 +153,9 @@ void SelectionState::onEnter()
 
 	playerModel = 0;
 	lastRendered = 0;
+
+	//hide the cursor
+	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
 }
 
 void SelectionState::render() {

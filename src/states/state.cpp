@@ -1,16 +1,6 @@
-#include "camera.h"
-#include "game.h"
-#include "utils.h"
-#include "mesh.h"
-#include "texture.h"
-#include "rendertotexture.h"
-#include "shader.h"
+#include "../game.h"
+#include "../utils.h"
 #include "state.h"
-#include "bass.h"
-#include "playstate.h"
-#include "menustate.h"
-
-#include <cmath>
 
 State::State() {}
 State::State(StateManager* SManager) : SManager( SManager ) {}
@@ -45,6 +35,7 @@ void StateManager::setInitialState(State* state) {
 }
 
 void StateManager::changeCurrentState( State* new_state ) {
+	
 	if( current_state ) current_state->onLeave( new_state->stateID() );
 	current_state = new_state;
 	current_state->onEnter();

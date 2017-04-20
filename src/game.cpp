@@ -9,6 +9,7 @@
 #include "states/selectionstate.h"
 #include "states/howto.h"
 #include "states/endingstate.h"
+#include "states/loadingstate.h"
 #include "bass.h"
 
 #include <cmath>
@@ -52,15 +53,7 @@ void Game::init(void)
 	nbFrames = 0;
 
 	sManager = new StateManager();
-
-	// initialize states
-	MenuState::getInstance(sManager)->init();
-	OptionsState::getInstance(sManager)->init();
-	Howto::getInstance(sManager)->init();
-	SelectionState::getInstance(sManager)->init();
-	PlayState::getInstance(sManager)->init();
-	EndingState::getInstance(sManager)->init();
-	sManager->changeCurrentState(MenuState::getInstance(sManager));
+	sManager->setInitialState(LoadingState::getInstance(sManager));
 }
 
 //what to do when the image has to be draw

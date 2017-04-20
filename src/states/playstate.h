@@ -8,11 +8,11 @@
 #define FULLVIEW 0
 #define CABINEVIEW 1
 
-#include "framework.h"
-#include "texture.h"
-#include "game.h"
-#include "mesh.h"
-#include "camera.h"
+#include "../framework.h"
+#include "../texture.h"
+#include "../game.h"
+#include "../mesh.h"
+#include "../camera.h"
 #include <iostream>
 
 using namespace std;

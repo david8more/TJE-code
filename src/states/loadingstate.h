@@ -1,5 +1,9 @@
-#ifndef ENDINGSTATE_H
-#define ENDINGSTATE_H
+#ifndef LOADINGSTATE_H
+#define LOADINGSTATE_H
+
+#define PLAYSTATE 0
+#define HOWTOPLAY 1
+#define OPTIONS 2
 
 #include "../framework.h"
 #include "../texture.h"
@@ -15,31 +19,33 @@ class Mesh;
 class Camera;
 class Game;
 
-class EndingState : public State {
+class LoadingState : public State {
 protected:
-	EndingState(StateManager* SManager);
+	LoadingState(StateManager* SManager);
 
 public:
 
-	~EndingState();
+	~LoadingState();
 
-	void init();
 	void onEnter();
 	void onLeave(int fut_state);
 	void render();
-	void update(double elapsed_time);
 	void onKeyPressed(SDL_KeyboardEvent event);
-	int stateID() { return 5; }
+	int stateID() { return -1; }
 
-	static EndingState* getInstance(StateManager* SManager);
+	static LoadingState* getInstance(StateManager* SManager) {
+		static LoadingState Instance(SManager);
+		return &Instance;
+	}
+
+	// needed instances to render
 
 	// background texture
 	Texture* texture;
+	Mesh backgroundQuad;
 
-	// needed instances to render
 	Game* game;
 	Camera cam2D;
-	Mesh quad;
 
 };
 

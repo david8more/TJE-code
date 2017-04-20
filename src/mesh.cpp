@@ -9,6 +9,8 @@
 
 #define DEBUG 0
 
+std::map<std::string, Mesh*> Mesh::s_Meshes;
+
 Mesh::Mesh()
 {
 	vertices_vbo_id = 0;
@@ -500,24 +502,38 @@ bool Mesh::loadASE(const char* name, bool createCModel) {
 	return true;
 }
 
+Mesh* Mesh::Get(const char* filename, bool createCModel)
+{
+	std::string name = std::string(filename);
+	std::map<std::string, Mesh*>::iterator it = s_Meshes.find(name);
+	if (it != s_Meshes.end())
+		return it->second;
+
+	Mesh* m = new Mesh();
+	if (!m->loadASE(filename, createCModel))
+		return NULL;
+	s_Meshes[name] = m;
+	return m;
+}
+
 // colisiones (coldet)
 void Mesh::createCollisionModel() {
 
 	//para crear una instancia usamos la función newCollisionModel3D ya que coldet no permite hacer un new directamente CollisionModel3D*
-	collision_model = newCollisionModel3D();
+	this->collision_model = newCollisionModel3D();
 
 	//esto acelera el proceso si sabemos cuantos triangulos hay porque evita tener que ir reallocando los datos
 	// num triangulos = num vertices / 3 (por las caras!!!)
-	collision_model->setTriangleNumber(vertices.size() / 3);
+	this->collision_model->setTriangleNumber(vertices.size() / 3);
 
 	//agregamos uno a uno todos los triangulos de la mesh pasandole las coordenadas de los tres vertices que forman cada triangulo
 	for (int i = 0; i < vertices.size(); i += 3) {
-		collision_model->addTriangle(vertices[i].x, vertices[i].y, vertices[i].z,
+		this->collision_model->addTriangle(vertices[i].x, vertices[i].y, vertices[i].z,
 			vertices[i+1].x, vertices[i+1].y, vertices[i+1].z,
 			vertices[i+2].x, vertices[i+2].y, vertices[i+2].z);
 	}
 
 	//una vez tiene todos los triangulos llamamos a finalize para que cree el arbol interno optimizado
-	collision_model->finalize();
+	this->collision_model->finalize();
 	
 }

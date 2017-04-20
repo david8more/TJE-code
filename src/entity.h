@@ -19,7 +19,6 @@ public:
 
 	Matrix44 model;
 	unsigned int uid;
-	bool visible;
 	string name;
 	Entity* parent;
 	vector<Entity*> children;
