@@ -43,6 +43,7 @@ void OptionsState::onEnter()
 	MenuState* mState = MenuState::getInstance( game->sManager );
 
 	b_channel = mState->b_channel;
+
 }
 
 void OptionsState::render() {
@@ -72,30 +73,30 @@ void OptionsState::render() {
 		switch (i)
 		{
 		case MUSIC: 
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(300.0,225.0 + p, game->music_enabled ? "OF COURSE":"NAH", c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->music_enabled ? "OF COURSE":"NAH", c, 3.0);
 			break;
 		case EFFECTS: 
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(300.0, 225.0 + p, game->effects_enabled ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->effects_enabled ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		case FULLSCREEN:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(300.0, 225.0 + p, game->fullscreen ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->fullscreen ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		case GAMEMODE:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(300.0, 225.0 + p, game->gameMode ? "CRUISER" : "HUMAN", c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->gameMode ? "CRUISER" : "HUMAN", c, 3.0);
 			break; 
 		case FRIENDLYFIRE:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
-			drawText(300.0, 225.0 + p, 0 ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, 0 ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		default:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 3.0);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
 			break;
 		}
-		p += 35;
+		p += 40;
 	}
 
 	glColor3f(1.f, 1.f, 1.f);

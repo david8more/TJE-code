@@ -86,7 +86,7 @@ void Howto::render() {
 	glDisable(GL_BLEND);
 
 	// menu
-	const string submenu_items[] = { "Objetive", "Keyboad", "Xbox Controller", "Back" };
+	const string submenu_items[] = { "Objetive", "Keyboard", "Xbox Controller", "Back" };
 
 	int p = 0;
 	string enable;
@@ -99,16 +99,16 @@ void Howto::render() {
 		switch (i)
 		{
 		case OBJECTIVE:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 2.75);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		case KEYBOARD:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 2.75);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		case XBOX:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 2.75);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		default:
-			drawText(75.0, 225.0 + p, submenu_items[i], c, 2.75);
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		}
 		p += 35;
