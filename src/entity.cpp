@@ -12,7 +12,6 @@
 #include <cassert>
 #include <algorithm>
 
-int torpedos = 2;
 int usado1 = 0;
 int usado2 = 0;
 
@@ -165,8 +164,11 @@ void EntityPlayer::update(float elapsed_time) {
 			EntityEnemy * current_enemy = world->collision_enemies[j];
 
 			//si queremos especificar la model de la mesh usamos setTransform
+
 			CollisionModel3D * collisionModel = current_enemy->mesh->getCollisionModel();
+
 			collisionModel->setTransform(current_enemy->model.m);
+
 			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
 			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 			//al origen del rayo o nos conformamos con saber si colisiona. 
@@ -178,30 +180,21 @@ void EntityPlayer::update(float elapsed_time) {
 			
 			// collision made
 			bManager->bullet_vector[i].free = true; // liberar espacio de la bala
-			if (bManager->bullet_vector[i].type == 3) {
-				int sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
-				int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
-				BASS_ChannelPlay(channel, false); // play it
-			}
 			current_enemy->life -= bManager->bullet_vector[i].damage;
 			current_enemy->life = max(current_enemy->life, 0);
-			if (current_enemy->life == 0) {
-				world->root->removeChild(current_enemy);
-			}	
+
+			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
 		}
 	}
 
 	bManager->update(elapsed_time);
 
-	if (usado1) {
-		EntityMesh* torpedo = World::getInstance()->missileOne;
-		torpedo->model.traslate(0, 0, elapsed_time * 100);
-	}
+	EntityMesh* torpedo = World::getInstance()->torpedoOne;
+	EntityMesh* torpedo2 = World::getInstance()->torpedoTwo;
 
-	if (usado2) {
-		EntityMesh* torpedo2 = World::getInstance()->missileTwo;
-		torpedo2->model.traslate(0, 0, elapsed_time * 100);
-	}
+	if(usado1) torpedo->model.traslate(0, 0, elapsed_time * 100);
+	if(usado2) torpedo2->model.traslate(0, 0, elapsed_time * 100);
+
 }
 
 void EntityPlayer::m60Shoot() {
@@ -210,64 +203,58 @@ void EntityPlayer::m60Shoot() {
 	
 	Vector3 cannon_pos1;
 	Vector3 cannon_pos2;
+	Vector3 cannon_pos3;
 
 	switch (planeModel) {
 	case 0:
-		cannon_pos1 = Vector3(1.85f, -0.25f, 5.f);
-		cannon_pos2 = Vector3(-2.f, -0.25f, 5.f);
+		cannon_pos1 = Vector3(1.9f, -0.25f, 5.f);
+		cannon_pos2 = Vector3(-1.9f, -0.25f, 5.f);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		break;
 	case 1:
-		cannon_pos1 = Vector3(2.60f, -0.25f, 10.f);
-		cannon_pos2 = Vector3(-2.75f, -0.25f, 10.f);
+		cannon_pos1 = Vector3(0.5f, -0.25f, 10.f);
+		cannon_pos2 = Vector3(-0.5f, -0.25f, 10.f);
+		cannon_pos2 = Vector3(0.f, -0.1f, 10.f);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
+		bManager->createBullet(model*cannon_pos3, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		break;
 	case 2:
 		cannon_pos1 = Vector3(0.f, -0.50f, 10.f);
-		cannon_pos2 = Vector3(0.f, 0.f, -99.f); // -99.f implica que no hay
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		break;
 	case 3:
 		cannon_pos1 = Vector3(2.40f, -0.25f, 5.f);
 		cannon_pos2 = Vector3(-2.55f, -0.25f, 5.f);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		break;
 	}
-
-	bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
-	if(cannon_pos2.z != -99.f) bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 
 	int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
 }
 
-void EntityPlayer::missileShoot() {
-	BulletManager* bManager = BulletManager::getInstance();
+void EntityPlayer::torpedoShoot() {
 	
-	bManager->createBullet(model*Vector3(0, -0.50, 10), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageMissile, 0, 3);
-	this->missilesLeft--;
+	if (!torpedosLeft) return;
+
+	switch (torpedosLeft) {
+	case 1:
+		usado2 = 1;
+		break;
+	case 2:
+		usado1 = 1;
+		break;
+	}
+
+	torpedosLeft--;
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
-}
-
-void EntityPlayer::torpedoShoot(float time_elapsed) {
-	
-	if (torpedos > 0) {
-		torpedos--;
-	}
-	else {
-		return;
-	}
-
-	if (!usado1) {
-		usado1 = 1;
-		return;
-	}
-	if (!usado2) {
-		usado2 = 1;
-	} 
-
-	/*EntityMesh* torpedo = World::getInstance()->missileOne;
-	torpedo->model.traslate(0, 0, time_elapsed*100);*/
 }
 
 // *************************************************************************

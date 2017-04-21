@@ -45,7 +45,7 @@ void PlayState::init() {
 	game->free_camera->lookAt(Vector3(0, 500, 500), world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
-	game->current_camera = game->free_camera;
+	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
 
 	// fill views struct
 	// remember: sTransZoomCreator(view, planeModel, quantityToTranslate);
@@ -226,10 +226,13 @@ void PlayState::update(double seconds_elapsed) {
 
 	// update part
 
+	world->playerAir->update(seconds_elapsed);
+	
+	if (DEBUG) return;
+	
 	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
 	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	if (!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-	world->playerAir->update(seconds_elapsed);
 
 	// comprobar si es fin del juego
 	if (world->isGameOver()) SManager->changeCurrentState(EndingState::getInstance(SManager));
@@ -278,7 +281,7 @@ void PlayState::renderHUD() {
 	// MISSILES
 
 	ss.str("");
-	ss << "Missiles left: " << world->playerAir->missilesLeft;
+	ss << "Torpedos left: " << world->playerAir->torpedosLeft;
 	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0); // % engine !!!
 
 	// vidas enemigas
@@ -301,9 +304,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 
 	switch (event.keysym.sym)
 	{
-	case SDLK_0:
-		world->playerAir->missilesLeft++;
-		break;
 	case SDLK_1: // full plane view
 		current_view = 0;
 		setView();
@@ -330,12 +330,8 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 		shooting = false;
 		if (!overused) shootingtime = 0;
 		break;
-	case SDLK_m:
-		if (shooting) break;
-		if (world->playerAir->missilesLeft > 0) world->playerAir->missileShoot();
-		break;
 	case SDLK_t:
-		world->playerAir->torpedoShoot(0.0);
+		world->playerAir->torpedoShoot();
 		break;
 	}
 }

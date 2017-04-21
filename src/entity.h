@@ -52,18 +52,14 @@ public:
 };
 
 // *******************************************************************
-class EntityPlayer : public Entity {
+class EntityPlayer : public EntityMesh {
 public:
 
 	EntityPlayer();
 	~EntityPlayer();
 
-	Mesh* mesh;
-	Texture* texture;
-	Shader *shader;
-
 	int life;
-	int missilesLeft;
+	int torpedosLeft;
 	float cadence;
 	float damageM60;
 	float damageMissile;
@@ -72,20 +68,15 @@ public:
 	void render(Camera * camera);
 	void update(float elapsed_time);
 	void m60Shoot();
-	void missileShoot();
-	void torpedoShoot(float time_elapsed);
+	void torpedoShoot();
 };
 
 // *******************************************************************
-class EntityEnemy : public Entity {
+class EntityEnemy : public EntityMesh {
 public:
 
 	EntityEnemy();
 	~EntityEnemy();
-
-	Mesh* mesh;
-	Texture* texture;
-	Shader *shader;
 
 	int life;
 
