@@ -5,8 +5,9 @@
 #include "../mesh.h"
 #include "../texture.h"
 #include "../shader.h"
-#include "state.h"
 #include "../bass.h"
+#include "../entity.h"
+#include "state.h"
 #include "menustate.h"
 #include "playstate.h"
 #include "howto.h"
@@ -15,6 +16,9 @@
 #define OBJECTIVE 0
 #define KEYBOARD 1
 #define XBOX 2
+
+Camera cam;
+Mesh quead;
 
 Howto::Howto(StateManager* SManager) : State(SManager) {}
 Howto::~Howto() {}
@@ -51,6 +55,9 @@ void Howto::init() {
 
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
+
+	cam.setOrthographic(0.0, 600, 600, 0.0, -1.0, 1.0);
+	
 }
 
 void Howto::onEnter()
@@ -73,23 +80,22 @@ void Howto::onLeave(int fut_state)
 }
 
 void Howto::render() {
+	
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-
-	// render quad with texture applied
 	cam2D.set();
 	glEnable(GL_BLEND);
 	texture->bind();
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
-	glDisable(GL_BLEND);
 
 	// menu
 	const string submenu_items[] = { "Objetive", "Keyboard", "Xbox Controller", "Back" };
 
 	int p = 0;
 	string enable;
+
+	glColor4f(1.0, 1.0, 1.0, 1.0);
 
 	Vector3 c;
 	for (int i = 0; i < 4; i++) {
@@ -114,7 +120,7 @@ void Howto::render() {
 		p += 35;
 	}
 
-	glColor3f(1.f, 1.f, 1.f);
+	glColor4f(1.0, 1.0, 1.0, 0.0);
 }
 
 void Howto::update(double time_elapsed) {
