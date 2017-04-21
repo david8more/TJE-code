@@ -42,10 +42,10 @@ void PlayState::init() {
 	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
-	game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	game->free_camera->lookAt(Vector3(0, 500, 500), world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
-	game->current_camera = game->fixed_camera;
+	game->current_camera = game->free_camera;
 
 	// fill views struct
 	// remember: sTransZoomCreator(view, planeModel, quantityToTranslate);
@@ -56,7 +56,7 @@ void PlayState::init() {
 	sTransZoomCreator(0, 2, 7.5f);
 	sTransZoomCreator(0, 2, 0.45f);
 	sTransZoomCreator(1, 3, 7.5f); // falta probar estos dos
-	sTransZoomCreator(1, 3, 0.5f);
+	sTransZoomCreator(1, 3, 0.5f); // falta probar estos dos
 
 	// collision models
 
@@ -131,6 +131,8 @@ void PlayState::render() {
 	renderHUD();
 }
 
+bool a = false;
+
 void PlayState::update(double seconds_elapsed) {
 
 	// overusing y cadencia
@@ -157,11 +159,21 @@ void PlayState::update(double seconds_elapsed) {
 
 	Game* game = Game::getInstance();
 
-	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 20; //the speed is defined by the seconds_elapsed so it goes constant
 	bool mod = false;
 
 	if (DEBUG) {
-		
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
+		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->current_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
+		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->current_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->current_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) game->current_camera->move(Vector3(-1.f, 0.f, 0.f) * speed);
+
+		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
+		{
+			game->current_camera->rotate(game->mouse_delta.x * 0.005f, Vector3(0.f, -1.f, 0.f));
+			game->current_camera->rotate(game->mouse_delta.y * 0.005f, game->current_camera->getLocalVector(Vector3(-1.f, 0.f, 0.f)));
+		}
 	}
 	else {
 		//mouse input to rotate the cam
@@ -173,9 +185,11 @@ void PlayState::update(double seconds_elapsed) {
 			}
 			else {
 				mod = true;
+				
+				game->free_camera->rotate(game->mouse_delta.x * -0.005f, viewtarget);
+				game->free_camera->center.y = (world->playerAir->model * viewtarget).y;
+				game->free_camera->center.z = (world->playerAir->model * viewtarget).z;
 				game->free_camera->eye = world->playerAir->model * viewpos;
-				game->free_camera->center = world->playerAir->model * viewtarget;
-				game->free_camera->rotate(game->mouse_delta.x * 0.005f, viewtarget);
 			}
 		}
 
@@ -193,6 +207,9 @@ void PlayState::update(double seconds_elapsed) {
 			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, -1) * speed);
 			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 1, 0) * speed);
 		}
+		if (game->keystate[SDL_SCANCODE_T]) {
+			
+		}
 	}
 
 	//to navigate with the mouse fixed in the middle
@@ -209,15 +226,10 @@ void PlayState::update(double seconds_elapsed) {
 
 	// update part
 
-	if (DEBUG) {
-		
-	}
-	else { // parte ok
-		world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
-		game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-		if(!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-		world->playerAir->update(seconds_elapsed);
-	}
+	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
+	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	if (!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	world->playerAir->update(seconds_elapsed);
 
 	// comprobar si es fin del juego
 	if (world->isGameOver()) SManager->changeCurrentState(EndingState::getInstance(SManager));
@@ -321,6 +333,9 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 	case SDLK_m:
 		if (shooting) break;
 		if (world->playerAir->missilesLeft > 0) world->playerAir->missileShoot();
+		break;
+	case SDLK_t:
+		world->playerAir->torpedoShoot(0.0);
 		break;
 	}
 }

@@ -73,6 +73,7 @@ public:
 	void update(float elapsed_time);
 	void m60Shoot();
 	void missileShoot();
+	void torpedoShoot(float time_elapsed);
 };
 
 // *******************************************************************

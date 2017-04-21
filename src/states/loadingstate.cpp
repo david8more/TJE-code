@@ -18,9 +18,6 @@
 LoadingState::LoadingState(StateManager* SManager) : State(SManager) {}
 LoadingState::~LoadingState() {}
 
-bool loaded = false;
-std::string text = "[Press any key to load]";
-
 void LoadingState::onEnter()
 {
 	//set the clear color (the background color)
@@ -34,9 +31,7 @@ void LoadingState::onEnter()
 
 void LoadingState::onLeave(int fut_state)
 {
-	// initialize states
-	//SelectionState::getInstance(this->SManager)->init();
-	//PlayState::getInstance(this->SManager)->init();
+
 }
 
 void LoadingState::render()
@@ -48,27 +43,18 @@ void LoadingState::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor4f(1.f, 1.f, 1.f, 1.f);
-
-	//text = "[Press any key to continue]";
-	std::cout << text.size() << std::endl;
-
+	std::string text = "[Press any key to continue]";
 	drawText(game->window_width*0.5 - game->window_height*text.size()*0.008, game->window_height*0.75, text, Vector3(1.f, 1.f, 1.f), game->window_height*0.003);
 }
 
 void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	if (loaded == false) {
-		MenuState::getInstance(this->SManager)->init();
-		OptionsState::getInstance(this->SManager)->init();
-		Howto::getInstance(this->SManager)->init();
-		EndingState::getInstance(this->SManager)->init();
-		SelectionState::getInstance(this->SManager)->init();
-		PlayState::getInstance(this->SManager)->init();
-
-		loaded = true;
-		text = "** DONE! ** [Press any key to continue]";
-		return;
-	}
+	MenuState::getInstance(this->SManager)->init();
+	OptionsState::getInstance(this->SManager)->init();
+	Howto::getInstance(this->SManager)->init();
+	EndingState::getInstance(this->SManager)->init();
+	SelectionState::getInstance(this->SManager)->init();
+	PlayState::getInstance(this->SManager)->init();
 
 	SManager->changeCurrentState(MenuState::getInstance(SManager));
 }

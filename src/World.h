@@ -47,6 +47,9 @@ public:
 	EntityPlayer* playerAir;
 	EntityPlayer* playerShip;
 
+	EntityMesh* missileOne;
+	EntityMesh* missileTwo;
+
 	void create();
 	void addPlayer();
 	void addPlayerConst();

@@ -22,10 +22,9 @@ World::World()
 	sea = NULL;
 	playerAir = NULL;
 	playerShip = NULL;
-
-	enemyShip = NULL;
-	enemyAir = NULL;
-	enemy2Air = NULL;
+	
+	missileOne = NULL;
+	missileTwo = NULL;
 }
 
 World::~World()
@@ -50,6 +49,11 @@ void World::create() {
 void World::addPlayer() {
 	// PLAYER AIRPLANE ************************************************************************************
 	
+	missileOne = new EntityMesh();
+	missileOne->set("torpedo.ASE", "data/textures/torpedo.tga", "simple");
+	missileTwo = new EntityMesh();
+	missileTwo->set("torpedo.ASE", "data/textures/torpedo.tga", "simple");
+
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
 		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
@@ -58,6 +62,12 @@ void World::addPlayer() {
 		playerAir->missilesLeft = 2;
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
+
+		missileOne->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		missileOne->model.traslate(0.5f, -0.75f, -0.5f);
+		missileTwo->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		missileTwo->model.traslate(-0.5f, -0.75f, -0.5f);
+
 		break;
 	case P38:
 		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
@@ -66,6 +76,10 @@ void World::addPlayer() {
 		playerAir->missilesLeft = 4;
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
+
+		missileOne->model.setTranslation(-1.f, -0.75f, 5.f);
+		missileTwo->model.setTranslation(1.f, -0.75f, 5.f);
+
 		break;
 	case WILDCAT:
 		playerAir->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
@@ -74,6 +88,10 @@ void World::addPlayer() {
 		playerAir->missilesLeft = 4;
 		playerAir->damageM60 = 40;
 		playerAir->damageMissile = 100;
+
+		missileOne->model.setTranslation(-1.f, -0.75f, 5.f);
+		missileTwo->model.setTranslation(1.f, -0.75f, 5.f);
+
 		break;
 	case BOMBER:
 		playerAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
@@ -82,6 +100,10 @@ void World::addPlayer() {
 		playerAir->missilesLeft = 2;
 		playerAir->damageM60 = 15;
 		playerAir->damageMissile = 300;
+
+		missileOne->model.setTranslation(-1.f, -0.75f, 5.f);
+		missileTwo->model.setTranslation(1.f, -0.75f, 5.f);
+
 		break;
 	}
 
@@ -96,6 +118,9 @@ void World::addPlayer() {
 	playerAir->model.setScale(3, 3, 3);
 	playerAir->model.traslate(0, 500, 500);
 	root->addChild(playerAir);
+	
+	playerAir->addChild(missileOne);
+	playerAir->addChild(missileTwo);
 }
 
 void World::addPlayerConst() {
@@ -183,7 +208,7 @@ void World::addEnemies() {
 
 	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemyAir->model.setScale(3, 3, 3);
-	enemyAir->model.traslate(0, 500, 500);
+	enemyAir->model.traslate(0, 500, 200);
 	root->addChild(enemyAir);
 
 	collision_enemies.push_back(enemyAir);
@@ -191,7 +216,7 @@ void World::addEnemies() {
 	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setScale(3, 3, 3);
-	enemy2Air->model.traslate(500, 500, 500);
+	enemy2Air->model.traslate(500, 500, 200);
 	root->addChild(enemy2Air);
 
 	collision_enemies.push_back(enemy2Air);

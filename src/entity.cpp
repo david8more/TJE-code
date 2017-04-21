@@ -12,6 +12,10 @@
 #include <cassert>
 #include <algorithm>
 
+int torpedos = 2;
+int usado1 = 0;
+int usado2 = 0;
+
 // ENTITY
 
 Entity::Entity() {
@@ -188,6 +192,16 @@ void EntityPlayer::update(float elapsed_time) {
 	}
 
 	bManager->update(elapsed_time);
+
+	if (usado1) {
+		EntityMesh* torpedo = World::getInstance()->missileOne;
+		torpedo->model.traslate(0, 0, elapsed_time * 100);
+	}
+
+	if (usado2) {
+		EntityMesh* torpedo2 = World::getInstance()->missileTwo;
+		torpedo2->model.traslate(0, 0, elapsed_time * 100);
+	}
 }
 
 void EntityPlayer::m60Shoot() {
@@ -233,6 +247,27 @@ void EntityPlayer::missileShoot() {
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
+}
+
+void EntityPlayer::torpedoShoot(float time_elapsed) {
+	
+	if (torpedos > 0) {
+		torpedos--;
+	}
+	else {
+		return;
+	}
+
+	if (!usado1) {
+		usado1 = 1;
+		return;
+	}
+	if (!usado2) {
+		usado2 = 1;
+	} 
+
+	/*EntityMesh* torpedo = World::getInstance()->missileOne;
+	torpedo->model.traslate(0, 0, time_elapsed*100);*/
 }
 
 // *************************************************************************
