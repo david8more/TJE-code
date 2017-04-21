@@ -17,6 +17,7 @@ Mesh::Mesh()
 	normals_vbo_id = 0;
 	uvs_vbo_id = 0;
 	colors_vbo_id = 0;
+	collision_model = NULL;
 }
 
 Mesh::Mesh( const Mesh& m )
@@ -25,6 +26,7 @@ Mesh::Mesh( const Mesh& m )
 	normals = m.normals;
 	uvs = m.uvs;
 	colors = m.colors;
+	collision_model = NULL;
 }
 
 Mesh::~Mesh()
@@ -339,7 +341,7 @@ typedef struct {
 	int num_tfaces;
 } sBinHeader;
 
-bool Mesh::loadASE(const char* name, bool createCModel) {
+bool Mesh::loadASE(const char* name) {
 
 	vertices.clear();
 	normals.clear();
@@ -372,7 +374,6 @@ bool Mesh::loadASE(const char* name, bool createCModel) {
 		fclose(file);
 
 		uploadToVRAM();
-		if(createCModel) createCollisionModel();
 
 		long time0 = getTime();
 		if (DEBUG) std::cout << "Parsing time " << (time0 - time) * 0.001 << std::endl;
@@ -497,12 +498,11 @@ bool Mesh::loadASE(const char* name, bool createCModel) {
 
 	fclose(wfile);
 	uploadToVRAM();
-	if (createCModel) createCollisionModel();
 
 	return true;
 }
 
-Mesh* Mesh::Get(const char* filename, bool createCModel)
+Mesh* Mesh::Get(const char* filename)
 {
 	std::string name = std::string(filename);
 	std::map<std::string, Mesh*>::iterator it = s_Meshes.find(name);
@@ -510,7 +510,7 @@ Mesh* Mesh::Get(const char* filename, bool createCModel)
 		return it->second;
 
 	Mesh* m = new Mesh();
-	if (!m->loadASE(filename, createCModel))
+	if (!m->loadASE(filename))
 		return NULL;
 	s_Meshes[name] = m;
 	return m;
@@ -537,3 +537,16 @@ void Mesh::createCollisionModel() {
 	this->collision_model->finalize();
 	
 }
+
+CollisionModel3D * Mesh::getCollisionModel()
+{
+	if (this->collision_model != NULL) return collision_model;
+
+	createCollisionModel();
+	return collision_model; 
+}
+
+void Mesh::setCollisionModel() {
+	if (this->collision_model == NULL) createCollisionModel();
+}
+

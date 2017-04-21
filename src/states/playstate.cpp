@@ -31,20 +31,21 @@ void PlayState::init() {
 	world = World::getInstance();
 	world->create();
 
-	//create our camera
-	game->current_camera = new Camera();
-	game->camera = new Camera();
-
-	game->camera->lookAt(Vector3(0, 507, 485), Vector3(0, 440, 1190), Vector3(0, 1, 0)); //position the camera and point to 0,0,0
-	game->camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f); //set the projection, we want to be perspective
-
-	game->current_camera = game->camera;
-
 	// posicion y direccion de la vista seleccionada
 	viewpos = Vector3(0, 5, -15);
 	viewtarget = Vector3(0, 5, 0);
 
-	game->current_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	//create our camera
+	game->free_camera = new Camera(); //our global camera
+	game->fixed_camera = new Camera();
+
+	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
+
+	game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
+
+	game->current_camera = game->fixed_camera;
 
 	// fill views struct
 	// remember: sTransZoomCreator(view, planeModel, quantityToTranslate);
@@ -56,6 +57,13 @@ void PlayState::init() {
 	sTransZoomCreator(0, 2, 0.45f);
 	sTransZoomCreator(1, 3, 7.5f); // falta probar estos dos
 	sTransZoomCreator(1, 3, 0.5f);
+
+	// collision models
+
+	for (int i = 0; i < world->collision_enemies.size(); i++) {
+		EntityEnemy * current_enemy = world->collision_enemies[i];
+		current_enemy->mesh->setCollisionModel();
+	}
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
@@ -105,7 +113,7 @@ void PlayState::render() {
 	Game* game = Game::getInstance();
 
 	//set the clear color (the background color)
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.05, 0.14, 0.25, 1.0);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -114,7 +122,7 @@ void PlayState::render() {
 	
 	glDisable(GL_DEPTH_TEST);
 	world->sky->model.setIdentity();
-	world->sky->model.traslate((world->playerAir->model * Vector3()).x, (world->playerAir->model * Vector3()).y, (world->playerAir->model * Vector3()).z);
+	world->sky->model.traslate(game->current_camera->eye.x, game->current_camera->eye.y, game->current_camera->eye.z);
 	world->sky->render(game->current_camera);
 	glEnable(GL_DEPTH_TEST);
 
@@ -150,16 +158,25 @@ void PlayState::update(double seconds_elapsed) {
 	Game* game = Game::getInstance();
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	bool mod = false;
 
 	if (DEBUG) {
 		
 	}
 	else {
 		//mouse input to rotate the cam
-		if (game->mouse_locked) //is left button pressed?
+		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
 		{
-			world->playerAir->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
-			world->playerAir->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
+			if (game->current_camera == game->fixed_camera) {
+				world->playerAir->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
+				world->playerAir->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
+			}
+			else {
+				mod = true;
+				game->free_camera->eye = world->playerAir->model * viewpos;
+				game->free_camera->center = world->playerAir->model * viewtarget;
+				game->free_camera->rotate(game->mouse_delta.x * 0.005f, viewtarget);
+			}
 		}
 
 		//async input to move the camera around
@@ -197,7 +214,8 @@ void PlayState::update(double seconds_elapsed) {
 	}
 	else { // parte ok
 		world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
-		game->current_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+		game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+		if(!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 		world->playerAir->update(seconds_elapsed);
 	}
 
@@ -271,6 +289,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 
 	switch (event.keysym.sym)
 	{
+	case SDLK_0:
+		world->playerAir->missilesLeft++;
+		break;
 	case SDLK_1: // full plane view
 		current_view = 0;
 		setView();
@@ -279,12 +300,13 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		current_view = 1;
 		setView();
 		break;
+	case SDLK_3:
+		game->current_camera = game->current_camera == game->fixed_camera ? game->free_camera : game->fixed_camera;
+		break;
 	case SDLK_SPACE:
 		shooting = true;
 		break;
-	case SDLK_0:
-		world->playerAir->missilesLeft++;
-		break;
+	
 	}
 }
 

@@ -35,8 +35,8 @@ void LoadingState::onEnter()
 void LoadingState::onLeave(int fut_state)
 {
 	// initialize states
-	SelectionState::getInstance(this->SManager)->init();
-	PlayState::getInstance(this->SManager)->init();
+	//SelectionState::getInstance(this->SManager)->init();
+	//PlayState::getInstance(this->SManager)->init();
 }
 
 void LoadingState::render()
@@ -62,6 +62,8 @@ void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 		OptionsState::getInstance(this->SManager)->init();
 		Howto::getInstance(this->SManager)->init();
 		EndingState::getInstance(this->SManager)->init();
+		SelectionState::getInstance(this->SManager)->init();
+		PlayState::getInstance(this->SManager)->init();
 
 		loaded = true;
 		text = "** DONE! ** [Press any key to continue]";

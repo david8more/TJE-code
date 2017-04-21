@@ -53,7 +53,7 @@ public:
 	Vector2 mouse_delta; //mouse movement in the last frame
 	bool mouse_locked; //tells if the mouse is locked (not seen)
 	
-	Camera* camera; //our global camera
+	Camera* free_camera; //our global camera
 	Camera* fixed_camera;
 	Camera* current_camera;
 

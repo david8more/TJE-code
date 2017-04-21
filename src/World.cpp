@@ -142,18 +142,25 @@ void World::addWorldConst() {
 	sky = new EntityMesh();
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 
-	sea = new EntityMesh();
-	sea->set("agua.ASE", "data/textures/agua.tga", "color");
-	sea->model.setIdentity();
-	root->addChild(sea);
+	
 
-	for (int i = -2; i <= 2; i++) {
-		for (int j = -2; j <= 2; j++) {
+	for (int i = -3; i <= 3; i++) {
+		for (int j = -3; j <= 3; j++) {
 			EntityMesh* ground = new EntityMesh();
 			ground->set("island.ASE", "data/textures/island.tga", "simple");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			root->addChild(ground);
+		}
+	}
+
+	for (int i = -5; i <= 5; i++) {
+		for (int j = -5; j <= 5; j++) {
+			EntityMesh* sea = new EntityMesh();
+			sea->set("agua.ASE", "data/textures/agua.tga", "color");
+			sea->model.setIdentity();
+			sea->model.traslate(i * 10000, 0, j * 10000);
+			root->addChild(sea);
 		}
 	}
 }

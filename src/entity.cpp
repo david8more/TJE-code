@@ -3,7 +3,6 @@
 #include "game.h"
 #include "utils.h"
 #include "mesh.h"
-#include "meshmanager.h"
 #include "texture.h"
 #include "entity.h"
 #include "shader.h"
@@ -72,9 +71,7 @@ EntityMesh::~EntityMesh() {}
 //meshfile sin path, texturefile con path
 void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf ) {
 
-	mesh = Mesh::Get(meshf, false);
-	mesh->uploadToVRAM();
-
+	mesh = Mesh::Get(meshf);
 	texture = Texture::Get(texturef);
 
 	std::string shader_string(shaderf);
@@ -122,9 +119,7 @@ EntityPlayer::~EntityPlayer() {}
 //meshfile sin path, texturefile con path
 void EntityPlayer::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	mesh = Mesh::Get(meshf, false);
-	mesh->uploadToVRAM();
-
+	mesh = Mesh::Get(meshf);
 	texture = Texture::Get(texturef);
 
 	std::string shader_string(shaderf);
@@ -163,15 +158,18 @@ void EntityPlayer::update(float elapsed_time) {
 
 		for (int j = 0; j < world->collision_enemies.size(); j++) {
 
+			EntityEnemy * current_enemy = world->collision_enemies[j];
+
 			//si queremos especificar la model de la mesh usamos setTransform
-			world->collision_enemies[j]->mesh->collision_model->setTransform(world->collision_enemies[j]->model.m);
+			CollisionModel3D * collisionModel = current_enemy->mesh->getCollisionModel();
+			collisionModel->setTransform(current_enemy->model.m);
 			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
 			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 			//al origen del rayo o nos conformamos con saber si colisiona. 
 
 			Vector3 front = bManager->bullet_vector[i].last_position - bManager->bullet_vector[i].position;
 
-			if (!world->collision_enemies[j]->mesh->collision_model->rayCollision(bManager->bullet_vector[i].last_position.v,
+			if (!collisionModel->rayCollision(bManager->bullet_vector[i].last_position.v,
 				front.v, false)) continue;
 			
 			// collision made
@@ -181,10 +179,10 @@ void EntityPlayer::update(float elapsed_time) {
 				int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 				BASS_ChannelPlay(channel, false); // play it
 			}
-			world->collision_enemies[j]->life -= bManager->bullet_vector[i].damage;
-			world->collision_enemies[j]->life = max(world->collision_enemies[j]->life, 0);
-			if (world->collision_enemies[j]->life == 0) {
-				world->root->removeChild(world->collision_enemies[j]);
+			current_enemy->life -= bManager->bullet_vector[i].damage;
+			current_enemy->life = max(current_enemy->life, 0);
+			if (current_enemy->life == 0) {
+				world->root->removeChild(current_enemy);
 			}	
 		}
 	}
@@ -252,13 +250,7 @@ EntityEnemy::~EntityEnemy() {}
 //meshfile sin path, texturefile con path
 void EntityEnemy::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	/*mesh = Mesh::Get(meshf, true);*/
-	mesh = new Mesh();
-	if (!mesh->loadASE(meshf, true)) {
-		exit(0);
-	}
-	mesh->uploadToVRAM();
-
+	mesh = Mesh::Get(meshf);
 	texture = Texture::Get(texturef);
 
 	std::string shader_string(shaderf);

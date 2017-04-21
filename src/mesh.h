@@ -41,11 +41,13 @@ public:
 	void createQuad(float center_x, float center_y, float w, float h, bool flip_uvs = false);
 	void createBox(float center_x, float center_y, float w, float h, bool flip_uvs = false);
 
-	bool loadASE(const char* filename, bool createCollisionModel);
+	bool loadASE(const char* filename);
 
 	void createCollisionModel();
+	CollisionModel3D* getCollisionModel();
+	void setCollisionModel();
 
-	static Mesh* Get(const char* filename, bool createCModel);
+	static Mesh* Get(const char* filename);
 	static std::map<std::string, Mesh*> s_Meshes;
 };
 
