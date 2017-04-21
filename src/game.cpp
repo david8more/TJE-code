@@ -94,7 +94,7 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: 
-			if(sManager->stateID() == 0) exit(1);
+			if(!sManager->stateID() || sManager->stateID() == -1) exit(1);
 			sManager->changeCurrentState( MenuState::getInstance(sManager) );
 			break;
 		case SDLK_5:

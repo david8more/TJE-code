@@ -21,7 +21,7 @@ OptionsState* OptionsState::getInstance(StateManager* SManager)
 
 void OptionsState::init(){
 	
-	texture = Texture::Get("data/textures/main.tga");
+	texture = Texture::Get("data/textures/blur.tga");
 
 	game = Game::getInstance();
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
@@ -47,11 +47,6 @@ void OptionsState::onEnter()
 
 void OptionsState::render() {
 
-	//set the clear color (the background color)
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-	// Clear the window and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
@@ -73,7 +68,7 @@ void OptionsState::render() {
 	for(int i = 0; i < 6; i++) {
 		// highlight current selection
 		if(i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
-		else c = Vector3(0.15, 0.15, 0.15);
+		else c = Vector3(0.25, 0.25, 0.25);
 		switch (i)
 		{
 		case MUSIC: 

@@ -41,7 +41,7 @@ void MenuState::onEnter()
 	cout << "$ Entering menu state" << endl;
 
 	//set the clear color (the background color)
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.25, 0.25, 0.25, 1.0);
 
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -58,11 +58,6 @@ void MenuState::onEnter()
 }
 
 void MenuState::render() {
-
-	//set the clear color (the background color)
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-	// Clear the window and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);

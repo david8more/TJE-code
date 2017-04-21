@@ -41,6 +41,11 @@ public:
 	Camera cam2D;
 	Mesh quad;
 
+	void selectionDown();
+	void selectionUp();
+	void selectionChosen();
+
+	int currentSelection;
 };
 
 #endif

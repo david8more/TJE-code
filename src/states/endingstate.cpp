@@ -56,11 +56,6 @@ void EndingState::onLeave(int fut_state)
 
 void EndingState::render() {
 
-	//set the clear color (the background color)
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-	// Clear the window and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 

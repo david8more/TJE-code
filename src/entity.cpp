@@ -29,7 +29,8 @@ Vector3 Entity::getPosition() {
 
 void Entity::render(Camera * camera) {
 	for (int i = 0; i < children.size(); i++) {
-			children[i]->render(camera);
+		if (children[i]->name == "HELIX_BLEND") continue;
+		children[i]->render(camera);
 	}
 }
 

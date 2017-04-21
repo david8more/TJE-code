@@ -11,12 +11,12 @@
 #include "../entity.h"
 #include "../world.h"
 #include "../extra/textparser.h"
-
 #include <algorithm>
 
 #define DEBUG 0
 
 EntityMesh* eMesh = NULL; // plane mesh
+EntityMesh* helix = NULL; // helix mesh
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
@@ -88,18 +88,22 @@ void SelectionState::init() {
 	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "new");
 	eMesh->model.rotateLocal(0.5f, Vector3(0, -1, 0));
 
+	helix = new EntityMesh();
+	helix->name = "HELIX_BLEND";
+	helix->set("helice.ASE", "data/textures/helice.tga", "new");
+	helix->model = eMesh->model * helix->model;
+	helix->model.traslate(1.f, 0.15f, 2.f);
+
 	// sky
 	bMesh = new EntityMesh();
 	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "color");
 	bMesh->model.setTranslation(0.f, -500.f, 0.f);
-	bMesh->model.scale(30.f, 30.f, 30.f);
+	bMesh->model.scale(7.5f, 7.5f, 7.5f);
 
 	// ground
 	gMesh = new EntityMesh();
 	gMesh->set("terrain.ASE", "data/textures/terrain.tga", "color");
-	//gMesh->model = gMesh->model * bMesh->model;
 	gMesh->model.setTranslation(0.f, -500.f, 0.f);
-	bMesh->model.scale(0.25f, 0.25f, 0.25f);
 
 	// rendering properties
 
@@ -173,18 +177,22 @@ void SelectionState::render() {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
 		eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		//eMesh->addChild(helix);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
 		eMesh->set("p38.ASE", "data/textures/p38.tga", "simple");
+		//eMesh->removeChild(helix);
 		break;
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
 		eMesh->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
+		//eMesh->removeChild(helix);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
 		eMesh->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
+		//eMesh->removeChild(helix);
 		break;
 	default:
 		break;
@@ -194,6 +202,15 @@ void SelectionState::render() {
 	lastRendered = playerModel;
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);
+
+
+	if (playerModel == SPITFIRE) {
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		helix->render(cam3D);
+		glDisable(GL_BLEND);
+	}
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
