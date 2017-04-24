@@ -200,12 +200,12 @@ void EntityPlayer::update(float elapsed_time) {
 
 void EntityPlayer::m60Shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
+	Game*game = Game::getInstance();
 	int planeModel = World::getInstance()->worldInfo.playerModel;
 	
 	Vector3 cannon_pos1;
 	Vector3 cannon_pos2;
 	Vector3 cannon_pos3;
-
 	switch (planeModel) {
 	case 0:
 		cannon_pos1 = Vector3(1.9f, -0.25f, 5.f);
@@ -216,7 +216,8 @@ void EntityPlayer::m60Shoot() {
 	case 1:
 		cannon_pos1 = Vector3(0.5f, -0.25f, 10.f);
 		cannon_pos2 = Vector3(-0.5f, -0.25f, 10.f);
-		cannon_pos2 = Vector3(0.f, -0.1f, 10.f);
+		cannon_pos3 = Vector3(0.f, -0.1f, 10.f);
+		
 		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);
 		bManager->createBullet(model*cannon_pos3, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, 0, 1);

@@ -55,8 +55,8 @@ void PlayState::init() {
 	sTransZoomCreator(1, 1, 0.5f);
 	sTransZoomCreator(0, 2, 7.5f);
 	sTransZoomCreator(0, 2, 0.45f);
-	sTransZoomCreator(1, 3, 7.5f); // falta probar estos dos
-	sTransZoomCreator(1, 3, 0.5f); // falta probar estos dos
+	sTransZoomCreator(1, 3, 7.5f);
+	sTransZoomCreator(1, 3, 0.5f);
 
 	// collision models
 
@@ -67,9 +67,9 @@ void PlayState::init() {
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 50, 50);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 25, 25);
 
-	crosshair_tex = Texture::Get("data/textures/crosshair.tga");
+	crosshair_tex = Texture::Get("data/textures/target_32.tga");
 }
 
 void PlayState::onEnter()
@@ -109,6 +109,8 @@ void PlayState::onEnter()
 }
 
 void PlayState::render() {
+
+	//std::cout << "x: " << viewpos.x << ", y: " << viewpos.y << ", z: " << viewpos.z << std::endl;
 
 	Game* game = Game::getInstance();
 
@@ -155,11 +157,12 @@ void PlayState::update(double seconds_elapsed) {
 		overused = false;
 	}
 
-	// ********************************************************************
-
 	Game* game = Game::getInstance();
 
-	double speed = seconds_elapsed * 20; //the speed is defined by the seconds_elapsed so it goes constant
+	// ********************************************************************
+
+
+	double speed = seconds_elapsed * 400; //the speed is defined by the seconds_elapsed so it goes constant
 	bool mod = false;
 
 	if (DEBUG) {
@@ -376,7 +379,7 @@ void PlayState::setView() {
 
 		}
 		else if (world->worldInfo.playerModel == P38) {
-			viewpos = Vector3(0.f, 0.75f, -1.5f); viewtarget = Vector3(0.f, 0.5f, 0.f);
+			viewpos = Vector3(0.f, 0.75f, 0.752f); viewtarget = Vector3(0.f, 0.5f, 10.f);
 		} 
 		else if (world->worldInfo.playerModel == WILDCAT) {
 			viewpos = Vector3(0.f, 1.f, -0.5f); viewtarget = Vector3(0.f, 1.f, 0.f);
