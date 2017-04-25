@@ -86,11 +86,11 @@ void OptionsState::render() {
 			break;
 		case GAMEMODE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->gameMode ? "CRUISER" : "HUMAN", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->gameMode ? "HEROIC" : "CLASSIC", c, 3.0);
 			break; 
 		case FRIENDLYFIRE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, 0 ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->ffire_on ? "OF COURSE" : "NAH", c, 3.0);
 			break;
 		default:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -206,7 +206,7 @@ void OptionsState::selectionChosen()
 		game->gameMode = !game->gameMode;
 		break; 
 	case FRIENDLYFIRE:
-
+		game->ffire_on = !game->ffire_on;
 		break;
 	default: // back to menu
 		SManager->changeCurrentState(MenuState::getInstance(SManager));

@@ -80,20 +80,40 @@ void Howto::onLeave(int fut_state)
 }
 
 void Howto::render() {
+
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
 	
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	std::string current_howto = "";
 
 	cam2D.set();
-	glEnable(GL_BLEND);
+
+	switch (currentSelection) {
+	case OBJECTIVE:
+		current_howto = "data/textures/howto-obj1.tga";
+		break;
+	case KEYBOARD:
+		current_howto = "data/textures/howto-keyboard.tga";
+		break;
+	case XBOX:
+		current_howto = "data/textures/howto-xb.tga";
+		break;
+	default:
+		current_howto = "data/textures/blur.tga";
+		break;
+	}
+
+	texture = Texture::Get(current_howto.c_str());
+	
 	texture->bind();
 	quad.render(GL_TRIANGLES);
 	texture->unbind();
+		
 
 	// menu
 	const string submenu_items[] = { "Objetive", "Keyboard", "Xbox Controller", "Back" };
 
 	int p = 0;
-	string enable;
 
 	glColor4f(1.0, 1.0, 1.0, 1.0);
 

@@ -162,7 +162,7 @@ void PlayState::update(double seconds_elapsed) {
 	// ********************************************************************
 
 
-	double speed = seconds_elapsed * 400; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 350; //the speed is defined by the seconds_elapsed so it goes constant
 	bool mod = false;
 
 	if (DEBUG) {

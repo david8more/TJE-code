@@ -43,6 +43,7 @@ Game::Game(SDL_Window* window)
 	
 	fullscreen = false;
 	gameMode = NORMAL;
+	ffire_on = false;
 }
 
 //Here we have already GL working, so we can create meshes and textures

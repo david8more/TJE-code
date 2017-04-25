@@ -193,9 +193,17 @@ void EntityPlayer::update(float elapsed_time) {
 	EntityMesh* torpedo = World::getInstance()->torpedoOne;
 	EntityMesh* torpedo2 = World::getInstance()->torpedoTwo;
 
-	if(usado1) torpedo->model.traslate(0, 0, elapsed_time * 100);
-	if(usado2) torpedo2->model.traslate(0, 0, elapsed_time * 100);
+	if (usado1) {
+		world->playerAir->removeChild(torpedo);
+		//torpedo->model.inverse();
+		torpedo->model.traslate(0, 0, elapsed_time * 100);
+	}
+	
+	if (usado2) {
+		world->playerAir->removeChild(torpedo2);
 
+		torpedo2->model.traslate(0, 0, elapsed_time * 100);
+	}
 }
 
 void EntityPlayer::m60Shoot() {

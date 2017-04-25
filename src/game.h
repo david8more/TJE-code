@@ -35,6 +35,7 @@ public:
 	float elapsed_time;
 
 	int gameMode; // difficulty
+	bool ffire_on; // friendly fire
 
 	// State Delegator Instance
 	StateManager* sManager;
