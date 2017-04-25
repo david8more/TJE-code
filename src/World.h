@@ -8,6 +8,7 @@ class Entity;
 class EntityMesh;
 class EntityPlayer;
 class EntityEnemy;
+class Torpedo;
 
 class World
 {
@@ -47,8 +48,8 @@ public:
 	EntityPlayer* playerAir;
 	EntityPlayer* playerShip;
 
-	EntityMesh* torpedoOne;
-	EntityMesh* torpedoTwo;
+	Torpedo* t1;
+	Torpedo* t2;
 
 	void create();
 	void addPlayer();

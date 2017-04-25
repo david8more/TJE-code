@@ -85,20 +85,19 @@ void SelectionState::init() {
 
 	// plane
 	eMesh = new EntityMesh();
-	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "new");
+	eMesh->name = "selectionstate_entity";
+	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 	eMesh->model.rotateLocal(0.5f, Vector3(0, -1, 0));
 
 	helix = new EntityMesh();
-	helix->name = "HELIX_BLEND";
-	helix->set("helice.ASE", "data/textures/helice.tga", "new");
-	helix->model = eMesh->model * helix->model;
-	helix->model.traslate(1.f, 0.15f, 2.f);
+	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
+	eMesh->addChild(helix);
+	helix->model.traslate(0.f, 0.f, 2.f);
 
 	// sky
 	bMesh = new EntityMesh();
 	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "color");
 	bMesh->model.setTranslation(0.f, -500.f, 0.f);
-	bMesh->model.scale(7.5f, 7.5f, 7.5f);
 
 	// ground
 	gMesh = new EntityMesh();
@@ -177,22 +176,20 @@ void SelectionState::render() {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
 		eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
-		//eMesh->addChild(helix);
+		helix->model.setTranslation(0.f, 0.f, 2.f);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
 		eMesh->set("p38.ASE", "data/textures/p38.tga", "simple");
-		//eMesh->removeChild(helix);
 		break;
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
 		eMesh->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
-		//eMesh->removeChild(helix);
+		helix->model.setTranslation(0.f, 0.f, 3.25f);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
 		eMesh->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
-		//eMesh->removeChild(helix);
 		break;
 	default:
 		break;
@@ -203,8 +200,7 @@ void SelectionState::render() {
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);
 
-
-	if (playerModel == SPITFIRE) {
+	if (playerModel == SPITFIRE || playerModel == WILDCAT) {
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
@@ -236,7 +232,7 @@ void SelectionState::render() {
 
 void SelectionState::update(double time_elapsed) {
 
-	float speed = time_elapsed * 10; //the speed is defined by the seconds_elapsed so it goes constant
+	float speed = time_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
 	if (DEBUG) {
 		//mouse input to rotate the cam
@@ -262,10 +258,10 @@ void SelectionState::update(double time_elapsed) {
 			eMesh->model.rotateLocal(game->mouse_delta.y * 0.005f, Vector3(1, 0, 0));
 		}
 
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) eMesh->model.rotateLocal(0.05f, Vector3(0, 1, 0));
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) eMesh->model.rotateLocal(0.05f, Vector3(0, -1, 0));
-		if (game->keystate[SDL_SCANCODE_B]) cam3D->move(Vector3(0.f, 0.f, 1.f));
-		if (game->keystate[SDL_SCANCODE_V]) cam3D->move(Vector3(0.f, 0.f, -1.f));
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) eMesh->model.rotateLocal(0.05f* speed, Vector3(0, 1, 0));
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) eMesh->model.rotateLocal(0.05f* speed, Vector3(0, -1, 0));
+		if (game->keystate[SDL_SCANCODE_B]) cam3D->move(Vector3(0.f, 0.f, 1.f)* speed);
+		if (game->keystate[SDL_SCANCODE_V]) cam3D->move(Vector3(0.f, 0.f, -1.f)* speed);
 	}
 
 	//to navigate with the mouse fixed in the middle

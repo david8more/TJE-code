@@ -336,10 +336,6 @@ void Mesh::createPlane(float size)
 	uvs.push_back( Vector2(0,0) );
 }
 
-typedef struct {
-	int num_faces;
-	int num_tfaces;
-} sBinHeader;
 
 bool Mesh::loadASE(const char* name) {
 
@@ -356,13 +352,10 @@ bool Mesh::loadASE(const char* name) {
 	filename_bin += filename;
 	filename_bin += ".bin";
 
-	sBinHeader header;
-
 	FILE* file = fopen(filename_bin.c_str(), "rb");
 
-	if (file != NULL) {
+	if (file != NULL && 1) {
 		fread(&header, sizeof(sBinHeader), 1, file);
-		if (DEBUG) std::cout << "NUM FACES from bin: " << header.num_faces << std::endl;
 		
 		vertices.resize(header.num_faces * 3);
 		uvs.resize(header.num_tfaces * 3);
@@ -400,7 +393,8 @@ bool Mesh::loadASE(const char* name) {
 	int num_faces = t.getint();
 	if (DEBUG) std::cout << "#Mesh faces: " << num_faces << std::endl;
 
-	//colors.resize(num_faces * 3);
+	Vector3 max_v (-1000000, -10000000, -10000000);
+	Vector3 min_v (1000000, 10000000, 10000000);
 
 	unique_vertices.resize(num_vertex);
 	
@@ -413,6 +407,21 @@ bool Mesh::loadASE(const char* name) {
 		float z = t.getfloat();
 
 		Vector3 v(x, z, y);
+
+		if (v.x < min_v.x)
+			min_v.x = v.x;
+		if (v.y < min_v.y)
+			min_v.y = v.y;
+		if (v.z < min_v.z)
+			min_v.z = v.z;
+
+		if (v.x > max_v.x)
+			max_v.x = v.x;
+		if (v.y > max_v.y)
+			max_v.y = v.y;
+		if (v.z > max_v.z)
+			max_v.z = v.z;
+
 		unique_vertices[i] = v;
 	}
 
@@ -488,6 +497,14 @@ bool Mesh::loadASE(const char* name) {
 
 	header.num_faces = num_faces;
 	header.num_tfaces = num_tfaces;
+
+	header.min = min_v;
+	header.max = max_v;
+
+
+	header.center = ((header.max + header.min) * 0.5);
+	header.halfsize = (header.max - header.center);
+	header.radius = header.halfsize.length();
 
 	FILE* wfile = fopen(filename_bin.c_str(), "wb");
 

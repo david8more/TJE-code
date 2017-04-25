@@ -22,9 +22,9 @@ World::World()
 	sea = NULL;
 	playerAir = NULL;
 	playerShip = NULL;
-	
-	torpedoOne = NULL;
-	torpedoTwo = NULL;
+
+	t1 = NULL;
+	t2 = NULL;
 }
 
 World::~World()
@@ -49,10 +49,8 @@ void World::create() {
 void World::addPlayer() {
 	// PLAYER AIRPLANE ************************************************************************************
 	
-	torpedoOne = new EntityMesh();
-	torpedoOne->set("torpedo.ASE", "data/textures/torpedo.tga", "simple");
-	torpedoTwo = new EntityMesh();
-	torpedoTwo->set("torpedo.ASE", "data/textures/torpedo.tga", "simple");
+	t1 = new Torpedo();
+	t2 = new Torpedo();
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
@@ -63,10 +61,10 @@ void World::addPlayer() {
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
 
-		torpedoOne->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoOne->model.traslate(0.5f, -0.75f, -0.5f);
-		torpedoTwo->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoTwo->model.traslate(-0.5f, -0.75f, -0.5f);
+		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t1->model.traslate(0.75f, -0.75f, -0.5f);
+		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t2->model.traslate(-0.75f, -0.75f, -0.5f);
 
 		break;
 	case P38:
@@ -77,10 +75,10 @@ void World::addPlayer() {
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
 
-		torpedoOne->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoOne->model.traslate(1.25f, -0.3f, -0.5f);
-		torpedoTwo->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoTwo->model.traslate(-1.25f, -0.3f, -0.5f);
+		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t1->model.traslate(1.25f, -0.3f, -0.5f);
+		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t2->model.traslate(-1.25f, -0.3f, -0.5f);
 
 		break;
 	case WILDCAT:
@@ -91,10 +89,10 @@ void World::addPlayer() {
 		playerAir->damageM60 = 40;
 		playerAir->damageMissile = 100;
 
-		torpedoOne->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoOne->model.traslate(0.5f, -0.75f, -0.5f);
-		torpedoTwo->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoTwo->model.traslate(-0.5f, -0.75f, -0.5f);
+		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t1->model.traslate(0.5f, -0.75f, -0.5f);
+		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t2->model.traslate(-0.5f, -0.75f, -0.5f);
 
 		break;
 	case BOMBER:
@@ -105,10 +103,10 @@ void World::addPlayer() {
 		playerAir->damageM60 = 15;
 		playerAir->damageMissile = 300;
 
-		torpedoOne->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoOne->model.traslate(1.5f, -1.75f, 0.25f);
-		torpedoTwo->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		torpedoTwo->model.traslate(-1.5f, -1.75f, 0.25f);
+		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t1->model.traslate(1.5f, -1.75f, 0.25f);
+		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+		t2->model.traslate(-1.5f, -1.75f, 0.25f);
 
 		break;
 	}
@@ -120,8 +118,8 @@ void World::addPlayer() {
 		playerAir->damageMissile -= 100;
 	}
 
-	playerAir->addChild(torpedoOne);
-	playerAir->addChild(torpedoTwo);
+	playerAir->addChild(t1);
+	playerAir->addChild(t2);
 
 	playerAir->model.setScale(3, 3, 3);
 	playerAir->model.traslate(0, 500, 500);

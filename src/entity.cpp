@@ -12,10 +12,9 @@
 #include <cassert>
 #include <algorithm>
 
-int usado1 = 0;
-int usado2 = 0;
-
 // ENTITY
+
+std::vector<Entity*> Entity::destroy_pending;
 
 Entity::Entity() {
 	parent = NULL;
@@ -29,7 +28,6 @@ Vector3 Entity::getPosition() {
 
 void Entity::render(Camera * camera) {
 	for (int i = 0; i < children.size(); i++) {
-		if (children[i]->name == "HELIX_BLEND") continue;
 		children[i]->render(camera);
 	}
 }
@@ -58,6 +56,23 @@ void Entity::removeChild(Entity* entity) {
 Matrix44 Entity::getGlobalMatrix() {
 	if( parent ) return model * parent->getGlobalMatrix();
 	else return model;
+}
+
+void Entity::destroy(){
+	destroy_pending.push_back(this);
+	std::cout << "deleting";
+}
+
+void Entity::destroy_entities() {
+
+	/*for (int i = 0; i < destroy_pending.size(); i++) {
+		if (destroy_pending[i]->children.size() > 0) {
+
+		}
+		destroy_pending[i]->parent = NULL;
+		delete(destroy_pending[i]);
+	}*/
+	
 }
 
 // *************************************************************************
@@ -90,6 +105,9 @@ void EntityMesh::render(Camera * camera) {
 	
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Vector3 pos = this->getPosition();
+
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck" ) return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -97,6 +115,10 @@ void EntityMesh::render(Camera * camera) {
 	shader->setTexture("u_texture", texture);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
+
+	if (this->name == "selectionstate_entity") {
+		return;
+	}
 			
 	for (int i = 0; i < this->children.size(); i++) {
 		this->children[i]->render(camera);
@@ -189,21 +211,8 @@ void EntityPlayer::update(float elapsed_time) {
 	}
 
 	bManager->update(elapsed_time);
-
-	EntityMesh* torpedo = World::getInstance()->torpedoOne;
-	EntityMesh* torpedo2 = World::getInstance()->torpedoTwo;
-
-	if (usado1) {
-		world->playerAir->removeChild(torpedo);
-		//torpedo->model.inverse();
-		torpedo->model.traslate(0, 0, elapsed_time * 100);
-	}
-	
-	if (usado2) {
-		world->playerAir->removeChild(torpedo2);
-
-		torpedo2->model.traslate(0, 0, elapsed_time * 100);
-	}
+	world->t1->update(elapsed_time);
+	world->t2->update(elapsed_time);
 }
 
 void EntityPlayer::m60Shoot() {
@@ -250,15 +259,6 @@ void EntityPlayer::m60Shoot() {
 void EntityPlayer::torpedoShoot() {
 	
 	if (!torpedosLeft) return;
-
-	switch (torpedosLeft) {
-	case 1:
-		usado2 = 1;
-		break;
-	case 2:
-		usado1 = 1;
-		break;
-	}
 
 	torpedosLeft--;
 
@@ -310,10 +310,41 @@ void EntityEnemy::update(float elapsed_time) {
 	
 }
 
-/*void EntityEnemy::m60Shoot() {
+// *************************************************************************
+// TORPEDO
+// *************************************************************************
+
+unsigned int Torpedo::last_tid = 0;
+
+Torpedo::Torpedo() {
+	parent = NULL;
+	mesh = Mesh::Get("torpedo.ASE");
+	texture = Texture::Get("data/textures/torpedo.tga");
+	std::string fs = "data/shaders/simple.fs";
+	std::string vs = "data/shaders/simple.vs";
+
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+	assert(shader);
+
+	name = "stuck";
+	tid = last_tid;
+	last_tid++;
 	
+	ttl = 2;
 }
 
-void EntityEnemy::missileShoot() {
-	
-}*/
+Torpedo::~Torpedo() {}
+
+void Torpedo::update(float elapsed_time) {
+
+	if (this->ttl < 0) destroy();
+
+	EntityPlayer* player = World::getInstance()->playerAir;
+	if (player->torpedosLeft <= this->tid) {
+		this->model.traslate(0, 0, elapsed_time * 100);
+		ttl -= elapsed_time;
+	}
+}
+
+
+// **************************************************************************************

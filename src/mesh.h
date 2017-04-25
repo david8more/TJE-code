@@ -12,9 +12,23 @@
 
 class Shader;
 
+
 class Mesh
 {
 public:
+
+	typedef struct {
+		int num_faces;
+		int num_tfaces;
+		Vector3 min;
+		Vector3 max;
+		Vector3 center;
+		Vector3 halfsize;
+		float radius;
+	} sBinHeader;
+
+	sBinHeader header;
+
 	std::vector< Vector3 > vertices; //here we store the vertices
 	std::vector< Vector3 > normals;	 //here we store the normals
 	std::vector< Vector2 > uvs;	 //here we store the texture coordinates

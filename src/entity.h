@@ -29,6 +29,10 @@ public:
 	void addChild(Entity* entity);
 	Matrix44 getGlobalMatrix();
 	Vector3 getPosition();
+
+	void destroy();
+	static void destroy_entities();
+	static std::vector<Entity*> destroy_pending;
 	
 };
 
@@ -85,6 +89,20 @@ public:
 	void update(float elapsed_time);
 	//void m60Shoot();
 	//void missileShoot();
+};
+
+// *******************************************************************
+class Torpedo : public EntityMesh {
+public:
+
+	Torpedo();
+	~Torpedo();
+
+	float ttl;
+	static unsigned int last_tid;
+	unsigned int tid;
+
+	void update(float elapsed_time);
 };
 
 #endif

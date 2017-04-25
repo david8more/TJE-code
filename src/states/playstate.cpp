@@ -162,7 +162,7 @@ void PlayState::update(double seconds_elapsed) {
 	// ********************************************************************
 
 
-	double speed = seconds_elapsed * 350; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 35; //the speed is defined by the seconds_elapsed so it goes constant
 	bool mod = false;
 
 	if (DEBUG) {
@@ -236,6 +236,8 @@ void PlayState::update(double seconds_elapsed) {
 	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
 	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	if (!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+
+	Entity::destroy_entities();
 
 	// comprobar si es fin del juego
 	if (world->isGameOver()) SManager->changeCurrentState(EndingState::getInstance(SManager));
