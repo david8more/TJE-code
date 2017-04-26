@@ -180,7 +180,7 @@ void EntityPlayer::update(float elapsed_time) {
 	World* world = World::getInstance();
 
 	// colisiona alguna bala con los enemigos?
-	/*for (int i = 0; i < bManager->bullet_vector.size(); i++) {
+	for (int i = 0; i < bManager->bullet_vector.size(); i++) {
 
 		if (bManager->bullet_vector[i].free) continue;
 
@@ -190,7 +190,8 @@ void EntityPlayer::update(float elapsed_time) {
 
 			//si queremos especificar la model de la mesh usamos setTransform
 
-			CollisionModel3D * collisionModel = current_enemy->mesh->getCollisionModel();
+			Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
+			CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
 
 			collisionModel->setTransform(current_enemy->model.m);
 
@@ -210,7 +211,7 @@ void EntityPlayer::update(float elapsed_time) {
 
 			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
 		}
-	}*/
+	}
 
 	bManager->update(elapsed_time);
 }

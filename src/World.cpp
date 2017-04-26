@@ -6,6 +6,8 @@
 #include "shader.h"
 #include "states/playstate.h"
 
+#define DEBUG 0
+
 World* World::instance = NULL;
 
 EntityEnemy* enemyShip = NULL;
@@ -121,8 +123,7 @@ void World::addPlayer() {
 	playerAir->addChild(t1);
 	playerAir->addChild(t2);
 
-	playerAir->model.setScale(3, 3, 3);
-	playerAir->model.traslate(0, 500, 500);
+	playerAir->model.setTranslation(0, 500, 500);
 	root->addChild(playerAir);
 
 }
@@ -221,6 +222,8 @@ void World::addEnemies() {
 	root->addChild(enemy2Air);
 
 	collision_enemies.push_back(enemy2Air);
+
+	if (!DEBUG) return;
 
 	for (int i = 0; i < 20; i++) {
 		for (int j = 0; j < 20; j++) {

@@ -61,10 +61,10 @@ void PlayState::init() {
 
 	// collision models
 
-	/*for (int i = 0; i < world->collision_enemies.size(); i++) {
+	for (int i = 0; i < world->collision_enemies.size(); i++) {
 		EntityEnemy * current_enemy = world->collision_enemies[i];
-		current_enemy->mesh->setCollisionModel();
-	}*/
+		Mesh::Get(current_enemy->mesh.c_str())->setCollisionModel();
+	}
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
