@@ -39,6 +39,9 @@ void Entity::update(float elapsed_time) {
 }
 
 void Entity::addChild(Entity * entity) {
+	if (entity->parent) {
+		return;
+	}
 	entity->parent = this;
 	children.push_back( entity );
 }
@@ -60,18 +63,19 @@ Matrix44 Entity::getGlobalMatrix() {
 
 void Entity::destroy(){
 	destroy_pending.push_back(this);
-	std::cout << "deleting";
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->destroy();
+	}
 }
 
 void Entity::destroy_entities() {
 
-	/*for (int i = 0; i < destroy_pending.size(); i++) {
-		if (destroy_pending[i]->children.size() > 0) {
-
-		}
-		destroy_pending[i]->parent = NULL;
-		delete(destroy_pending[i]);
-	}*/
+	for (int i = 0; i < destroy_pending.size(); i++) {
+		Entity* ent = destroy_pending[i];
+		ent->parent->removeChild(ent);
+		ent->parent = NULL;
+		delete(ent);
+	}
 	
 }
 
@@ -80,25 +84,21 @@ void Entity::destroy_entities() {
 // *************************************************************************
 
 EntityMesh::EntityMesh() {
-	mesh = NULL;
-	parent = NULL;
-	texture = NULL;
-	shader = NULL;
+	
 }
 EntityMesh::~EntityMesh() {}
 
 //meshfile sin path, texturefile con path
 void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf ) {
 
-	mesh = Mesh::Get(meshf);
-	texture = Texture::Get(texturef);
+	mesh = meshf;
+	texture = texturef;
 
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 
 	shader = Shader::Load(vs.c_str(), fs.c_str());
-	assert(shader);
 }
 
 void EntityMesh::render(Camera * camera) {
@@ -107,18 +107,19 @@ void EntityMesh::render(Camera * camera) {
 	Matrix44 mvp = m * camera->viewprojection_matrix;
 	Vector3 pos = this->getPosition();
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck" ) return;
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius)) return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
-	shader->setTexture("u_texture", texture);
+	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
-	if (this->name == "selectionstate_entity") {
-		return;
-	}
+	// no pintar helice
+	if (this->name == "selectionstate_entity") return;
 			
 	for (int i = 0; i < this->children.size(); i++) {
 		this->children[i]->render(camera);
@@ -135,36 +136,37 @@ void EntityMesh::update( float elapsed_time ) {
 // *************************************************************************
 
 EntityPlayer::EntityPlayer() {
-	mesh = NULL;
-	parent = NULL;
-	texture = NULL;
-	shader = NULL;
+	
 }
 EntityPlayer::~EntityPlayer() {}
 
 //meshfile sin path, texturefile con path
 void EntityPlayer::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	mesh = Mesh::Get(meshf);
-	texture = Texture::Get(texturef);
+	mesh = meshf;
+	texture = texturef;
 
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-	
+
 	shader = Shader::Load(vs.c_str(), fs.c_str());
-	assert(shader);
 }
 
 void EntityPlayer::render(Camera * camera) {
 
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Vector3 pos = this->getPosition();
+
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
-	shader->setTexture("u_texture", texture);
+	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
@@ -178,7 +180,7 @@ void EntityPlayer::update(float elapsed_time) {
 	World* world = World::getInstance();
 
 	// colisiona alguna bala con los enemigos?
-	for (int i = 0; i < bManager->bullet_vector.size(); i++) {
+	/*for (int i = 0; i < bManager->bullet_vector.size(); i++) {
 
 		if (bManager->bullet_vector[i].free) continue;
 
@@ -208,11 +210,9 @@ void EntityPlayer::update(float elapsed_time) {
 
 			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
 		}
-	}
+	}*/
 
 	bManager->update(elapsed_time);
-	world->t1->update(elapsed_time);
-	world->t2->update(elapsed_time);
 }
 
 void EntityPlayer::m60Shoot() {
@@ -261,6 +261,7 @@ void EntityPlayer::torpedoShoot() {
 	if (!torpedosLeft) return;
 
 	torpedosLeft--;
+	torpedos.pop_back();
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
@@ -272,37 +273,43 @@ void EntityPlayer::torpedoShoot() {
 // *************************************************************************
 
 EntityEnemy::EntityEnemy() {
-	mesh = NULL;
-	parent = NULL;
-	texture = NULL;
-	shader = NULL;
+	
 }
 EntityEnemy::~EntityEnemy() {}
 
 //meshfile sin path, texturefile con path
 void EntityEnemy::set(const char * meshf, const char * texturef, const char * shaderf) {
 
-	mesh = Mesh::Get(meshf);
-	texture = Texture::Get(texturef);
+	mesh = meshf;
+	texture = texturef;
 
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-	
+
 	shader = Shader::Load(vs.c_str(), fs.c_str());
-	assert(shader);
 }
 
 void EntityEnemy::render(Camera * camera) {
 
-	Matrix44 mvp = model * camera->viewprojection_matrix;
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Vector3 pos = this->getPosition();
+
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
 
 	shader->enable();
-	shader->setMatrix44("u_model", model);
+	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
-	shader->setTexture("u_texture", texture);
+	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
+
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->render(camera);
+	}
 
 }
 
@@ -318,13 +325,13 @@ unsigned int Torpedo::last_tid = 0;
 
 Torpedo::Torpedo() {
 	parent = NULL;
-	mesh = Mesh::Get("torpedo.ASE");
-	texture = Texture::Get("data/textures/torpedo.tga");
-	std::string fs = "data/shaders/simple.fs";
-	std::string vs = "data/shaders/simple.vs";
+	mesh = "torpedo.ASE";
+	texture = "data/textures/torpedo.tga";
+	std::string shader_string("simple");
+	std::string fs = "data/shaders/" + shader_string + ".fs";
+	std::string vs = "data/shaders/" + shader_string + ".vs";
 
 	shader = Shader::Load(vs.c_str(), fs.c_str());
-	assert(shader);
 
 	name = "stuck";
 	tid = last_tid;
@@ -337,13 +344,13 @@ Torpedo::~Torpedo() {}
 
 void Torpedo::update(float elapsed_time) {
 
-	if (this->ttl < 0) destroy();
+	/*if (this->ttl < 0) destroy();
 
 	EntityPlayer* player = World::getInstance()->playerAir;
 	if (player->torpedosLeft <= this->tid) {
 		this->model.traslate(0, 0, elapsed_time * 100);
 		ttl -= elapsed_time;
-	}
+	}*/
 }
 
 

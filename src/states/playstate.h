@@ -76,7 +76,7 @@ public:
 	//GUI
 	Camera cam2D;
 	Mesh quad;
-	Texture * crosshair_tex;
+	std::string crosshair_tex;
 
 	// background music
 	int b_sample;

@@ -48,9 +48,6 @@ public:
 	EntityPlayer* playerAir;
 	EntityPlayer* playerShip;
 
-	Torpedo* t1;
-	Torpedo* t2;
-
 	void create();
 	void addPlayer();
 	void addPlayerConst();

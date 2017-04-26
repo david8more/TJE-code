@@ -22,9 +22,6 @@ World::World()
 	sea = NULL;
 	playerAir = NULL;
 	playerShip = NULL;
-
-	t1 = NULL;
-	t2 = NULL;
 }
 
 World::~World()
@@ -49,8 +46,8 @@ void World::create() {
 void World::addPlayer() {
 	// PLAYER AIRPLANE ************************************************************************************
 	
-	t1 = new Torpedo();
-	t2 = new Torpedo();
+	Torpedo * t2 = new Torpedo();
+	Torpedo * t1 = new Torpedo();
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
@@ -118,6 +115,9 @@ void World::addPlayer() {
 		playerAir->damageMissile -= 100;
 	}
 
+	playerAir->torpedos.push_back(t1);
+	playerAir->torpedos.push_back(t2);
+
 	playerAir->addChild(t1);
 	playerAir->addChild(t2);
 
@@ -170,15 +170,14 @@ void World::addWorldConst() {
 	// WORLD
 	sky = new EntityMesh();
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
-
 	
-
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityMesh* ground = new EntityMesh();
 			ground->set("island.ASE", "data/textures/island.tga", "simple");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
+			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
 			root->addChild(ground);
 		}
 	}
@@ -189,7 +188,7 @@ void World::addWorldConst() {
 			sea->set("agua.ASE", "data/textures/agua.tga", "color");
 			sea->model.setIdentity();
 			sea->model.traslate(i * 10000, 0, j * 10000);
-			root->addChild(sea);
+			//root->addChild(sea);
 		}
 	}
 }
@@ -211,19 +210,30 @@ void World::addEnemies() {
 	collision_enemies.push_back(enemyShip);
 
 	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
-	enemyAir->model.setScale(3, 3, 3);
-	enemyAir->model.traslate(0, 500, 200);
+	enemyAir->model.setTranslation(0, 500, 200);
 	root->addChild(enemyAir);
 
 	collision_enemies.push_back(enemyAir);
 
 	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
-	enemy2Air->model.setScale(3, 3, 3);
-	enemy2Air->model.traslate(500, 500, 200);
+	enemy2Air->model.setTranslation(500, 500, 200);
 	root->addChild(enemy2Air);
 
 	collision_enemies.push_back(enemy2Air);
+
+	for (int i = 0; i < 20; i++) {
+		for (int j = 0; j < 20; j++) {
+			EntityMesh* p = new EntityMesh();
+			p->name = "p";
+			p->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
+			float x = rand() % 800;
+			float y = rand() % 800;
+			float z = rand() % 800;
+			p->model.traslate(x, y, z);
+			root->addChild(p);
+		}
+	}
 }
 
 void World::setGameMode() {

@@ -19,7 +19,8 @@
 //globals
 bool inZoom = false;
 BulletManager* bManager = NULL;
-World * world = NULL;
+World * world = NULL; 
+//initialize joistick
 
 PlayState::PlayState(StateManager* SManager) : State(SManager) {}
 PlayState::~PlayState() {}
@@ -50,7 +51,7 @@ void PlayState::init() {
 	// fill views struct
 	// remember: sTransZoomCreator(view, planeModel, quantityToTranslate);
 	sTransZoomCreator(0, 0, 7.5f);
-	sTransZoomCreator(1, 0, 0.5f);
+	sTransZoomCreator(1, 0, 0.25f);
 	sTransZoomCreator(0, 1, 7.5f);
 	sTransZoomCreator(1, 1, 0.5f);
 	sTransZoomCreator(0, 2, 7.5f);
@@ -60,16 +61,16 @@ void PlayState::init() {
 
 	// collision models
 
-	for (int i = 0; i < world->collision_enemies.size(); i++) {
+	/*for (int i = 0; i < world->collision_enemies.size(); i++) {
 		EntityEnemy * current_enemy = world->collision_enemies[i];
 		current_enemy->mesh->setCollisionModel();
-	}
+	}*/
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 25, 25);
 
-	crosshair_tex = Texture::Get("data/textures/target_32.tga");
+	crosshair_tex = "data/textures/target_32.tga";
 }
 
 void PlayState::onEnter()
@@ -110,8 +111,6 @@ void PlayState::onEnter()
 
 void PlayState::render() {
 
-	//std::cout << "x: " << viewpos.x << ", y: " << viewpos.y << ", z: " << viewpos.z << std::endl;
-
 	Game* game = Game::getInstance();
 
 	//set the clear color (the background color)
@@ -132,8 +131,6 @@ void PlayState::render() {
 	bManager->render();
 	renderHUD();
 }
-
-bool a = false;
 
 void PlayState::update(double seconds_elapsed) {
 
@@ -162,8 +159,7 @@ void PlayState::update(double seconds_elapsed) {
 	// ********************************************************************
 
 
-	double speed = seconds_elapsed * 35; //the speed is defined by the seconds_elapsed so it goes constant
-	bool mod = false;
+	double speed = seconds_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
 	if (DEBUG) {
 		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
@@ -181,19 +177,9 @@ void PlayState::update(double seconds_elapsed) {
 	else {
 		//mouse input to rotate the cam
 		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
-		{
-			if (game->current_camera == game->fixed_camera) {
+		{		
 				world->playerAir->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
 				world->playerAir->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
-			}
-			else {
-				mod = true;
-				
-				game->free_camera->rotate(game->mouse_delta.x * -0.005f, viewtarget);
-				game->free_camera->center.y = (world->playerAir->model * viewtarget).y;
-				game->free_camera->center.z = (world->playerAir->model * viewtarget).z;
-				game->free_camera->eye = world->playerAir->model * viewpos;
-			}
 		}
 
 		//async input to move the camera around
@@ -211,7 +197,7 @@ void PlayState::update(double seconds_elapsed) {
 			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 1, 0) * speed);
 		}
 		if (game->keystate[SDL_SCANCODE_T]) {
-			
+		
 		}
 	}
 
@@ -230,12 +216,20 @@ void PlayState::update(double seconds_elapsed) {
 	// update part
 
 	world->playerAir->update(seconds_elapsed);
+	for (int i = 0; i < world->playerAir->torpedos.size(); i++)
+		world->playerAir->torpedos[i]->update(seconds_elapsed);
 	
 	if (DEBUG) return;
 	
+	// move plane
 	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
-	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-	if (!mod) game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+
+	Vector3 eye = world->playerAir->model * viewpos;
+	
+	// interpolate current and previous camera
+	eye = game->current_camera->eye * 0.9 + eye * 0.1;
+	game->fixed_camera->lookAt(eye, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	//game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 
 	Entity::destroy_entities();
 
@@ -256,9 +250,9 @@ void PlayState::renderHUD() {
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-	crosshair_tex->bind();
+	Texture::Get(crosshair_tex.c_str())->bind();
 	quad.render(GL_TRIANGLES);
-	crosshair_tex->unbind();
+	Texture::Get(crosshair_tex.c_str())->unbind();
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 	glDisable(GL_BLEND);
 
@@ -310,11 +304,11 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	switch (event.keysym.sym)
 	{
 	case SDLK_1: // full plane view
-		current_view = 0;
+		current_view = FULLVIEW;
 		setView();
 		break;
 	case SDLK_2: // cabine view
-		current_view = 1;
+		current_view = CABINEVIEW;
 		setView();
 		break;
 	case SDLK_3:
@@ -373,9 +367,8 @@ void PlayState::setView() {
 
 	case CABINEVIEW:
 		
-		// arreglar la vista del p38!!!!!
 		if (world->worldInfo.playerModel == SPITFIRE) {
-			viewpos = Vector3(0.f, 0.7f, -1.45f);
+			viewpos = Vector3(0.f, 0.7f, -1.f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
 			world->playerAir->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 

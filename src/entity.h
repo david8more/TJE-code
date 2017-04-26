@@ -9,6 +9,7 @@ using namespace std;
 class Mesh;
 class Texture;
 class Shader;
+class Torpedo;
 
 class Camera;
 
@@ -45,9 +46,9 @@ public:
 	EntityMesh();
 	~EntityMesh();
 
-	Mesh* mesh;
-	Texture* texture;
-	Shader *shader;
+	std::string mesh;
+	std::string texture;
+	Shader* shader;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
@@ -68,6 +69,8 @@ public:
 	float damageM60;
 	float damageMissile;
 
+	std::vector<Torpedo*> torpedos;
+
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
@@ -83,6 +86,7 @@ public:
 	~EntityEnemy();
 
 	int life;
+	CollisionModel3D* collision_model;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
