@@ -85,7 +85,7 @@ void SelectionState::init() {
 
 	// plane
 	eMesh = new EntityMesh();
-	eMesh->name = "selectionstate_entity";
+	eMesh->name = "NO_CHILD";
 	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 	eMesh->model.rotateLocal(0.5f, Vector3(0, -1, 0));
 

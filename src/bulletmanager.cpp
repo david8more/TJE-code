@@ -7,6 +7,7 @@
 #include "game.h"
 #include "world.h"
 #include "framework.h"
+#include "entity.h"
 
 BulletManager* BulletManager::instance = NULL;
 
@@ -96,6 +97,40 @@ void BulletManager::update(float elapsed_time) {
 		bullet_vector[i].position.x += bullet_vector[i].velocity.x * elapsed_time / 2;
 		bullet_vector[i].position.y += bullet_vector[i].velocity.y * elapsed_time / 2;
 		bullet_vector[i].position.z += bullet_vector[i].velocity.z * elapsed_time / 2;
+	}
+
+	// colisiona alguna bala con los enemigos?
+	for (int i = 0; i < this->bullet_vector.size(); i++) {
+
+		if (this->bullet_vector[i].free) continue;
+
+		for (int j = 0; j < world->collision_enemies.size(); j++) {
+
+			EntityEnemy * current_enemy = world->collision_enemies[j];
+
+			//si queremos especificar la model de la mesh usamos setTransform
+
+			Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
+			CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
+
+			collisionModel->setTransform(current_enemy->model.m);
+
+			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
+			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
+			//al origen del rayo o nos conformamos con saber si colisiona. 
+
+			Vector3 front = this->bullet_vector[i].last_position - this->bullet_vector[i].position;
+
+			if (!collisionModel->rayCollision(this->bullet_vector[i].last_position.v,
+				front.v, false)) continue;
+
+			// collision made
+			this->bullet_vector[i].free = true; // liberar espacio de la bala
+			current_enemy->life -= this->bullet_vector[i].damage;
+			current_enemy->life = max(current_enemy->life, 0);
+
+			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
+		}
 	}
 
 }

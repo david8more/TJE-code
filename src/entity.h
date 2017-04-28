@@ -4,6 +4,10 @@
 #include "framework.h"
 #include "utils.h"
 #include <iostream>
+
+#define NO_CULLING false
+#define CULLING true
+
 using namespace std;
 
 class Mesh;
@@ -43,12 +47,13 @@ public:
 class EntityMesh: public Entity {
 public:
 
-	EntityMesh();
+	EntityMesh(bool culling = true);
 	~EntityMesh();
 
 	std::string mesh;
 	std::string texture;
 	Shader* shader;
+	bool culling;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
@@ -60,7 +65,7 @@ public:
 class EntityPlayer : public EntityMesh {
 public:
 
-	EntityPlayer();
+	EntityPlayer(bool culling = true);
 	~EntityPlayer();
 
 	int life;
@@ -69,14 +74,13 @@ public:
 	float damageM60;
 	float damageMissile;
 
-	std::vector<Torpedo*> torpedos;
-	int des1;
-	int des2;
+	Torpedo* torpedos[2];
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
 	void m60Shoot();
+	void createTorpedos();
 	void torpedoShoot();
 };
 
@@ -84,7 +88,7 @@ public:
 class EntityEnemy : public EntityMesh {
 public:
 
-	EntityEnemy();
+	EntityEnemy(bool culling = true);
 	~EntityEnemy();
 
 	int life;
@@ -101,14 +105,16 @@ public:
 class Torpedo : public EntityMesh {
 public:
 
-	Torpedo();
+	Torpedo(bool culling = true);
 	~Torpedo();
 
 	float ttl;
 	static unsigned int last_tid;
 	unsigned int tid;
+	bool ready;
 
 	void update(float elapsed_time);
+	void activate();
 };
 
 #endif

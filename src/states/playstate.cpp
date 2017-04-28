@@ -132,6 +132,10 @@ void PlayState::render() {
 	glEnable(GL_DEPTH_TEST);
 
 	world->root->render(game->current_camera);
+
+	// render reload zone
+
+
 	bManager->render();
 	renderHUD();
 }
@@ -163,7 +167,7 @@ void PlayState::update(double seconds_elapsed) {
 	// ********************************************************************
 
 
-	double speed = seconds_elapsed * 250; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
 
 	if (game->current_camera == game->free_camera) {
 		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
@@ -187,7 +191,7 @@ void PlayState::update(double seconds_elapsed) {
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(-1.f, 0.f, 0.f) * speed);
 		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(1.f, 0.f, 0.f) * speed);
 		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, 1.f) * speed);
@@ -218,13 +222,15 @@ void PlayState::update(double seconds_elapsed) {
 	}
 
 	// update bullets and more
-	world->playerAir->update(seconds_elapsed);
+	world->root->update(seconds_elapsed);
 	
 	// move plane
-	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
+	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
 	// interpolate current and previous camera
 	Vector3 eye = world->playerAir->model * viewpos;
+
+	//eye = eye.normalize() * 5;
 	
 	// evitamos que se mueva en la vista de cabina
 	if(current_view == FULLVIEW)

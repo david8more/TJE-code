@@ -1,4 +1,5 @@
 #include "states/state.h"
+#include "states/playstate.h"
 #include "camera.h"
 #include "game.h"
 #include "utils.h"
@@ -28,6 +29,13 @@ Vector3 Entity::getPosition() {
 
 void Entity::render(Camera * camera) {
 	for (int i = 0; i < children.size(); i++) {
+		if (children[i]->name == "RELOAD_ZONE") {
+			glColor4f(1.0, 1.0, 1.0, 1.0);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_BLEND);
+			children[i]->render(camera);
+			glDisable(GL_BLEND);
+		}
 		children[i]->render(camera);
 	}
 }
@@ -75,16 +83,17 @@ void Entity::destroy_entities() {
 		ent->parent->removeChild(ent);
 		ent->parent = NULL;
 		delete(ent);
+
 	}
-	
+	destroy_pending.clear();
 }
 
 // *************************************************************************
 // ENTITYMESH 
 // *************************************************************************
 
-EntityMesh::EntityMesh() {
-	
+EntityMesh::EntityMesh(bool culling) {
+	this->culling = culling;
 }
 EntityMesh::~EntityMesh() {}
 
@@ -105,11 +114,12 @@ void EntityMesh::render(Camera * camera) {
 	
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
-	Vector3 pos = this->getPosition();
+	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
+	Vector3 pos = m * center;
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -119,7 +129,7 @@ void EntityMesh::render(Camera * camera) {
 	shader->disable();
 
 	// no pintar helice
-	if (this->name == "selectionstate_entity") return;
+	if (this->name == "NO_CHILD") return;
 			
 	for (int i = 0; i < this->children.size(); i++) {
 		this->children[i]->render(camera);
@@ -135,10 +145,10 @@ void EntityMesh::update( float elapsed_time ) {
 // ENTITYPLAYER 
 // *************************************************************************
 
-EntityPlayer::EntityPlayer() {
-	des1 = 0;
-	des2 = 0;
+EntityPlayer::EntityPlayer(bool culling) {
+
 }
+
 EntityPlayer::~EntityPlayer() {}
 
 //meshfile sin path, texturefile con path
@@ -158,11 +168,12 @@ void EntityPlayer::render(Camera * camera) {
 
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
-	Vector3 pos = this->getPosition();
+	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
+	Vector3 pos = m * center;
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -177,49 +188,9 @@ void EntityPlayer::render(Camera * camera) {
 }
 
 void EntityPlayer::update(float elapsed_time) {
-	BulletManager* bManager = BulletManager::getInstance();
-	World* world = World::getInstance();
 
-	// colisiona alguna bala con los enemigos?
-	for (int i = 0; i < bManager->bullet_vector.size(); i++) {
-
-		if (bManager->bullet_vector[i].free) continue;
-
-		for (int j = 0; j < world->collision_enemies.size(); j++) {
-
-			EntityEnemy * current_enemy = world->collision_enemies[j];
-
-			//si queremos especificar la model de la mesh usamos setTransform
-
-			Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
-			CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
-
-			collisionModel->setTransform(current_enemy->model.m);
-
-			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
-			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
-			//al origen del rayo o nos conformamos con saber si colisiona. 
-
-			Vector3 front = bManager->bullet_vector[i].last_position - bManager->bullet_vector[i].position;
-
-			if (!collisionModel->rayCollision(bManager->bullet_vector[i].last_position.v,
-				front.v, false)) continue;
-			
-			// collision made
-			bManager->bullet_vector[i].free = true; // liberar espacio de la bala
-			current_enemy->life -= bManager->bullet_vector[i].damage;
-			current_enemy->life = max(current_enemy->life, 0);
-
-			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
-		}
-	}
-
-	bManager->update(elapsed_time);
-
-	
-		if(!des1) this->torpedos[0]->update(elapsed_time);
-		if(!des2) this->torpedos[1]->update(elapsed_time);
-
+	BulletManager::getInstance()->update(elapsed_time);
+	Entity::update(elapsed_time);
 }
 
 void EntityPlayer::m60Shoot() {
@@ -263,22 +234,62 @@ void EntityPlayer::m60Shoot() {
 	BASS_ChannelPlay(channel, false); // play it
 }
 
+void EntityPlayer::createTorpedos()
+{
+	Torpedo * t1 = new Torpedo(NO_CULLING);
+	Torpedo * t2 = new Torpedo(NO_CULLING);
+
+	switch (World::getInstance()->worldInfo.playerModel) {
+	case SPITFIRE:
+		t1->model.traslate(0.75f, -0.75f, -0.5f);
+		t2->model.traslate(-0.75f, -0.75f, -0.5f);
+		break;
+	case P38:
+		t1->model.traslate(1.25f, -0.3f, -0.5f);
+		t2->model.traslate(-1.25f, -0.3f, -0.5f);
+		break;
+	case WILDCAT:
+		t1->model.traslate(0.5f, -0.75f, -0.5f);
+		t2->model.traslate(-0.5f, -0.75f, -0.5f);
+		break;
+	case BOMBER:
+		t1->model.traslate(1.5f, -1.75f, 0.25f);
+		t2->model.traslate(-1.5f, -1.75f, 0.25f);
+		break;
+	}
+	torpedos[0] = t1;
+	torpedos[1] = t2;
+
+	torpedos[0]->name = "TROPEDO 1";
+	torpedos[1]->name = "TROPEDO 2";
+
+
+	this->addChild(t1);
+	this->addChild(t2);
+}
+
 void EntityPlayer::torpedoShoot() {
 	
 	if (!torpedosLeft) return;
 
 	torpedosLeft--;
-
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
+
+	for (int i = 0; i < 2; i++) {
+		if (!torpedos[i]->ready) {
+			torpedos[i]->activate();
+			return;
+		}
+	}
 }
 
 // *************************************************************************
 // ENTITYENEMY
 // *************************************************************************
 
-EntityEnemy::EntityEnemy() {
+EntityEnemy::EntityEnemy(bool culling) {
 	
 }
 EntityEnemy::~EntityEnemy() {}
@@ -300,11 +311,12 @@ void EntityEnemy::render(Camera * camera) {
 
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
-	Vector3 pos = this->getPosition();
+	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
+	Vector3 pos = m * center;
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -329,40 +341,50 @@ void EntityEnemy::update(float elapsed_time) {
 
 unsigned int Torpedo::last_tid = 0;
 
-Torpedo::Torpedo() {
+Torpedo::Torpedo(bool culling) {
 	parent = NULL;
+	model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
+
 	mesh = "torpedo.ASE";
 	texture = "data/textures/torpedo.tga";
 	std::string shader_string("simple");
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
-
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
-	name = "stuck";
+
 	tid = last_tid;
 	last_tid++;
+	ready = false;
 	
-	ttl = 0.5;
-
-	std::cout << "torpedo with tid = " << this->tid << std::endl;
+	ttl = 100000;
 }
 
 Torpedo::~Torpedo() {}
 
 void Torpedo::update(float elapsed_time) {
 
-	EntityPlayer* player = World::getInstance()->playerAir;
+	std::cout << tid << std::endl;
+	if (!ready) return;
+
 	if (this->ttl < 0) {
-		if (!player->des1) player->des1 = 1;
-		else player->des2 = 1;
-		//destroy();
+		destroy();
+		return;
 	}
 
-	if (player->torpedosLeft <= this->tid) {
-		this->model.traslate(0, 0, elapsed_time * 100);
-		ttl -= elapsed_time;
-	}
+	this->model.traslate(0, 0, elapsed_time * 100);
+	ttl -= elapsed_time;
+}
+
+void Torpedo::activate() {
+
+	Entity* root = World::getInstance()->root;
+	Matrix44 mod = this->getGlobalMatrix();
+	this->parent->removeChild(this);
+	root->addChild(this);
+	this->model = mod;
+
+	ready = true;
 }
 
 

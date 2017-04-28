@@ -47,9 +47,6 @@ void World::create() {
 
 void World::addPlayer() {
 	// PLAYER AIRPLANE ************************************************************************************
-	
-	Torpedo * t2 = new Torpedo();
-	Torpedo * t1 = new Torpedo();
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
@@ -60,11 +57,6 @@ void World::addPlayer() {
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
 
-		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t1->model.traslate(0.75f, -0.75f, -0.5f);
-		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t2->model.traslate(-0.75f, -0.75f, -0.5f);
-
 		break;
 	case P38:
 		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
@@ -73,11 +65,6 @@ void World::addPlayer() {
 		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
-
-		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t1->model.traslate(1.25f, -0.3f, -0.5f);
-		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t2->model.traslate(-1.25f, -0.3f, -0.5f);
 
 		break;
 	case WILDCAT:
@@ -88,11 +75,6 @@ void World::addPlayer() {
 		playerAir->damageM60 = 40;
 		playerAir->damageMissile = 100;
 
-		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t1->model.traslate(0.5f, -0.75f, -0.5f);
-		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t2->model.traslate(-0.5f, -0.75f, -0.5f);
-
 		break;
 	case BOMBER:
 		playerAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
@@ -101,11 +83,6 @@ void World::addPlayer() {
 		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 15;
 		playerAir->damageMissile = 300;
-
-		t1->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t1->model.traslate(1.5f, -1.75f, 0.25f);
-		t2->model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
-		t2->model.traslate(-1.5f, -1.75f, 0.25f);
 
 		break;
 	}
@@ -117,15 +94,9 @@ void World::addPlayer() {
 		playerAir->damageMissile -= 100;
 	}
 
-	playerAir->torpedos.push_back(t1);//1
-	playerAir->torpedos.push_back(t2);//0
-
-	playerAir->addChild(t1);
-	playerAir->addChild(t2);
-
 	playerAir->model.setTranslation(0, 500, 500);
 	root->addChild(playerAir);
-
+	playerAir->createTorpedos();
 }
 
 void World::addPlayerConst() {
@@ -191,6 +162,14 @@ void World::addWorldConst() {
 			sea->model.traslate(i * 10000, 0, j * 10000);
 			//root->addChild(sea);
 		}
+	}
+
+	for (int i = 1; i <= 50; i++) {
+		EntityMesh* reload_zone = new EntityMesh(NO_CULLING);
+		reload_zone->name = "RELOAD_ZONE";
+		reload_zone->set("box.ASE", "data/textures/smoke_alpha.tga", "simple");
+		reload_zone->model.traslate(0, 200 + i*100, 0);
+		root->addChild(reload_zone);
 	}
 }
 
