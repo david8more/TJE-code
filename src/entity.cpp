@@ -109,7 +109,7 @@ void EntityMesh::render(Camera * camera) {
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius)) return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->name != "stuck") return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -136,7 +136,8 @@ void EntityMesh::update( float elapsed_time ) {
 // *************************************************************************
 
 EntityPlayer::EntityPlayer() {
-	
+	des1 = 0;
+	des2 = 0;
 }
 EntityPlayer::~EntityPlayer() {}
 
@@ -214,6 +215,11 @@ void EntityPlayer::update(float elapsed_time) {
 	}
 
 	bManager->update(elapsed_time);
+
+	
+		if(!des1) this->torpedos[0]->update(elapsed_time);
+		if(!des2) this->torpedos[1]->update(elapsed_time);
+
 }
 
 void EntityPlayer::m60Shoot() {
@@ -262,7 +268,6 @@ void EntityPlayer::torpedoShoot() {
 	if (!torpedosLeft) return;
 
 	torpedosLeft--;
-	torpedos.pop_back();
 
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
@@ -338,20 +343,26 @@ Torpedo::Torpedo() {
 	tid = last_tid;
 	last_tid++;
 	
-	ttl = 2;
+	ttl = 0.5;
+
+	std::cout << "torpedo with tid = " << this->tid << std::endl;
 }
 
 Torpedo::~Torpedo() {}
 
 void Torpedo::update(float elapsed_time) {
 
-	/*if (this->ttl < 0) destroy();
-
 	EntityPlayer* player = World::getInstance()->playerAir;
+	if (this->ttl < 0) {
+		if (!player->des1) player->des1 = 1;
+		else player->des2 = 1;
+		//destroy();
+	}
+
 	if (player->torpedosLeft <= this->tid) {
 		this->model.traslate(0, 0, elapsed_time * 100);
 		ttl -= elapsed_time;
-	}*/
+	}
 }
 
 

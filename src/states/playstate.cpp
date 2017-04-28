@@ -49,15 +49,19 @@ void PlayState::init() {
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
 
 	// fill views struct
-	// remember: sTransZoomCreator(view, planeModel, quantityToTranslate);
-	sTransZoomCreator(0, 0, 7.5f);
-	sTransZoomCreator(1, 0, 0.25f);
-	sTransZoomCreator(0, 1, 7.5f);
-	sTransZoomCreator(1, 1, 0.5f);
-	sTransZoomCreator(0, 2, 7.5f);
-	sTransZoomCreator(0, 2, 0.45f);
-	sTransZoomCreator(1, 3, 7.5f);
-	sTransZoomCreator(1, 3, 0.5f);
+	// METER ZOOM DEPENDIENDO DEL AVION!!
+	// sTransZoomCreator(view, planeModel, quantityToTranslate);
+	sTransZoomCreator(FULLVIEW, SPITFIRE, 7.5f);
+	sTransZoomCreator(CABINEVIEW, SPITFIRE, 0.5f);
+
+	sTransZoomCreator(FULLVIEW, P38, 7.5f);
+	sTransZoomCreator(CABINEVIEW, P38, 0.65f);
+
+	sTransZoomCreator(FULLVIEW, WILDCAT, 7.5f);
+	sTransZoomCreator(CABINEVIEW, WILDCAT, 0.75f);
+
+	sTransZoomCreator(FULLVIEW, BOMBER, 7.5f);
+	sTransZoomCreator(CABINEVIEW, BOMBER, 0.75f);
 
 	// collision models
 
@@ -159,9 +163,9 @@ void PlayState::update(double seconds_elapsed) {
 	// ********************************************************************
 
 
-	double speed = seconds_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 250; //the speed is defined by the seconds_elapsed so it goes constant
 
-	if (DEBUG) {
+	if (game->current_camera == game->free_camera) {
 		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->current_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
 		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->current_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
@@ -201,7 +205,7 @@ void PlayState::update(double seconds_elapsed) {
 		}
 	}
 
-	//to navigate with the mouse fixed in the middle
+	// to navigate with the mouse fixed in the middle
 	if (game->mouse_locked)
 	{
 		int center_x = floor(game->window_width*0.5);
@@ -213,24 +217,22 @@ void PlayState::update(double seconds_elapsed) {
 		game->mouse_position.y = center_y;
 	}
 
-	// update part
-
+	// update bullets and more
 	world->playerAir->update(seconds_elapsed);
-	for (int i = 0; i < world->playerAir->torpedos.size(); i++)
-		world->playerAir->torpedos[i]->update(seconds_elapsed);
-	
-	if (DEBUG) return;
 	
 	// move plane
 	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
 
+	// interpolate current and previous camera
 	Vector3 eye = world->playerAir->model * viewpos;
 	
-	// interpolate current and previous camera
-	eye = game->current_camera->eye * 0.9 + eye * 0.1;
+	// evitamos que se mueva en la vista de cabina
+	if(current_view == FULLVIEW)
+		eye = game->current_camera->eye * 0.9 + eye * 0.1;
+	
 	game->fixed_camera->lookAt(eye, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-	//game->free_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 
+	// borrar pendientes
 	Entity::destroy_entities();
 
 	// comprobar si es fin del juego
@@ -314,6 +316,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_3:
 		game->current_camera = game->current_camera == game->fixed_camera ? game->free_camera : game->fixed_camera;
 		break;
+	case SDLK_4:
+		world->playerShip->destroy();
+		break;
 	case SDLK_SPACE:
 		shooting = true;
 		break;
@@ -368,19 +373,22 @@ void PlayState::setView() {
 	case CABINEVIEW:
 		
 		if (world->worldInfo.playerModel == SPITFIRE) {
-			viewpos = Vector3(0.f, 0.7f, -1.f);
+			viewpos = Vector3(0.f, 0.7f, -1.5f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
 			world->playerAir->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 
 		}
 		else if (world->worldInfo.playerModel == P38) {
-			viewpos = Vector3(0.f, 0.75f, 0.752f); viewtarget = Vector3(0.f, 0.5f, 10.f);
+			viewpos = Vector3(-0.03f, 0.75f, 0.752f);
+			viewtarget = Vector3(0.f, 0.5f, 10.f);
 		} 
 		else if (world->worldInfo.playerModel == WILDCAT) {
-			viewpos = Vector3(0.f, 1.f, -0.5f); viewtarget = Vector3(0.f, 1.f, 0.f);
+			viewpos = Vector3(0.f, 1.f, -0.5f);
+			viewtarget = Vector3(0.f, 1.f, 10.f);
 		}
 		else if (world->worldInfo.playerModel == BOMBER) {
-			viewpos = Vector3(0.5f, 0.f, 2.5f); viewtarget = Vector3(0.f, 1.f, 10.f);
+			viewpos = Vector3(0.5f, 0.f, 2.5f);
+			viewtarget = Vector3(0.f, 1.f, 10.f);
 		}
 
 		break;

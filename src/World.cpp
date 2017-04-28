@@ -117,8 +117,8 @@ void World::addPlayer() {
 		playerAir->damageMissile -= 100;
 	}
 
-	playerAir->torpedos.push_back(t1);
-	playerAir->torpedos.push_back(t2);
+	playerAir->torpedos.push_back(t1);//1
+	playerAir->torpedos.push_back(t2);//0
 
 	playerAir->addChild(t1);
 	playerAir->addChild(t2);
