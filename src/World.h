@@ -6,6 +6,7 @@
 
 class Entity;
 class EntityMesh;
+class EntityCollider;
 class EntityPlayer;
 class EntityEnemy;
 class Torpedo;
@@ -35,14 +36,11 @@ public:
 
 	sWorldInfo worldInfo;
 
-	// colisionables??
-	std::vector<EntityEnemy*> collision_enemies;
-
 	Entity* root;
 
 	//world constants
 	EntityMesh* sky;
-	EntityMesh* sea;
+	EntityCollider* sea;
 
 	// fighters
 	EntityPlayer* playerAir;

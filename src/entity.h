@@ -60,9 +60,29 @@ public:
 	void update(float elapsed_time);
 
 };
+// *******************************************************************
+
+class EntityCollider : public EntityMesh {
+public:
+	bool is_static;
+	bool is_dynamic;
+
+	static std::vector<EntityCollider*> dynamic_colliders;
+	static std::vector<EntityCollider*> static_colliders;
+
+	EntityCollider();
+	~EntityCollider();
+	virtual void onCollision();
+
+	void setStatic();
+	void setDynamic();
+
+	static bool testRayWithAll(Vector3 origin, Vector3 dir, float max_dist, Vector3& collisions);
+
+};
 
 // *******************************************************************
-class EntityPlayer : public EntityMesh {
+class EntityPlayer : public EntityCollider {
 public:
 
 	EntityPlayer(bool culling = true);
@@ -85,7 +105,7 @@ public:
 };
 
 // *******************************************************************
-class EntityEnemy : public EntityMesh {
+class EntityEnemy : public EntityCollider {
 public:
 
 	EntityEnemy(bool culling = true);
@@ -101,16 +121,15 @@ public:
 	//void missileShoot();
 };
 
+
 // *******************************************************************
-class Torpedo : public EntityMesh {
+class Torpedo : public EntityCollider {
 public:
 
 	Torpedo(bool culling = true);
 	~Torpedo();
 
 	float ttl;
-	static unsigned int last_tid;
-	unsigned int tid;
 	bool ready;
 
 	void update(float elapsed_time);

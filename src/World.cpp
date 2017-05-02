@@ -53,7 +53,6 @@ void World::addPlayer() {
 		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 		playerAir->life = 350;
 		playerAir->cadence = 15.f;
-		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
 
@@ -62,7 +61,6 @@ void World::addPlayer() {
 		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
 		playerAir->life = 400;
 		playerAir->cadence = 10.f;
-		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
 
@@ -71,7 +69,6 @@ void World::addPlayer() {
 		playerAir->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
 		playerAir->life = 250;
 		playerAir->cadence = 30.f;
-		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 40;
 		playerAir->damageMissile = 100;
 
@@ -80,7 +77,6 @@ void World::addPlayer() {
 		playerAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
 		playerAir->life = 500;
 		playerAir->cadence = 20.f;
-		playerAir->torpedosLeft = 2;
 		playerAir->damageM60 = 15;
 		playerAir->damageMissile = 300;
 
@@ -145,29 +141,31 @@ void World::addWorldConst() {
 	
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
-			EntityMesh* ground = new EntityMesh();
+			EntityCollider* ground = new EntityCollider();
 			ground->set("island.ASE", "data/textures/island.tga", "simple");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
 			root->addChild(ground);
+			//ground->setStatic();
 		}
 	}
 
 	for (int i = -5; i <= 5; i++) {
 		for (int j = -5; j <= 5; j++) {
-			EntityMesh* sea = new EntityMesh();
+			EntityCollider* sea = new EntityCollider();
 			sea->set("agua.ASE", "data/textures/agua.tga", "color");
 			sea->model.setIdentity();
 			sea->model.traslate(i * 10000, 0, j * 10000);
 			//root->addChild(sea);
+			//sea->setStatic();
 		}
 	}
 
 	for (int i = 1; i <= 50; i++) {
 		EntityMesh* reload_zone = new EntityMesh(NO_CULLING);
 		reload_zone->name = "RELOAD_ZONE";
-		reload_zone->set("box.ASE", "data/textures/smoke_alpha.tga", "simple");
+		reload_zone->set("box.ASE", "data/textures/smoke_alpha_green.tga", "simple");
 		reload_zone->model.traslate(0, 200 + i*100, 0);
 		root->addChild(reload_zone);
 	}
@@ -187,20 +185,20 @@ void World::addEnemies() {
 	enemyShip->model.traslate(100, 0, 100);
 	root->addChild(enemyShip);
 
-	collision_enemies.push_back(enemyShip);
+	enemyShip->setStatic();
 
 	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemyAir->model.setTranslation(0, 500, 200);
 	root->addChild(enemyAir);
 
-	collision_enemies.push_back(enemyAir);
+	enemyAir->setStatic();
 
 	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setTranslation(500, 500, 200);
 	root->addChild(enemy2Air);
 
-	collision_enemies.push_back(enemy2Air);
+	enemyAir->setStatic();
 
 	if (!DEBUG) return;
 
@@ -233,7 +231,7 @@ bool World::isGameOver() {
 
 	/* vida de los enemigos: si seguimos vivos y ellos mueren ->>> WIN
 	*  pero solo acaba si el barco muere!!!                         */
-	if (collision_enemies[0]->life <= 0) return true;
+	//if (collision_enemies[0]->life <= 0) return true;
 
 	// si todos sigue igual:
 	return false;

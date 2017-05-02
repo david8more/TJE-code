@@ -142,6 +142,58 @@ void EntityMesh::update( float elapsed_time ) {
 }
 
 // *************************************************************************
+// ENTITYCOLLIDER
+// *************************************************************************
+
+EntityCollider::EntityCollider() {}
+EntityCollider::~EntityCollider() {}
+
+std::vector<EntityCollider*> EntityCollider::static_colliders;
+std::vector<EntityCollider*> EntityCollider::dynamic_colliders;
+
+void EntityCollider::onCollision() {
+
+}
+
+void EntityCollider::setStatic() {
+	static_colliders.push_back(this);
+	is_static = true;
+}
+
+void EntityCollider::setDynamic() {
+	dynamic_colliders.push_back(this);
+	is_dynamic = true;
+}
+
+bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist, Vector3& collisions) {
+
+	for (int j = 0; j < static_colliders.size(); j++) {
+
+		EntityCollider * current_enemy = static_colliders[j];
+
+		//si queremos especificar la model de la mesh usamos setTransform
+
+		Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
+		CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
+
+		collisionModel->setTransform(current_enemy->model.m);
+
+		//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
+		//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
+		//al origen del rayo o nos conformamos con saber si colisiona. 
+
+		if (!collisionModel->rayCollision(origin.v, dir.v, true)) continue;
+
+		collisionModel->getCollisionPoint(collisions.v, false);
+
+		return true;
+	}
+
+	return false;
+
+}
+
+// *************************************************************************
 // ENTITYPLAYER 
 // *************************************************************************
 
@@ -239,6 +291,9 @@ void EntityPlayer::createTorpedos()
 	Torpedo * t1 = new Torpedo(NO_CULLING);
 	Torpedo * t2 = new Torpedo(NO_CULLING);
 
+	t1->setDynamic();
+	t2->setDynamic();
+
 	switch (World::getInstance()->worldInfo.playerModel) {
 	case SPITFIRE:
 		t1->model.traslate(0.75f, -0.75f, -0.5f);
@@ -257,12 +312,11 @@ void EntityPlayer::createTorpedos()
 		t2->model.traslate(-1.5f, -1.75f, 0.25f);
 		break;
 	}
+
 	torpedos[0] = t1;
 	torpedos[1] = t2;
 
-	torpedos[0]->name = "TROPEDO 1";
-	torpedos[1]->name = "TROPEDO 2";
-
+	torpedosLeft = 2;
 
 	this->addChild(t1);
 	this->addChild(t2);
@@ -270,7 +324,11 @@ void EntityPlayer::createTorpedos()
 
 void EntityPlayer::torpedoShoot() {
 	
-	if (!torpedosLeft) return;
+	if (!torpedosLeft) {
+		/*this->torpedos[0] = NULL;
+		this->torpedos[1] = NULL;*/
+		return;
+	}
 
 	torpedosLeft--;
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
@@ -339,8 +397,6 @@ void EntityEnemy::update(float elapsed_time) {
 // TORPEDO
 // *************************************************************************
 
-unsigned int Torpedo::last_tid = 0;
-
 Torpedo::Torpedo(bool culling) {
 	parent = NULL;
 	model.setRotation(3.14159265359f, Vector3(0.f, 1.f, 0.f));
@@ -352,19 +408,15 @@ Torpedo::Torpedo(bool culling) {
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
-
-	tid = last_tid;
-	last_tid++;
 	ready = false;
 	
-	ttl = 100000;
+	ttl = 3;
 }
 
 Torpedo::~Torpedo() {}
 
 void Torpedo::update(float elapsed_time) {
 
-	std::cout << tid << std::endl;
 	if (!ready) return;
 
 	if (this->ttl < 0) {
@@ -372,7 +424,7 @@ void Torpedo::update(float elapsed_time) {
 		return;
 	}
 
-	this->model.traslate(0, 0, elapsed_time * 100);
+	model.traslateLocal(0, 0, elapsed_time * -200);
 	ttl -= elapsed_time;
 }
 
@@ -380,6 +432,7 @@ void Torpedo::activate() {
 
 	Entity* root = World::getInstance()->root;
 	Matrix44 mod = this->getGlobalMatrix();
+
 	this->parent->removeChild(this);
 	root->addChild(this);
 	this->model = mod;

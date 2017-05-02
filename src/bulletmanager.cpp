@@ -104,9 +104,9 @@ void BulletManager::update(float elapsed_time) {
 
 		if (this->bullet_vector[i].free) continue;
 
-		for (int j = 0; j < world->collision_enemies.size(); j++) {
+		for (int j = 0; j < EntityCollider::static_colliders.size(); j++) {
 
-			EntityEnemy * current_enemy = world->collision_enemies[j];
+			EntityCollider * current_enemy = EntityCollider::static_colliders[j];
 
 			//si queremos especificar la model de la mesh usamos setTransform
 
@@ -125,11 +125,12 @@ void BulletManager::update(float elapsed_time) {
 				front.v, false)) continue;
 
 			// collision made
-			this->bullet_vector[i].free = true; // liberar espacio de la bala
+			std::cout << "Collision made" << std::endl;
+			/*this->bullet_vector[i].free = true; // liberar espacio de la bala
 			current_enemy->life -= this->bullet_vector[i].damage;
 			current_enemy->life = max(current_enemy->life, 0);
 
-			if (current_enemy->life == 0) world->root->removeChild(current_enemy);
+			if (current_enemy->life == 0) world->root->removeChild(current_enemy);*/
 		}
 	}
 

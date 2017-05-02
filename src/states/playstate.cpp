@@ -20,6 +20,7 @@
 bool inZoom = false;
 BulletManager* bManager = NULL;
 World * world = NULL; 
+Mesh debug_mesh;
 //initialize joistick
 
 PlayState::PlayState(StateManager* SManager) : State(SManager) {}
@@ -40,10 +41,10 @@ void PlayState::init() {
 	game->free_camera = new Camera(); //our global camera
 	game->fixed_camera = new Camera();
 
-	game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	//game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
-	game->free_camera->lookAt(Vector3(0, 500, 500), world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	game->free_camera->lookAt(Vector3(0, 500, 500), Vector3(0,0, 0), Vector3(0, 1, 0));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
@@ -65,9 +66,9 @@ void PlayState::init() {
 
 	// collision models
 
-	for (int i = 0; i < world->collision_enemies.size(); i++) {
-		EntityEnemy * current_enemy = world->collision_enemies[i];
-		Mesh::Get(current_enemy->mesh.c_str())->setCollisionModel();
+	for (int i = 0; i < EntityCollider::static_colliders.size(); i++) {
+		EntityCollider * current_collider = EntityCollider::static_colliders[i];
+		Mesh::Get(current_collider->mesh.c_str())->setCollisionModel();
 	}
 
 	// HUD
@@ -100,9 +101,11 @@ void PlayState::onEnter()
 	shooting = overused = false;
 
 	// Sounds
-	b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-	b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-	BASS_ChannelPlay(b_channel, false); // play it
+	if (game->music_enabled) {
+		b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
+		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+		BASS_ChannelPlay(b_channel, false); // play it
+	}
 
 	e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 	e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
@@ -132,10 +135,11 @@ void PlayState::render() {
 	glEnable(GL_DEPTH_TEST);
 
 	world->root->render(game->current_camera);
-
-	// render reload zone
-
-
+	//
+	if (debug_mesh.vertices.size()) {
+		debug_mesh.render(GL_POINTS);
+	}
+	//
 	bManager->render();
 	renderHUD();
 }
@@ -170,19 +174,34 @@ void PlayState::update(double seconds_elapsed) {
 	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
 
 	if (game->current_camera == game->free_camera) {
+		
 		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
-		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->current_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->current_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->current_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) game->current_camera->move(Vector3(-1.f, 0.f, 0.f) * speed);
+		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->free_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
+		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->free_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->free_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) game->free_camera->move(Vector3(-1.f, 0.f, 0.f) * speed);
 
 		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
 		{
 			game->current_camera->rotate(game->mouse_delta.x * 0.005f, Vector3(0.f, -1.f, 0.f));
 			game->current_camera->rotate(game->mouse_delta.y * 0.005f, game->current_camera->getLocalVector(Vector3(-1.f, 0.f, 0.f)));
 		}
+
+		if (game->mouse_locked)
+		{
+			int center_x = floor(game->window_width*0.5);
+			int center_y = floor(game->window_height*0.5);
+
+			SDL_WarpMouseInWindow(game->window, center_x, center_y); //put the mouse back in the middle of the screen
+
+			game->mouse_position.x = center_x;
+			game->mouse_position.y = center_y;
+		}
+
+		return;
 	}
 	else {
+		
 		//mouse input to rotate the cam
 		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
 		{		
@@ -204,9 +223,7 @@ void PlayState::update(double seconds_elapsed) {
 			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, -1) * speed);
 			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 1, 0) * speed);
 		}
-		if (game->keystate[SDL_SCANCODE_T]) {
-		
-		}
+
 	}
 
 	// to navigate with the mouse fixed in the middle
@@ -230,13 +247,23 @@ void PlayState::update(double seconds_elapsed) {
 	// interpolate current and previous camera
 	Vector3 eye = world->playerAir->model * viewpos;
 
-	//eye = eye.normalize() * 5;
-	
 	// evitamos que se mueva en la vista de cabina
 	if(current_view == FULLVIEW)
 		eye = game->current_camera->eye * 0.9 + eye * 0.1;
 	
 	game->fixed_camera->lookAt(eye, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+
+	// COLISIONES
+
+	Vector3 ray_origin = game->current_camera->eye;
+	Vector3 ray_dir = (game->current_camera->center - ray_origin).normalize();
+
+	Vector3 coll;
+
+	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, 10000000, coll)) {
+		std::cout << coll.x << coll.y << coll.z;
+		debug_mesh.vertices.push_back(coll);
+	}
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -293,7 +320,7 @@ void PlayState::renderHUD() {
 
 	// vidas enemigas
 
-	ss.str("");
+	/*ss.str("");
 	ss << world->collision_enemies[0]->life;
 	drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 3.0);
 	ss.str("");
@@ -301,10 +328,11 @@ void PlayState::renderHUD() {
 	drawText(game->window_width*0.1, game->window_height*0.2, ss.str(), Vector3(1, 0, 0), 3.0);
 	ss.str("");
 	ss << world->collision_enemies[2]->life;
-	drawText(game->window_width*0.1, game->window_height*0.3, ss.str(), Vector3(1, 0, 0), 3.0);
+	drawText(game->window_width*0.1, game->window_height*0.3, ss.str(), Vector3(1, 0, 0), 3.0);*/
 
 	// FINISHED RENDER INTERFACE ****************************************************************
 }
+
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	Game* game = Game::getInstance();
@@ -358,7 +386,6 @@ void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
 		else setView();
 	}
 }
-
 
 void PlayState::onLeave(int fut_state) {
 	BASS_ChannelStop(b_channel); // stop music
