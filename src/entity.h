@@ -102,6 +102,7 @@ public:
 	void m60Shoot();
 	void createTorpedos();
 	void torpedoShoot();
+	void onCollision();
 };
 
 // *******************************************************************
@@ -117,7 +118,7 @@ public:
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
-	//void m60Shoot();
+	void onCollision();
 	//void missileShoot();
 };
 

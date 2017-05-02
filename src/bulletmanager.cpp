@@ -126,11 +126,6 @@ void BulletManager::update(float elapsed_time) {
 
 			// collision made
 			std::cout << "Collision made" << std::endl;
-			/*this->bullet_vector[i].free = true; // liberar espacio de la bala
-			current_enemy->life -= this->bullet_vector[i].damage;
-			current_enemy->life = max(current_enemy->life, 0);
-
-			if (current_enemy->life == 0) world->root->removeChild(current_enemy);*/
 		}
 	}
 

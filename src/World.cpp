@@ -147,7 +147,7 @@ void World::addWorldConst() {
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
 			root->addChild(ground);
-			//ground->setStatic();
+			ground->setStatic();
 		}
 	}
 

@@ -151,10 +151,6 @@ EntityCollider::~EntityCollider() {}
 std::vector<EntityCollider*> EntityCollider::static_colliders;
 std::vector<EntityCollider*> EntityCollider::dynamic_colliders;
 
-void EntityCollider::onCollision() {
-
-}
-
 void EntityCollider::setStatic() {
 	static_colliders.push_back(this);
 	is_static = true;
@@ -169,7 +165,7 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 	for (int j = 0; j < static_colliders.size(); j++) {
 
-		EntityCollider * current_enemy = static_colliders[j];
+		EntityEnemy * current_enemy = (EntityEnemy*)static_colliders[j];
 
 		//si queremos especificar la model de la mesh usamos setTransform
 
@@ -182,9 +178,12 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 		//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 		//al origen del rayo o nos conformamos con saber si colisiona. 
 
-		if (!collisionModel->rayCollision(origin.v, dir.v, true)) continue;
+		if (!collisionModel->rayCollision(origin.v, dir.v, true))
+			continue;
 
 		collisionModel->getCollisionPoint(collisions.v, false);
+
+		current_enemy->onCollision();
 
 		return true;
 	}
@@ -192,6 +191,8 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 	return false;
 
 }
+
+void EntityCollider::onCollision() {}
 
 // *************************************************************************
 // ENTITYPLAYER 
@@ -343,6 +344,10 @@ void EntityPlayer::torpedoShoot() {
 	}
 }
 
+void EntityPlayer::onCollision() {
+	
+}
+
 // *************************************************************************
 // ENTITYENEMY
 // *************************************************************************
@@ -391,6 +396,14 @@ void EntityEnemy::render(Camera * camera) {
 
 void EntityEnemy::update(float elapsed_time) {
 	
+}
+
+void EntityEnemy::onCollision() {
+
+	this->life -= 5;
+	this->life = max(this->life, 0);
+
+	if (this->life == 0) World::getInstance()->root->removeChild(this);
 }
 
 // *************************************************************************

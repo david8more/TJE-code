@@ -255,14 +255,24 @@ void PlayState::update(double seconds_elapsed) {
 
 	// COLISIONES
 
-	Vector3 ray_origin = game->current_camera->eye;
-	Vector3 ray_dir = (game->current_camera->center - ray_origin).normalize();
+	Vector3 ray_origin;
+	Vector3 ray_dir;
+
+	if (DEBUG) {
+		ray_origin = game->current_camera->eye;
+		ray_dir = (game->current_camera->center - ray_origin).normalize();
+	}
+	else {
+		ray_origin = game->current_camera->eye;
+		ray_dir = (game->current_camera->center - ray_origin).normalize();
+	}
 
 	Vector3 coll;
 
 	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, 10000000, coll)) {
-		std::cout << coll.x << coll.y << coll.z;
+		//std::cout << coll.x << coll.y << coll.z;
 		debug_mesh.vertices.push_back(coll);
+		debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
 	}
 
 	// borrar pendientes
