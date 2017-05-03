@@ -12,14 +12,8 @@
 BulletManager* BulletManager::instance = NULL;
 
 BulletManager::BulletManager() {
-	bullet_vector.resize(30);
+	bullet_vector.resize(100);
 	last_free = 0;
-
-
-	for (int i = 0; i < bullet_vector.size(); i++) {
-		bullet_vector[i].free = true;
-	}
-
 	instance = this;
 }
 
@@ -27,35 +21,40 @@ BulletManager::~BulletManager() {
 	
 }
 
-void BulletManager::createBullet(Vector3 position, Vector3 velocity, float ttl, float damage, int author, int type) {
-	for (int i = 0; i < bullet_vector.size(); i++) {
+void BulletManager::createBullet(Vector3 position, Vector3 velocity, float ttl, float damage, Entity* author, int type) {
 
-		if (!bullet_vector[i].free) {
-			continue;
-		}
-
-		bullet_vector[i].position = position;
-		bullet_vector[i].last_position = position;
-		bullet_vector[i].velocity = velocity;
-		bullet_vector[i].ttl = ttl;
-		bullet_vector[i].damage = damage;
-		bullet_vector[i].author = author;
-		bullet_vector[i].type = type;
-		bullet_vector[i].free = false;
+	if (last_free >= bullet_vector.size())
 		return;
-	}
+
+	Bullet& current = bullet_vector[last_free];
+
+	current.position = position;
+	current.last_position = position;
+	current.velocity = velocity;
+	current.ttl = ttl;
+	current.damage = damage;
+	current.author = author;
+	current.type = type;
+	current.free = false;
+
+	last_free++;
 }
 
 void BulletManager::render() {
 	Mesh bullets;
+	std::cout << last_free << std::endl;
 
 	for (int i = 0; i < bullet_vector.size(); ++i) {
-		if (bullet_vector[i].free) continue;
 
-		bullets.vertices.push_back(bullet_vector[i].position);
-		bullets.vertices.push_back(bullet_vector[i].last_position);
+		Bullet& current = bullet_vector[i];
 
-		switch (bullet_vector[i].type) {
+		if (current.ttl < 0.0)
+			continue;
+
+		bullets.vertices.push_back(current.position);
+		bullets.vertices.push_back(current.last_position);
+
+		switch (current.type) {
 		case 1:
 			bullets.colors.push_back(Vector4(0.f, 0.f, 0.f, 1.f));
 			break;
@@ -82,51 +81,67 @@ void BulletManager::render() {
 
 void BulletManager::update(float elapsed_time) {
 	
-	World* world = World::getInstance();
+	for (int i = 0; i < last_free; i++) {
 
-	for (int i = 0; i < bullet_vector.size(); i++) {
+		Bullet& current = bullet_vector[i];
 
-		bullet_vector[i].ttl -= elapsed_time;
+		current.ttl -= elapsed_time;
 
-		if (bullet_vector[i].ttl < 0.0) {
-			bullet_vector[i].free = true;
-			last_free = i;
+		if (current.ttl < 0.0) {
+			//current = bullet_vector[last_free];
+			last_free--;
 			continue;
 		}
-		bullet_vector[i].last_position = bullet_vector[i].position;
-		bullet_vector[i].position.x += bullet_vector[i].velocity.x * elapsed_time / 2;
-		bullet_vector[i].position.y += bullet_vector[i].velocity.y * elapsed_time / 2;
-		bullet_vector[i].position.z += bullet_vector[i].velocity.z * elapsed_time / 2;
+
+		current.last_position = current.position;
+		current.position.x += current.velocity.x * elapsed_time / 2;
+		current.position.y += current.velocity.y * elapsed_time / 2;
+		current.position.z += current.velocity.z * elapsed_time / 2;
 	}
 
+	if (testBulletCollision())
+		onBulletCollision();
+
+}
+
+bool BulletManager::testBulletCollision() {
+
 	// colisiona alguna bala con los enemigos?
-	for (int i = 0; i < this->bullet_vector.size(); i++) {
+	for (int i = 0; i < EntityCollider::static_colliders.size(); i++) {
 
-		if (this->bullet_vector[i].free) continue;
+		EntityCollider * current_enemy = EntityCollider::static_colliders[i];
 
-		for (int j = 0; j < EntityCollider::static_colliders.size(); j++) {
+		//si queremos especificar la model de la mesh usamos setTransform
 
-			EntityCollider * current_enemy = EntityCollider::static_colliders[j];
+		Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
+		CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
 
-			//si queremos especificar la model de la mesh usamos setTransform
+		collisionModel->setTransform(current_enemy->model.m);
 
-			Mesh* enemy_mesh = Mesh::Get(current_enemy->mesh.c_str());
-			CollisionModel3D * collisionModel = enemy_mesh->getCollisionModel();
+		for (int j = 0; j < this->bullet_vector.size(); j++) {
 
-			collisionModel->setTransform(current_enemy->model.m);
+			Bullet& current = this->bullet_vector[j];
+
+			if (current.ttl < 0.0)
+				continue;
 
 			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
 			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 			//al origen del rayo o nos conformamos con saber si colisiona. 
 
-			Vector3 front = this->bullet_vector[i].last_position - this->bullet_vector[i].position;
+			Vector3 front = current.last_position - current.position;
 
-			if (!collisionModel->rayCollision(this->bullet_vector[i].last_position.v,
-				front.v, false)) continue;
+			if (!collisionModel->rayCollision(current.last_position.v, front.v, false))
+				continue;
 
 			// collision made
-			std::cout << "Collision made" << std::endl;
+			return true;
 		}
 	}
+
+	return false;
+}
+
+void BulletManager::onBulletCollision() {
 
 }

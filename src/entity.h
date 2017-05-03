@@ -14,7 +14,6 @@ class Mesh;
 class Texture;
 class Shader;
 class Torpedo;
-
 class Camera;
 
 class Entity {
@@ -113,7 +112,6 @@ public:
 	~EntityEnemy();
 
 	int life;
-	CollisionModel3D* collision_model;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
