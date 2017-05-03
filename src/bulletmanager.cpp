@@ -44,7 +44,7 @@ void BulletManager::render() {
 	Mesh bullets;
 	std::cout << last_free << std::endl;
 
-	for (int i = 0; i < bullet_vector.size(); ++i) {
+	for (int i = 0; i < bullet_vector.size(); i++) {
 
 		Bullet& current = bullet_vector[i];
 
@@ -88,8 +88,9 @@ void BulletManager::update(float elapsed_time) {
 		current.ttl -= elapsed_time;
 
 		if (current.ttl < 0.0) {
-			//current = bullet_vector[last_free];
+			current = bullet_vector[last_free - 1];
 			last_free--;
+			//i = i - 1;
 			continue;
 		}
 
@@ -120,7 +121,7 @@ bool BulletManager::testBulletCollision() {
 
 		for (int j = 0; j < this->bullet_vector.size(); j++) {
 
-			Bullet& current = this->bullet_vector[j];
+			Bullet current = this->bullet_vector[j];
 
 			if (current.ttl < 0.0)
 				continue;
