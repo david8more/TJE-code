@@ -50,8 +50,8 @@ void MenuState::onEnter()
 	if (game->bkg_music_playing || !game->music_enabled) return;
 	
 	b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-	b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-	BASS_ChannelPlay(b_channel, false); // play it
+	hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+	BASS_ChannelPlay(hSampleChannel, false); // play it
 	game->bkg_music_playing = true;
 
 }
@@ -145,7 +145,7 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 void MenuState::onLeave(int fut_state) {
 
 	if (0) {
-		BASS_ChannelStop(b_channel); // stop music
+		BASS_ChannelStop(hSampleChannel); // stop music
 		game->bkg_music_playing = false;
 	}
 }

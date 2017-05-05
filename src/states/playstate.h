@@ -14,6 +14,7 @@
 #include "../mesh.h"
 #include "../camera.h"
 #include <iostream>
+#include "../bass.h"
 
 using namespace std;
 
@@ -80,7 +81,7 @@ public:
 
 	// background music
 	int b_sample;
-	int b_channel;
+	HCHANNEL hSampleChannel;
 
 	//engine sound
 	bool engine_on;

@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "entity.h"
+#include "gameentities.h"
 #include "game.h"
 #include "shader.h"
 #include "states/playstate.h"
@@ -19,7 +20,6 @@ World::World()
 	instance = this;
 	root = new Entity();
 
-	// poner aqui en NULL
 	sky = NULL;
 	sea = NULL;
 	playerAir = NULL;
@@ -42,7 +42,7 @@ void World::create() {
 	// *****************************************************************************************
 	addEnemies();
 	// *****************************************************************************************
-	playerAir = new EntityPlayer();
+	playerAir = new Airplane();
 }
 
 void World::addPlayer() {
@@ -99,7 +99,7 @@ void World::addPlayerConst() {
 
 	// PLAYER SHIP ************************************************************************************
 
-	playerShip = new EntityPlayer();
+	playerShip = new Airplane();
 
 	playerShip->set("barco.ASE", "data/textures/barco.tga", "simple");
 	//playerShip->model.traslateLocal(5500, -2100, 5500);
@@ -139,6 +139,11 @@ void World::addWorldConst() {
 	sky = new EntityMesh();
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 	
+	EntityCollider* sea = new EntityCollider();
+	sea->setName("sea");
+	sea->set("agua.ASE", "data/textures/agua.tga", "water");
+	//sea->setStatic();
+
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityCollider* ground = new EntityCollider();
@@ -151,16 +156,6 @@ void World::addWorldConst() {
 		}
 	}
 
-	for (int i = -5; i <= 5; i++) {
-		for (int j = -5; j <= 5; j++) {
-			EntityCollider* sea = new EntityCollider();
-			sea->set("agua.ASE", "data/textures/agua.tga", "color");
-			sea->model.setIdentity();
-			sea->model.traslate(i * 10000, 0, j * 10000);
-			//root->addChild(sea);
-			//sea->setStatic();
-		}
-	}
 
 	for (int i = 1; i <= 50; i++) {
 		EntityMesh* reload_zone = new EntityMesh(NO_CULLING);
@@ -179,6 +174,7 @@ void World::addEnemies() {
 	enemyAir = new EntityEnemy();
 	enemy2Air = new EntityEnemy();
 
+	enemyShip->setName("enemy_ship");
 	enemyShip->life = Game::getInstance()->gameMode ? 1500:1000;
 	enemyShip->set("barco.ASE", "data/textures/barco.tga", "color");
 	enemyShip->model = playerShip->model * enemyShip->model;
@@ -191,14 +187,14 @@ void World::addEnemies() {
 	enemyAir->model.setTranslation(0, 500, 200);
 	root->addChild(enemyAir);
 
-	//enemyAir->setStatic();
+	enemyAir->setStatic();
 
 	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setTranslation(500, 500, 200);
 	root->addChild(enemy2Air);
 
-	//enemyAir->setStatic();
+	enemyAir->setStatic();
 
 	if (!DEBUG) return;
 
@@ -227,13 +223,17 @@ bool World::isGameOver() {
 	// aqui tratamos de averiguar si se ha llegado al final del juego
 
 	// nuestra vida: si nos matan ->>> LOSE
-	if (playerAir->life <= 0) return true;
+	if (playerAir->life <= 0)
+		return true;
 
 	/* vida de los enemigos: si seguimos vivos y ellos mueren ->>> WIN
-	*  pero solo acaba si el barco muere!!!                         */
-	//if (collision_enemies[0]->life <= 0) return true;
+	*  pero solo acaba si el barco muere!!! 
+	*/
 
-	// si todos sigue igual:
+	if (enemyShip->life <= 0)
+		return true;
+
+	// si todo sigue igual:
 	return false;
 }
 

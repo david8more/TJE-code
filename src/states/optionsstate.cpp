@@ -42,8 +42,7 @@ void OptionsState::onEnter()
 
 	MenuState* mState = MenuState::getInstance( game->sManager );
 
-	b_channel = mState->b_channel;
-
+	hSampleChannel = mState->hSampleChannel;
 }
 
 void OptionsState::render() {
@@ -60,13 +59,16 @@ void OptionsState::render() {
 	glDisable(GL_BLEND);
 
 	// menu
-	const string submenu_items[] = {"Music", "Effects", "Fullscreen", "Game mode", "Friendly fire", "Back"};
+	const string submenu_items[] = {"Music", "Music volume", "Effects", "Fullscreen", "Game mode", "Friendly fire", "Back"};
+
+	int N = submenu_items->size();
 
 	int p = 0;
 	string enable;
 
 	Vector3 c;
-	for(int i = 0; i < 6; i++) {
+	stringstream ss;
+	for(int i = 0; i < N; i++) {
 		// highlight current selection
 		if(i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
 		else c = Vector3(0.25, 0.25, 0.25);
@@ -75,6 +77,13 @@ void OptionsState::render() {
 		case MUSIC: 
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
 			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->music_enabled ? "OF COURSE":"NAH", c, 3.0);
+			break;
+		case MUSIC_VOL:
+			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
+			ss.str("");
+			for(int i = 0; i < (int)(game->BCK_VOL * 10); i++)
+				ss << "|·|";
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, ss.str(), c, 3.0);
 			break;
 		case EFFECTS: 
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -121,14 +130,25 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 		break;
 	case SDLK_LEFT:
 	case SDLK_a:
-		if (currentSelection != 5) selectionChosen();
+		if (currentSelection == MUSIC_VOL)
+		{
+			downVol();
+			break;
+		}
+		selectionChosen();
 		break;
 	case SDLK_RIGHT:
 	case SDLK_d:
-		if (currentSelection != 5) selectionChosen();
+		if(currentSelection == MUSIC_VOL)
+		{	
+			upVol();
+			break;
+		}
+		selectionChosen();
 		break;
 	case SDLK_RETURN:
-		if(currentSelection == 5) selectionChosen();
+		if(currentSelection == BACK)
+			selectionChosen();
 		break;
 	}
 }
@@ -143,11 +163,25 @@ void OptionsState::onLeave( int fut_state ){
 	std::cout << "Options saved correctly" << endl;
 }
 
+void OptionsState::upVol()
+{
+	if(game->BCK_VOL < 1.0) game->BCK_VOL += 0.1;
+	BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
+
+}
+
+void OptionsState::downVol()
+{
+	if (game->BCK_VOL > 0.0) game->BCK_VOL -= 0.1;
+	BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
+
+}
+
 void OptionsState::selectionUp()
 {
 	currentSelection--;
 	if (currentSelection==-1)
-		currentSelection = 5;
+		currentSelection = 6;
 
 	if (!game->effects_enabled)
 		return;
@@ -160,7 +194,7 @@ void OptionsState::selectionUp()
 void OptionsState::selectionDown()
 {
 	currentSelection++;
-	if (currentSelection==6)
+	if (currentSelection==7)
 		currentSelection = 0;
 
 	if (!game->effects_enabled)
@@ -185,15 +219,17 @@ void OptionsState::selectionChosen()
 	case MUSIC:
 		game->music_enabled = !game->music_enabled;
 		if(game->bkg_music_playing){
-			BASS_ChannelStop(b_channel); // stop music 
+			BASS_ChannelStop(hSampleChannel); // stop music 
 			game->bkg_music_playing = false;
 		}
 		else {
 			int b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-			b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-			BASS_ChannelPlay(b_channel, false); // play it
+			hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+			BASS_ChannelPlay(hSampleChannel, false); // play it
 			game->bkg_music_playing = true;
 		}
+		break;
+	case MUSIC_VOL:
 		break;
 	case EFFECTS:
 		game->effects_enabled = !game->effects_enabled;

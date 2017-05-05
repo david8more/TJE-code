@@ -3,11 +3,13 @@
 
 #include "framework.h"
 #include "utils.h"
+#include "entity.h"
+#include "gameentities.h"
 
 class Entity;
 class EntityMesh;
 class EntityCollider;
-class EntityPlayer;
+class Airplane;
 class EntityEnemy;
 class Torpedo;
 
@@ -43,8 +45,8 @@ public:
 	EntityCollider* sea;
 
 	// fighters
-	EntityPlayer* playerAir;
-	EntityPlayer* playerShip;
+	Airplane* playerAir;
+	Airplane* playerShip;
 
 	void create();
 	void addPlayer();

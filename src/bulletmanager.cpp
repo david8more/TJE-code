@@ -54,12 +54,9 @@ void BulletManager::render() {
 
 		switch (current.type) {
 		case 1:
-			bullets.colors.push_back(Vector4(0.f, 0.f, 0.f, 1.f));
-			break;
-		case 2:
 			bullets.colors.push_back(Vector4(1.f, 0.f, 0.f, 1.f));
 			break;
-		case 3:
+		case 2:
 			bullets.colors.push_back(Vector4(1, 0, 1, 1));
 			break;
 		default:
@@ -80,8 +77,6 @@ void BulletManager::render() {
 
 void BulletManager::update(float elapsed_time) {
 	
-	std::cout << last_free << std::endl;
-
 	for (int i = 0; i < last_free; i++) {
 
 		Bullet& current = bullet_vector[i];

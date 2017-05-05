@@ -2,16 +2,19 @@
 #define OPTIONSSTATE_H
 
 #define MUSIC 0
-#define EFFECTS 1
-#define FULLSCREEN 2
-#define GAMEMODE 3
-#define FRIENDLYFIRE 4
+#define MUSIC_VOL 1
+#define EFFECTS 2
+#define FULLSCREEN 3
+#define GAMEMODE 4
+#define FRIENDLYFIRE 5
+#define BACK 6
 
 #include "../framework.h"
 #include "../texture.h"
 #include "../game.h"
 #include "../mesh.h"
 #include "../camera.h"
+#include "../bass.h"
 #include <iostream>
 
 using namespace std;
@@ -59,10 +62,13 @@ public:
 	// BASS
 	int s_sample;
 	int s_channel;
-	int b_channel;
+	HCHANNEL hSampleChannel;
 
 	// Index of the current selected menu item
 	int currentSelection;
+
+	void upVol();
+	void downVol();
 };
 
 #endif

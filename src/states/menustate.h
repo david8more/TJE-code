@@ -56,7 +56,7 @@ public:
 	int s_sample;
 	int b_sample;
 	int s_channel;
-	int b_channel;
+	HCHANNEL hSampleChannel;
 	bool music_on;
 
 	// needed instances to render

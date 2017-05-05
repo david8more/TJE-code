@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "utils.h"
 #include <iostream>
+#include <map>
 
 #define NO_CULLING false
 #define CULLING true
@@ -26,6 +27,10 @@ public:
 	string name;
 	Entity* parent;
 	vector<Entity*> children;
+
+	static std::map<std::string, Entity*> s_Entities;
+	static Entity* getEntity(std::string name);
+	void setName(std::string name);
 
 	virtual void render(Camera * camera);
 	virtual void update(float elapsed_time);
@@ -72,6 +77,7 @@ public:
 	EntityCollider();
 	~EntityCollider();
 	virtual void onBulletCollision();
+	virtual void onCollision() {}
 
 	int life;
 
@@ -83,30 +89,7 @@ public:
 };
 
 // *******************************************************************
-class EntityPlayer : public EntityCollider {
-public:
 
-	EntityPlayer(bool culling = true);
-	~EntityPlayer();
-
-	int life;
-	int torpedosLeft;
-	float cadence;
-	float damageM60;
-	float damageMissile;
-
-	Torpedo* torpedos[2];
-
-	void set(const char * mesh, const char * texture, const char * shader);
-	void render(Camera * camera);
-	void update(float elapsed_time);
-	void m60Shoot();
-	void createTorpedos();
-	void torpedoShoot();
-	void onCollision();
-};
-
-// *******************************************************************
 class EntityEnemy : public EntityCollider {
 public:
 
@@ -117,21 +100,6 @@ public:
 	void render(Camera * camera);
 	void update(float elapsed_time);
 	void onBulletCollision();
-};
-
-
-// *******************************************************************
-class Torpedo : public EntityCollider {
-public:
-
-	Torpedo(bool culling = true);
-	~Torpedo();
-
-	float ttl;
-	bool ready;
-
-	void update(float elapsed_time);
-	void activate();
 };
 
 #endif

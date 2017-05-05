@@ -42,6 +42,7 @@ public:
 
 	// background music playing
 	bool bkg_music_playing;
+	float BCK_VOL;
 	bool music_enabled;
 	bool effects_enabled;
 

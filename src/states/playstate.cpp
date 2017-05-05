@@ -1,16 +1,17 @@
+#include "state.h"
+#include "playstate.h"
+#include "endingstate.h"
 #include "../camera.h"
 #include "../game.h"
 #include "../utils.h"
 #include "../mesh.h"
 #include "../texture.h"
 #include "../shader.h"
-#include "state.h"
 #include "../bass.h"
-#include "playstate.h"
 #include "../entity.h"
 #include "../world.h"
 #include "../bulletmanager.h"
-#include "endingstate.h"
+#include "../playercontroller.h"
 
 #include <cmath>
 
@@ -33,6 +34,8 @@ void PlayState::init() {
 	world = World::getInstance();
 	world->create();
 
+	PlayerController::getInstance()->setPlayer(world->playerAir);
+
 	// posicion y direccion de la vista seleccionada
 	viewpos = Vector3(0, 5, -15);
 	viewtarget = Vector3(0, 5, 0);
@@ -42,7 +45,7 @@ void PlayState::init() {
 	game->fixed_camera = new Camera();
 
 	//game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
+	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 10.f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(0, 500, 500), Vector3(0,0, 0), Vector3(0, 1, 0));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
@@ -103,13 +106,14 @@ void PlayState::onEnter()
 	// Sounds
 	if (game->music_enabled) {
 		b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-		b_channel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-		BASS_ChannelPlay(b_channel, false); // play it
+		hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+		BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
+		BASS_ChannelPlay(hSampleChannel, false); // play it
 	}
 
 	e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 	e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
-	BASS_ChannelPlay(e_channel, false); // play it
+	//BASS_ChannelPlay(e_channel, false); // play it
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -134,7 +138,13 @@ void PlayState::render() {
 	world->sky->render(game->current_camera);
 	glEnable(GL_DEPTH_TEST);
 
+	Entity * sea = Entity::getEntity("sea");
+	sea->model.setIdentity();
+	sea->model.traslate(game->current_camera->eye.x, -10, game->current_camera->eye.z);
+	sea->render(game->current_camera);
+
 	world->root->render(game->current_camera);
+
 	//
 	if (debug_mesh.vertices.size()) {
 		debug_mesh.render(GL_POINTS);
@@ -200,30 +210,9 @@ void PlayState::update(double seconds_elapsed) {
 
 		return;
 	}
-	else {
-		
-		//mouse input to rotate the cam
-		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
-		{		
-				world->playerAir->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
-				world->playerAir->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
-		}
-
-		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
-		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(-1.f, 0.f, 0.f) * speed);
-		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(1.f, 0.f, 0.f) * speed);
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, 1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, -1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_Q]) {
-			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, 1) * speed);
-			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, -1, 0) * speed);
-		}
-		if (game->keystate[SDL_SCANCODE_E]) {
-			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, -1) * speed);
-			world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 1, 0) * speed);
-		}
-
+	else
+	{	
+		PlayerController::getInstance()->update(seconds_elapsed);
 	}
 
 	// to navigate with the mouse fixed in the middle
@@ -240,9 +229,6 @@ void PlayState::update(double seconds_elapsed) {
 
 	// update bullets and more
 	world->root->update(seconds_elapsed);
-	
-	// move plane
-	world->playerAir->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
 	// interpolate current and previous camera
 	Vector3 eye = world->playerAir->model * viewpos;
@@ -355,7 +341,7 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		game->current_camera = game->current_camera == game->fixed_camera ? game->free_camera : game->fixed_camera;
 		break;
 	case SDLK_4:
-		world->playerShip->destroy();
+		Shader::ReloadAll();
 		break;
 	case SDLK_SPACE:
 		shooting = true;
@@ -392,7 +378,7 @@ void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
 }
 
 void PlayState::onLeave(int fut_state) {
-	BASS_ChannelStop(b_channel); // stop music
+	BASS_ChannelStop(hSampleChannel); // stop music
 	BASS_ChannelStop(e_channel);
 }
 
