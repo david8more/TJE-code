@@ -90,6 +90,15 @@ void Vector3::random(Vector3 range)
 	z = (rand() / (float)RAND_MAX) * 2.0f * range.z - range.z; //value between -range and range
 }
 
+Vector3 Vector3::operator += (const Vector3& v)
+{
+	x += v.x;
+	y += v.y;
+	z += v.z;
+
+	return *this;
+}
+
 //*********************************
 Matrix44::Matrix44()
 {

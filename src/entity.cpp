@@ -183,7 +183,7 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 		collisionModel->getCollisionPoint(collisions.v, false);
 
-		current_enemy->onCollision();
+		current_enemy->onBulletCollision();
 
 		return true;
 	}
@@ -192,7 +192,7 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 }
 
-void EntityCollider::onCollision() {}
+void EntityCollider::onBulletCollision() {}
 
 // *************************************************************************
 // ENTITYPLAYER 
@@ -255,13 +255,13 @@ void EntityPlayer::m60Shoot() {
 	Vector3 cannon_pos2;
 	Vector3 cannon_pos3;
 	switch (planeModel) {
-	case 0:
+	case SPITFIRE:
 		cannon_pos1 = Vector3(1.9f, -0.25f, 5.f);
 		cannon_pos2 = Vector3(-1.9f, -0.25f, 5.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
-	case 1:
+	case P38:
 		cannon_pos1 = Vector3(0.5f, -0.25f, 10.f);
 		cannon_pos2 = Vector3(-0.5f, -0.25f, 10.f);
 		cannon_pos3 = Vector3(0.f, -0.1f, 10.f);
@@ -270,11 +270,11 @@ void EntityPlayer::m60Shoot() {
 		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
 		bManager->createBullet(model*cannon_pos3, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
 		break;
-	case 2:
+	case WILDCAT:
 		cannon_pos1 = Vector3(0.f, -0.50f, 10.f);
 		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
 		break;
-	case 3:
+	case BOMBER:
 		cannon_pos1 = Vector3(2.40f, -0.25f, 5.f);
 		cannon_pos2 = Vector3(-2.55f, -0.25f, 5.f);
 		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
@@ -326,8 +326,6 @@ void EntityPlayer::createTorpedos()
 void EntityPlayer::torpedoShoot() {
 	
 	if (!torpedosLeft) {
-		/*this->torpedos[0] = NULL;
-		this->torpedos[1] = NULL;*/
 		return;
 	}
 
@@ -336,8 +334,10 @@ void EntityPlayer::torpedoShoot() {
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
 
-	for (int i = 0; i < 2; i++) {
-		if (!torpedos[i]->ready) {
+	for (int i = 0; i < 2; i++)
+	{
+		if (!torpedos[i]->ready)
+		{
 			torpedos[i]->activate();
 			return;
 		}
@@ -388,7 +388,8 @@ void EntityEnemy::render(Camera * camera) {
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
-	for (int i = 0; i < this->children.size(); i++) {
+	for (int i = 0; i < this->children.size(); i++)
+	{
 		this->children[i]->render(camera);
 	}
 
@@ -398,7 +399,7 @@ void EntityEnemy::update(float elapsed_time) {
 	
 }
 
-void EntityEnemy::onCollision() {
+void EntityEnemy::onBulletCollision() {
 
 	this->life -= 5;
 	this->life = max(this->life, 0);

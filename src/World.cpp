@@ -147,7 +147,7 @@ void World::addWorldConst() {
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
 			root->addChild(ground);
-			ground->setStatic();
+			//ground->setStatic();
 		}
 	}
 
@@ -191,14 +191,14 @@ void World::addEnemies() {
 	enemyAir->model.setTranslation(0, 500, 200);
 	root->addChild(enemyAir);
 
-	enemyAir->setStatic();
+	//enemyAir->setStatic();
 
 	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setTranslation(500, 500, 200);
 	root->addChild(enemy2Air);
 
-	enemyAir->setStatic();
+	//enemyAir->setStatic();
 
 	if (!DEBUG) return;
 

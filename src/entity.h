@@ -71,7 +71,9 @@ public:
 
 	EntityCollider();
 	~EntityCollider();
-	virtual void onCollision();
+	virtual void onBulletCollision();
+
+	int life;
 
 	void setStatic();
 	void setDynamic();
@@ -111,13 +113,10 @@ public:
 	EntityEnemy(bool culling = true);
 	~EntityEnemy();
 
-	int life;
-
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
-	void onCollision();
-	//void missileShoot();
+	void onBulletCollision();
 };
 
 

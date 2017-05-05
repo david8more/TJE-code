@@ -26,8 +26,7 @@ public:
 
 	void render();
 	void update( float elapsed_time );
-	bool testBulletCollision();
-	void onBulletCollision();
+	void testBulletCollision();
 };
 
 #endif // !BULLETMANAGER_H

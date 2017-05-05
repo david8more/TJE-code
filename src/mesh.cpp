@@ -557,13 +557,16 @@ void Mesh::createCollisionModel() {
 
 CollisionModel3D * Mesh::getCollisionModel()
 {
-	if (this->collision_model != NULL) return collision_model;
+	if (this->collision_model != NULL)
+		return collision_model;
 
+	std::cout << " Creando collision model" << std::endl;
 	createCollisionModel();
 	return collision_model; 
 }
 
 void Mesh::setCollisionModel() {
-	if (this->collision_model == NULL) createCollisionModel();
+	if (this->collision_model == NULL)
+		createCollisionModel();
 }
 

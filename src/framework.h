@@ -84,6 +84,10 @@ public:
 
 	Vector3 cross( const Vector3& v ) const;
 	float dot( const Vector3& v ) const;
+
+	Vector3 operator += (const Vector3& v);
+
+	void sumame(Vector3 v);
 };
 
 class Vector4

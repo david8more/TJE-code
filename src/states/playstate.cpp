@@ -255,7 +255,7 @@ void PlayState::update(double seconds_elapsed) {
 
 	// COLISIONES
 
-	Vector3 ray_origin;
+	/*Vector3 ray_origin;
 	Vector3 ray_dir;
 
 	if (DEBUG) {
@@ -273,7 +273,7 @@ void PlayState::update(double seconds_elapsed) {
 		//std::cout << coll.x << coll.y << coll.z;
 		debug_mesh.vertices.push_back(coll);
 		debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
-	}
+	}*/
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -330,15 +330,9 @@ void PlayState::renderHUD() {
 
 	// vidas enemigas
 
-	/*ss.str("");
-	ss << world->collision_enemies[0]->life;
+	ss.str("");
+	ss << EntityCollider::static_colliders[0]->life;
 	drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 3.0);
-	ss.str("");
-	ss << world->collision_enemies[1]->life;
-	drawText(game->window_width*0.1, game->window_height*0.2, ss.str(), Vector3(1, 0, 0), 3.0);
-	ss.str("");
-	ss << world->collision_enemies[2]->life;
-	drawText(game->window_width*0.1, game->window_height*0.3, ss.str(), Vector3(1, 0, 0), 3.0);*/
 
 	// FINISHED RENDER INTERFACE ****************************************************************
 }
