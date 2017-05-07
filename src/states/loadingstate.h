@@ -30,6 +30,7 @@ public:
 	void onEnter();
 	void onLeave(int fut_state);
 	void render();
+	void update(double time_elapsed);
 	void onKeyPressed(SDL_KeyboardEvent event);
 	int stateID() { return -1; }
 
@@ -37,6 +38,8 @@ public:
 		static LoadingState Instance(SManager);
 		return &Instance;
 	}
+
+	void Load();
 
 	// needed instances to render
 

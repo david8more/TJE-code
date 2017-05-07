@@ -1,11 +1,12 @@
 #include "../camera.h"
 #include "../game.h"
 #include "../utils.h"
+#include "../includes.h"
 #include "../mesh.h"
 #include "../texture.h"
 #include "../shader.h"
-#include "optionsstate.h"
 #include "../bass.h"
+#include "optionsstate.h"
 #include "menustate.h"
 #include "playstate.h"
 #include "selectionstate.h"
@@ -17,6 +18,7 @@ MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
 
 Vector2 screen;
+float optimer = 0;
 
 void MenuState::init() {
 
@@ -115,8 +117,35 @@ void MenuState::render() {
 
 }
 
-void MenuState::update(double time_elapsed) {
+void MenuState::update(double time_elapsed)
+{
+	Game* game = Game::getInstance();
 	
+	optimer += time_elapsed;
+
+	if (game->joystick == NULL || optimer < 0.1)
+		return;
+
+	JoystickState state = getJoystickState(game->joystick);
+
+
+	if (state.button[HAT_UP])
+	{
+		selectionUp();
+		optimer = 0;
+	}
+
+	else if (state.button[HAT_DOWN])
+	{
+		selectionDown();
+		optimer = 0;
+	}
+
+	else if (state.button[A_BUTTON])
+	{
+		selectionChosen();
+		optimer = 0;
+	}
 }
 
 bool MenuState::inCurrentSelection(int selection) {

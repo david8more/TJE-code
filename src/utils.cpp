@@ -213,3 +213,43 @@ bool drawText(float x, float y, std::string text, Vector3 c, float scale )
 
 	return true;
 }
+
+SDL_Joystick* openJoystick(int num_joystick)
+{
+	// Initialize the joystick subsystem
+	SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+	// Check for number of joysticks available
+	if (SDL_NumJoysticks() <= num_joystick)
+		return NULL;
+
+	// Open joystick and return it
+	return SDL_JoystickOpen(num_joystick);
+}
+
+
+JoystickState getJoystickState(SDL_Joystick* joystick)
+{
+	JoystickState state;
+	memset(&state, 0, sizeof(JoystickState)); //clear
+
+	if (joystick == NULL)
+	{
+		//std::cout << "Error: Joystick not opened" << std::endl;
+		return state;
+	}
+
+	state.num_axis = SDL_JoystickNumAxes((::SDL_Joystick*) joystick);
+	state.num_buttons = SDL_JoystickNumButtons((::SDL_Joystick*)joystick);
+
+	if (state.num_axis > 8) state.num_axis = 8;
+	if (state.num_buttons > 16) state.num_buttons = 16;
+
+	for (int i = 0; i < state.num_axis; ++i) //axis
+		state.axis[i] = SDL_JoystickGetAxis((::SDL_Joystick*) joystick, i) / 32768.0f; //range -32768 to 32768
+	for (int i = 0; i < state.num_buttons; ++i) //buttons
+		state.button[i] = SDL_JoystickGetButton((::SDL_Joystick*) joystick, i);
+	state.hat = (HATState)(SDL_JoystickGetHat((::SDL_Joystick*) joystick, 0) - SDL_HAT_CENTERED); //one hat is enough
+
+	return state;
+}

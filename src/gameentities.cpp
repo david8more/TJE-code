@@ -197,7 +197,7 @@ void Torpedo::update(float elapsed_time) {
 		return;
 	}
 
-	model.traslateLocal(0, 0, elapsed_time * -200);
+	model.traslateLocal(0, 0, (3 - ttl) * elapsed_time * -150);
 	ttl -= elapsed_time;
 }
 

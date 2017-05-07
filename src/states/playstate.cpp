@@ -18,11 +18,11 @@
 #define DEBUG 0
 
 //globals
-bool inZoom = false;
 BulletManager* bManager = NULL;
 World * world = NULL; 
+
 Mesh debug_mesh;
-//initialize joistick
+bool inZoom = false;
 
 PlayState::PlayState(StateManager* SManager) : State(SManager) {}
 PlayState::~PlayState() {}
@@ -45,7 +45,7 @@ void PlayState::init() {
 	game->fixed_camera = new Camera();
 
 	//game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
-	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 10.f, 50000.f);
+	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(0, 500, 500), Vector3(0,0, 0), Vector3(0, 1, 0));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
@@ -85,12 +85,14 @@ void PlayState::onEnter()
 {
 	cout << "$ Entering play state -- ..." << endl;
 	Game* game = Game::getInstance();
+
+	player = World::getInstance()->playerAir;
 	
 	// views things
 	current_view = 0;
 
 	//set the clear color (the background color)
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.5, 0.7, 0.8, 1.0);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -99,9 +101,12 @@ void PlayState::onEnter()
 	glEnable(GL_DEPTH_TEST); //check the occlusi  ons using the Z buffer
 
 	//m60 init
-	timer = shootingtime = 0;
-	cadencia = 0;
-	shooting = overused = false;
+	player->timer = player->shootingtime = 0;
+	player->cadenceCounter = 0;
+	player->shooting = player->overused = false;
+
+
+	PlayerController::getInstance()->current_controller = CONTROLLER_MODE_KEYBOARD;
 
 	// Sounds
 	if (game->music_enabled) {
@@ -113,7 +118,7 @@ void PlayState::onEnter()
 
 	e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 	e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
-	//BASS_ChannelPlay(e_channel, false); // play it
+	BASS_ChannelPlay(e_channel, false); // play it
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -122,12 +127,10 @@ void PlayState::onEnter()
 
 void PlayState::render() {
 
-	Game* game = Game::getInstance();
-
-	//set the clear color (the background color)
-	glClearColor(0.05, 0.14, 0.25, 1.0);
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	Game* game = Game::getInstance();
 
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	game->current_camera->set();
@@ -156,75 +159,18 @@ void PlayState::render() {
 
 void PlayState::update(double seconds_elapsed) {
 
-	// overusing y cadencia
-
-	if (!overused && shootingtime > 30) overused = true;
-
-	if (shooting && !overused && cadencia <= 0){
-		shootingtime++;
-		world->playerAir->m60Shoot();
-		cadencia = world->playerAir->cadence;
-	}
-
-	if (cadencia > 0) cadencia -= seconds_elapsed * 100;
-
-	// cooling system timer
-	if (overused) timer += seconds_elapsed;
-
-	if (timer > 5) {
-		timer = shootingtime = 0;
-		overused = false;
-	}
-
 	Game* game = Game::getInstance();
 
 	// ********************************************************************
 
-
-	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
-
-	if (game->current_camera == game->free_camera) {
-		
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
-		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->free_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->free_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->free_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) game->free_camera->move(Vector3(-1.f, 0.f, 0.f) * speed);
-
-		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
-		{
-			game->current_camera->rotate(game->mouse_delta.x * 0.005f, Vector3(0.f, -1.f, 0.f));
-			game->current_camera->rotate(game->mouse_delta.y * 0.005f, game->current_camera->getLocalVector(Vector3(-1.f, 0.f, 0.f)));
-		}
-
-		if (game->mouse_locked)
-		{
-			int center_x = floor(game->window_width*0.5);
-			int center_y = floor(game->window_height*0.5);
-
-			SDL_WarpMouseInWindow(game->window, center_x, center_y); //put the mouse back in the middle of the screen
-
-			game->mouse_position.x = center_x;
-			game->mouse_position.y = center_y;
-		}
-
+	if (game->current_camera == game->free_camera)
+	{	
+		PlayerController::getInstance()->updateCamera(game->current_camera, seconds_elapsed);
 		return;
 	}
 	else
 	{	
 		PlayerController::getInstance()->update(seconds_elapsed);
-	}
-
-	// to navigate with the mouse fixed in the middle
-	if (game->mouse_locked)
-	{
-		int center_x = floor(game->window_width*0.5);
-		int center_y = floor(game->window_height*0.5);
-
-		SDL_WarpMouseInWindow(game->window, center_x, center_y); //put the mouse back in the middle of the screen
-
-		game->mouse_position.x = center_x;
-		game->mouse_position.y = center_y;
 	}
 
 	// update bullets and more
@@ -292,7 +238,7 @@ void PlayState::renderHUD() {
 	std::stringstream ss;
 
 	ss << "[";
-	for (int i = 0; i < shootingtime; i += 3) {
+	for (int i = 0; i < player->shootingtime; i += 3) {
 		ss << "|";
 	}
 	ss << "]";
@@ -301,12 +247,12 @@ void PlayState::renderHUD() {
 	Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
 
 	drawText(game->window_width*0.8, game->window_height*0.9, ss.str(), v, 3.0);
-	int percent_used = (float)shootingtime / 30 * 100;
+	int percent_used = (float)player->shootingtime / 30 * 100;
 	if (percent_used > 100.0) percent_used = 100.0;
 	ss.str("");
 	ss << percent_used << "%";
 	drawText(game->window_width*0.8, game->window_height*0.95, ss.str(), v, 2.0); // % engine !!!
-	if (overused) drawText(game->window_width*0.1, game->window_height*0.75, "ALERT: ENGINE OVERUSED. COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
+	if (player->overused) drawText(game->window_width*0.1, game->window_height*0.75, "ALERT: ENGINE OVERUSED. COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
 
 	// MISSILES
 
@@ -343,8 +289,11 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_4:
 		Shader::ReloadAll();
 		break;
+	case SDLK_5:
+		PlayerController::getInstance()->current_controller = PlayerController::getInstance()->current_controller ? CONTROLLER_MODE_KEYBOARD : CONTROLLER_MODE_GAMEPAD;
+		break;
 	case SDLK_SPACE:
-		shooting = true;
+		world->playerAir->shooting = true;
 		break;
 	
 	}
@@ -355,8 +304,8 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 	switch (event.keysym.sym)
 	{
 	case SDLK_SPACE:
-		shooting = false;
-		if (!overused) shootingtime = 0;
+		world->playerAir->shooting = false;
+		if (!player->overused) player->shootingtime = 0;
 		break;
 	case SDLK_t:
 		world->playerAir->torpedoShoot();

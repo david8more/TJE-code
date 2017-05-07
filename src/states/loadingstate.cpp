@@ -31,6 +31,8 @@ void LoadingState::onEnter()
 	game = Game::getInstance();
 	backgroundQuad.createQuad(game->window_width*0.5, game->window_height*0.5, game->window_width, game->window_height, true);
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
+
+	game->joystick = openJoystick(0);
 }
 
 void LoadingState::onLeave(int fut_state)
@@ -54,10 +56,36 @@ void LoadingState::render()
 	drawText(game->window_width*0.5 - game->window_height*text.size()*0.008, game->window_height*0.75, text, Vector3(1.f, 1.f, 1.f), game->window_height*0.003);
 }
 
+void LoadingState::update(double time_elapsed)
+{
+	Game* game = Game::getInstance();
+
+	if (game->joystick == NULL)
+		return;
+
+
+	JoystickState state = getJoystickState(game->joystick);
+
+	for (int i = 0; i < 14; i++)
+	{
+		if (state.button[i])
+		{
+			Load();
+			return;
+		}
+
+	}
+}
+
 void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	if (event.keysym.sym == SDLK_ESCAPE) return;
 
+	Load();
+}
+
+void LoadingState::Load()
+{
 	MenuState::getInstance(this->SManager)->init();
 	OptionsState::getInstance(this->SManager)->init();
 	Howto::getInstance(this->SManager)->init();

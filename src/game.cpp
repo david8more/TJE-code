@@ -36,6 +36,7 @@ Game::Game(SDL_Window* window)
 	std::cout << " * Window size: " << window_width << " x " << window_height << std::endl;
 
 	keystate = NULL;
+	joystick = NULL;
 	mouse_locked = false;
 	music_enabled = true; 
 	effects_enabled = true; 
@@ -98,9 +99,6 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 		case SDLK_ESCAPE: 
 			if(!sManager->stateID() || sManager->stateID() == -1) exit(1);
 			sManager->changeCurrentState( MenuState::getInstance(sManager) );
-			break;
-		case SDLK_5:
-			sManager->changeCurrentState(EndingState::getInstance(sManager));
 			break;
 	}
 }

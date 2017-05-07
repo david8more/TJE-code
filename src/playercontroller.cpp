@@ -9,6 +9,7 @@
 #include "entity.h"
 #include "world.h"
 #include "bulletmanager.h"
+#include "states\playstate.h"
 
 PlayerController * PlayerController::instance = NULL;
 
@@ -30,43 +31,178 @@ PlayerController::~PlayerController()
 void PlayerController::update(float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
-	World* world = World::getInstance();
+
+	// SHOOTING
+
+	// overusing y cadencia
+
+	if (!player->overused && player->shootingtime > 30)
+		player->overused = true;
+
+	if (player->shooting && !player->overused && player->cadenceCounter <= 0)
+	{
+		player->shootingtime++;
+		player->m60Shoot();
+		player->cadenceCounter = player->cadence;
+	}
+
+	if (player->cadenceCounter > 0)
+		player->cadenceCounter -= seconds_elapsed * 100;
+
+	// cooling system timer
+	if (player->overused)
+		player->timer += seconds_elapsed;
+
+	if (player->timer > 5)
+	{
+		player->timer = player->shootingtime = 0;
+		player->overused = false;
+	}
+
+	// CONTROLLER
 
 	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
 
+	if (current_controller == CONTROLLER_MODE_KEYBOARD)
+	{
+		if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
+		{
+			player->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
+			player->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
+		}
+
+		//async input to move the camera around
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
+
+		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) moveY(-1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) moveY(1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) moveX(1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) moveX(-1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_Q]) moveXY(1.f, -1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_E]) moveXY(-1.f, 1.f, seconds_elapsed, speed);
+
+		// to navigate with the mouse fixed in the middle
+		if (game->mouse_locked)
+		{
+			int center_x = floor(game->window_width*0.5);
+			int center_y = floor(game->window_height*0.5);
+
+			SDL_WarpMouseInWindow(game->window, center_x, center_y); //put the mouse back in the middle of the screen
+
+			game->mouse_position.x = center_x;
+			game->mouse_position.y = center_y;
+		}
+	}
+	else if(current_controller == CONTROLLER_MODE_GAMEPAD)
+	{
+		// JOYSTICK
+
+		if (game->joystick == NULL)
+			return;
+
+		JoystickState state = getJoystickState(game->joystick);
+
+		if (state.axis[LEFT_ANALOG_Y] > 0.2 || state.axis[LEFT_ANALOG_Y] < -0.2)
+		{
+			moveY(state.axis[LEFT_ANALOG_Y], seconds_elapsed, speed);
+		}
+
+		if (state.axis[RIGHT_ANALOG_X] > 0.2 || state.axis[RIGHT_ANALOG_X] < -0.2)
+		{
+			// Q, E on keyboard
+			// moveXY(-state.axis[RIGHT_ANALOG_X], state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
+			//
+			moveX(-state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
+		}
+
+		if (state.button[HAT_LEFT])
+		{
+			moveX(1.f, seconds_elapsed, speed);
+		}
+
+		if (state.button[HAT_RIGHT])
+		{
+			moveX(-1.f, seconds_elapsed, speed);
+		}
+
+		if (state.button[Y_BUTTON])
+		{
+			/*int current_view = PlayState::getInstance();
+			PlayState::current_view = PlayState::current_view ? FULLVIEW : CABINEVIEW;
+			PlayState::setView();*/
+		}
+		
+		if (state.axis[4] > 0.1)
+		{
+			speed *= 50;
+		}
+
+		if (state.axis[5] > 0.1)
+		{
+			shoot();
+		}
+		else
+		{
+			player->shooting = false;
+			if (!player->overused) player->shootingtime = 0;
+		}
+	}
+
+	// MOVING
+	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
+}
+
+void PlayerController::moveY(float axis, float seconds_elapsed, float speed)
+{
+	player->model.rotateLocal(seconds_elapsed, Vector3(axis, 0.f, 0.f) * speed);
+}
+
+void PlayerController::moveX(float axis, float seconds_elapsed, float speed)
+{
+	player->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, axis) * speed);
+}
+
+void PlayerController::moveXY(float Zaxis, float Yaxis, float seconds_elapsed, float speed)
+{
+	player->model.rotateLocal(seconds_elapsed, Vector3(0, 0, Zaxis) * speed);
+	player->model.rotateLocal(seconds_elapsed, Vector3(0, Yaxis, 0) * speed);
+}
+
+void PlayerController::shoot()
+{	
+	player->shooting = true;
+}
+
+void PlayerController::updateCamera(Camera * camera, float seconds_elapsed)
+{
+	Game* game = Game::getInstance();
+	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
+
+	if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
+	if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->free_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
+	if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->free_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
+	if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->free_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
+	if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) game->free_camera->move(Vector3(-1.f, 0.f, 0.f) * speed);
+
 	if (game->mouse_locked || (game->mouse_state & SDL_BUTTON_LEFT)) //is left button pressed?
 	{
-		world->playerAir->model.rotateLocal(game->mouse_delta.x * 0.005, Vector3(0, -1, 0));
-		world->playerAir->model.rotateLocal(game->mouse_delta.y * 0.005, Vector3(1, 0, 0));
+		game->free_camera->rotate(game->mouse_delta.x * 0.005f, Vector3(0.f, -1.f, 0.f));
+		game->free_camera->rotate(game->mouse_delta.y * 0.005f, game->current_camera->getLocalVector(Vector3(-1.f, 0.f, 0.f)));
 	}
 
-	//async input to move the camera around
-	if (game->keystate[SDL_SCANCODE_LSHIFT])
-		speed *= 50; //move faster with left shift
-
-	if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(-1.f, 0.f, 0.f) * speed);
-
-	if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN])
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(1.f, 0.f, 0.f) * speed);
-
-	if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT])
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, 1.f) * speed);
-
-	if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT])
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0.f, 0.f, -1.f) * speed);
-
-	if (game->keystate[SDL_SCANCODE_Q])
+	if (game->mouse_locked)
 	{
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, 1) * speed);
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, -1, 0) * speed);
-	}
+		int center_x = floor(game->window_width*0.5);
+		int center_y = floor(game->window_height*0.5);
 
-	if (game->keystate[SDL_SCANCODE_E])
-	{
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 0, -1) * speed);
-		world->playerAir->model.rotateLocal(seconds_elapsed, Vector3(0, 1, 0) * speed);
-	}
+		SDL_WarpMouseInWindow(game->window, center_x, center_y); //put the mouse back in the middle of the screen
 
-	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
+		game->mouse_position.x = center_x;
+		game->mouse_position.y = center_y;
+	}
 }

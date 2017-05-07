@@ -15,6 +15,13 @@ public:
 	float damageM60;
 	float damageMissile;
 
+	// m60 attributes
+	float timer;
+	bool overused;
+	int shootingtime;
+	bool shooting;
+	float cadenceCounter;
+
 	Torpedo* torpedos[2];
 
 	void set(const char * mesh, const char * texture, const char * shader);

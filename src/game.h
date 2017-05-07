@@ -9,6 +9,7 @@
 #define HARD true
 
 #include "includes.h"
+#include "utils.h"
 #include "camera.h"
 #include "states/state.h"
 
@@ -54,6 +55,10 @@ public:
 	Vector2 mouse_position; //last mouse position
 	Vector2 mouse_delta; //mouse movement in the last frame
 	bool mouse_locked; //tells if the mouse is locked (not seen)
+
+	//joystick
+
+	SDL_Joystick* joystick;
 	
 	Camera* free_camera; //our global camera
 	Camera* fixed_camera;

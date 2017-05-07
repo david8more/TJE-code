@@ -35,6 +35,10 @@ public:
 
 	int stateID() { return 3; }
 
+	void selectionDown();
+	void selectionUp();
+	void selectionChosen();
+
 	static SelectionState* getInstance(StateManager* SManager);
 
 	// background texture

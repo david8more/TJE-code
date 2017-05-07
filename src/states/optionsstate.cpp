@@ -10,6 +10,8 @@
 
 #include <cmath>
 
+float timer = 0;
+
 OptionsState::OptionsState(StateManager* SManager) : State( SManager ) {}
 OptionsState::~OptionsState() {}
 
@@ -113,7 +115,57 @@ void OptionsState::render() {
 
 void OptionsState::update(double seconds_elapsed) {
 	
-	
+	Game* game = Game::getInstance();
+
+	if (game->joystick == NULL)
+		return;
+
+	JoystickState state = getJoystickState(game->joystick);
+
+	timer += seconds_elapsed;
+
+	if (state.button[HAT_UP] && timer > 0.1)
+	{
+		selectionUp();
+		timer = 0;
+	}
+
+	else if (state.button[HAT_DOWN] && timer > 0.1)
+	{
+		selectionDown();
+		timer = 0;
+	}
+
+	else if (state.button[A_BUTTON] && timer > 0.2)
+	{
+		selectionChosen();
+		timer = 0;
+	}
+
+	else if (state.button[B_BUTTON] && timer > 0.2)
+	{
+		timer = 0;
+		SManager->changeCurrentState(MenuState::getInstance(SManager));
+	}
+
+	else if (state.button[HAT_LEFT] && timer > 0.2)
+	{
+		timer = 0;
+		if (currentSelection == MUSIC_VOL)
+		{
+			downVol();
+		}
+	}
+
+	else if (state.button[HAT_RIGHT] && timer > 0.2)
+	{
+		timer = 0;
+		if (currentSelection == MUSIC_VOL)
+		{
+			upVol();
+		}
+	}
+
 }
 
 void OptionsState::onKeyPressed( SDL_KeyboardEvent event )

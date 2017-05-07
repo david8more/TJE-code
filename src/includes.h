@@ -55,10 +55,4 @@
 
 //OPENGL EXTENSIONS
 
-
-
-
-
-
-
 #endif

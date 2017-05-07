@@ -20,6 +20,7 @@ EntityMesh* helix = NULL; // helix mesh
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
+float seltimer = 0;
 
 SelectionState::SelectionState(StateManager* SManager) : State(SManager) {}
 SelectionState::~SelectionState() {}
@@ -28,43 +29,6 @@ SelectionState* SelectionState::getInstance(StateManager* SManager)
 {
 	static SelectionState Instance(SManager);
 	return &Instance;
-}
-
-void SelectionState::onKeyPressed(SDL_KeyboardEvent event)
-{
-	World* world = World::getInstance();
-
-	if (DEBUG) return;
-
-	switch (event.keysym.sym)
-	{
-	case SDLK_RETURN:
-		//set the clear color (the background color) & clear the window and the depth buffer
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// tell world the plane selected
-		world->worldInfo.playerModel = playerModel;
-		world->addPlayer();
-		world->setGameMode();
-		SManager->changeCurrentState(PlayState::getInstance(SManager));
-		break;
-	case SDLK_UP:
-	case SDLK_w:
-		s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-		s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-		BASS_ChannelPlay(s_channel, false); // play it
-		playerModel--;
-		if (playerModel == -1) playerModel = 3;
-		break;
-	case SDLK_DOWN:
-	case SDLK_s:
-		s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-		s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-		BASS_ChannelPlay(s_channel, false); // play it
-		playerModel++;
-		if (playerModel == 4) playerModel = 0;
-		break;
-	}
 }
 
 void SelectionState::init() {
@@ -234,34 +198,19 @@ void SelectionState::update(double time_elapsed) {
 
 	float speed = time_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
-	if (DEBUG) {
+	if (DEBUG)
+	{
 		//mouse input to rotate the cam
 		if ((game->mouse_state & SDL_BUTTON_LEFT) || game->mouse_locked) //is left button pressed?
 		{
 			cam3D->rotate(game->mouse_delta.x * 0.005f, Vector3(0.0f, -0.5f, 0.0f));
 			cam3D->rotate(game->mouse_delta.y * 0.005f, cam3D->getLocalVector(Vector3(-0.5f, 0.0f, 0.0f)));
 		}
-
-		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
-		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) cam3D->move(Vector3(0.0f, 0.0f, 0.1f) * speed);
-		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) cam3D->move(Vector3(0.0f, 0.0f, -0.1f) * speed);
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) cam3D->move(Vector3(0.1f, 0.0f, 0.0f) * speed);
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) cam3D->move(Vector3(-0.1f, 0.0f, 0.0f) * speed);
 	}
-	else {
-
-		//mouse input to rotate the cam
-		if ((game->mouse_state & SDL_BUTTON_LEFT) || game->mouse_locked) //is left button pressed?
-		{
-			eMesh->model.rotateLocal(game->mouse_delta.x * 0.005f, Vector3(0, 1, 0));
-			eMesh->model.rotateLocal(game->mouse_delta.y * 0.005f, Vector3(1, 0, 0));
-		}
-
+	else
+	{
 		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) eMesh->model.rotateLocal(0.05f* speed, Vector3(0, 1, 0));
 		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) eMesh->model.rotateLocal(0.05f* speed, Vector3(0, -1, 0));
-		if (game->keystate[SDL_SCANCODE_B]) cam3D->move(Vector3(0.f, 0.f, 1.f)* speed);
-		if (game->keystate[SDL_SCANCODE_V]) cam3D->move(Vector3(0.f, 0.f, -1.f)* speed);
 	}
 
 	//to navigate with the mouse fixed in the middle
@@ -276,4 +225,87 @@ void SelectionState::update(double time_elapsed) {
 		game->mouse_position.y = (float)center_y;
 	}
 
+	// JOYSTICK
+	
+	seltimer += time_elapsed;
+
+	if (game->joystick == NULL || seltimer < 0.1)
+		return;
+
+	JoystickState state = getJoystickState(game->joystick);
+
+	if (state.button[HAT_UP])
+	{
+		seltimer = 0;
+		selectionUp();
+	}
+
+	else if (state.button[HAT_DOWN])
+	{
+		seltimer = 0;
+		selectionDown();
+	}
+
+	else if (state.button[A_BUTTON])
+	{
+		seltimer = 0;
+		selectionChosen();
+	}
+
+	//std:cout << state.axis[LEFT_ANALOG_X] << std::endl;
+
+	if (state.axis[LEFT_ANALOG_X] > 0.2 || state.axis[LEFT_ANALOG_X] < -0.2)
+	{
+		eMesh->model.rotateLocal(0.05f* speed, Vector3(0, state.axis[LEFT_ANALOG_X], 0));
+	}
+
+}
+
+void SelectionState::selectionDown()
+{
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
+	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
+	BASS_ChannelPlay(s_channel, false); // play it
+	playerModel++;
+	if (playerModel == 4) playerModel = 0;
+}
+
+void SelectionState::selectionUp()
+{
+	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
+	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
+	BASS_ChannelPlay(s_channel, false); // play it
+	playerModel--;
+	if (playerModel == -1) playerModel = 3;
+}
+
+void SelectionState::selectionChosen()
+{
+	World* world = World::getInstance();
+
+	// tell world the plane selected
+	world->worldInfo.playerModel = playerModel;
+	world->addPlayer();
+	world->setGameMode();
+	SManager->changeCurrentState(PlayState::getInstance(SManager));
+}
+
+void SelectionState::onKeyPressed(SDL_KeyboardEvent event)
+{
+	if (DEBUG) return;
+
+	switch (event.keysym.sym)
+	{
+	case SDLK_RETURN:
+		selectionChosen();
+		break;
+	case SDLK_UP:
+	case SDLK_w:
+		selectionUp();
+		break;
+	case SDLK_DOWN:
+	case SDLK_s:
+		selectionDown();
+		break;
+	}
 }

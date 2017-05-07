@@ -147,7 +147,7 @@ void World::addWorldConst() {
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityCollider* ground = new EntityCollider();
-			ground->set("island.ASE", "data/textures/island.tga", "simple");
+			ground->set("island.ASE", "data/textures/island.tga", "fog");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));

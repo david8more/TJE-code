@@ -16,9 +16,11 @@
 #define OBJECTIVE 0
 #define KEYBOARD 1
 #define XBOX 2
+#define BACK 3
 
 Camera cam;
 Mesh quead;
+float httimer = 0;
 
 Howto::Howto(StateManager* SManager) : State(SManager) {}
 Howto::~Howto() {}
@@ -143,8 +145,40 @@ void Howto::render() {
 	glColor4f(1.0, 1.0, 1.0, 0.0);
 }
 
-void Howto::update(double time_elapsed) {
+void Howto::update(double time_elapsed)
+{
+	Game* game = Game::getInstance();
 
+	if (game->joystick == NULL)
+		return;
+
+	JoystickState state = getJoystickState(game->joystick);
+
+	httimer += time_elapsed;
+
+	if (state.button[HAT_UP] && httimer > 0.1)
+	{
+		selectionUp();
+		httimer = 0;
+	}
+
+	if (state.button[HAT_DOWN] && httimer > 0.1)
+	{
+		selectionDown();
+		httimer = 0;
+	}
+
+	if (state.button[A_BUTTON] && httimer > 0.2)
+	{
+		httimer = 0;
+		selectionChosen();
+	}
+
+	if (state.button[B_BUTTON] && httimer > 0.2)
+	{
+		httimer = 0;
+		SManager->changeCurrentState(MenuState::getInstance(SManager));
+	}
 }
 void Howto::selectionUp()
 {
@@ -183,7 +217,8 @@ void Howto::selectionChosen()
 		BASS_ChannelPlay(s_channel, false); // play it
 	}
 
-	if(currentSelection == 3) SManager->changeCurrentState(MenuState::getInstance(SManager));
+	if(currentSelection == BACK)
+		SManager->changeCurrentState(MenuState::getInstance(SManager));
 
 }
 

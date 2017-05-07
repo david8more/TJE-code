@@ -15,6 +15,7 @@
 #include "../camera.h"
 #include <iostream>
 #include "../bass.h"
+#include "../gameentities.h"
 
 using namespace std;
 
@@ -51,10 +52,13 @@ public:
 	void onMouseButton(SDL_MouseButtonEvent event);
 	int stateID() { return 4; }
 	void setView();
+	int current_view;
+
+
+	Airplane* player;
 
 	Vector3 viewpos;
 	Vector3 viewtarget;
-	int current_view;
 
 	// saber cuanto sumamos a la cámara dependiendo
 	// del avion que usamos
@@ -87,13 +91,6 @@ public:
 	bool engine_on;
 	int e_sample;
 	int e_channel;
-
-	// m60 attributes
-	float timer;
-	bool shooting;
-	bool overused;
-	int shootingtime;
-	float cadencia;
 };
 
 #endif
