@@ -87,9 +87,9 @@ void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 void LoadingState::Load()
 {
 	MenuState::getInstance(this->SManager)->init();
-	OptionsState::getInstance(this->SManager)->init();
-	Howto::getInstance(this->SManager)->init();
-	EndingState::getInstance(this->SManager)->init();
+	//OptionsState::getInstance(this->SManager)->init();
+	//Howto::getInstance(this->SManager)->init();
+	//EndingState::getInstance(this->SManager)->init();
 	SelectionState::getInstance(this->SManager)->init();
 	PlayState::getInstance(this->SManager)->init();
 

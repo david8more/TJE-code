@@ -12,10 +12,11 @@
 #include "states\playstate.h"
 
 PlayerController * PlayerController::instance = NULL;
+float controller_timer = 0;
 
 PlayerController::PlayerController()
 {
-	
+	current_view = FULLVIEW;
 }
 
 void PlayerController::setPlayer(Airplane* player)
@@ -107,6 +108,8 @@ void PlayerController::update(float seconds_elapsed)
 
 		JoystickState state = getJoystickState(game->joystick);
 
+		controller_timer += seconds_elapsed;
+
 		if (state.axis[LEFT_ANALOG_Y] > 0.2 || state.axis[LEFT_ANALOG_Y] < -0.2)
 		{
 			moveY(state.axis[LEFT_ANALOG_Y], seconds_elapsed, speed);
@@ -130,11 +133,16 @@ void PlayerController::update(float seconds_elapsed)
 			moveX(-1.f, seconds_elapsed, speed);
 		}
 
-		if (state.button[Y_BUTTON])
+		if (state.button[Y_BUTTON] && controller_timer > 0.25)
 		{
-			/*int current_view = PlayState::getInstance();
-			PlayState::current_view = PlayState::current_view ? FULLVIEW : CABINEVIEW;
-			PlayState::setView();*/
+			current_view = current_view ? FULLVIEW : CABINEVIEW;
+			controller_timer = 0;
+		}
+
+		if (state.button[LB_BUTTON] && controller_timer > 0.25)
+		{
+			player->torpedoShoot();
+			controller_timer = 0;
 		}
 		
 		if (state.axis[4] > 0.1)

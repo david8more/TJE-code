@@ -54,6 +54,7 @@ public:
 	void setView();
 	int current_view;
 
+	Game* game;
 
 	Airplane* player;
 

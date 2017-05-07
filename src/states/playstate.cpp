@@ -29,7 +29,7 @@ PlayState::~PlayState() {}
 
 void PlayState::init() {
 
-	Game* game = Game::getInstance();
+	game = Game::getInstance();
 	bManager = BulletManager::getInstance();
 	world = World::getInstance();
 	world->create();
@@ -84,8 +84,7 @@ void PlayState::init() {
 void PlayState::onEnter()
 {
 	cout << "$ Entering play state -- ..." << endl;
-	Game* game = Game::getInstance();
-
+	
 	player = World::getInstance()->playerAir;
 	
 	// views things
@@ -130,8 +129,6 @@ void PlayState::render() {
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Game* game = Game::getInstance();
-
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	game->current_camera->set();
 	
@@ -159,18 +156,28 @@ void PlayState::render() {
 
 void PlayState::update(double seconds_elapsed) {
 
-	Game* game = Game::getInstance();
+	PlayerController* player_controller = PlayerController::getInstance();
 
 	// ********************************************************************
 
 	if (game->current_camera == game->free_camera)
 	{	
-		PlayerController::getInstance()->updateCamera(game->current_camera, seconds_elapsed);
+		player_controller->updateCamera(game->current_camera, seconds_elapsed);
 		return;
 	}
 	else
 	{	
-		PlayerController::getInstance()->update(seconds_elapsed);
+		player_controller->update(seconds_elapsed);
+
+		if (player_controller->current_controller == CONTROLLER_MODE_GAMEPAD)
+		{
+			if (player_controller->current_view != current_view)
+			{
+				current_view = player_controller->current_view;
+				setView();
+			}
+		}
+
 	}
 
 	// update bullets and more
@@ -215,8 +222,6 @@ void PlayState::update(double seconds_elapsed) {
 }
 
 void PlayState::renderHUD() {
-
-	Game* game = Game::getInstance();
 
 	// RENDER HUD ****************************************************************
 
@@ -271,8 +276,6 @@ void PlayState::renderHUD() {
 
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	Game* game = Game::getInstance();
-
 	switch (event.keysym.sym)
 	{
 	case SDLK_1: // full plane view
@@ -332,9 +335,14 @@ void PlayState::onLeave(int fut_state) {
 }
 
 void PlayState::setView() {
+
 	switch (current_view)
 	{
 	case FULLVIEW:
+
+		game->current_camera->near_plane = 7.5f;
+		game->current_camera->far_plane = 50000.f;
+
 		if (world->worldInfo.playerModel == SPITFIRE) {
 			world->playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 		}
@@ -343,6 +351,9 @@ void PlayState::setView() {
 		break;
 
 	case CABINEVIEW:
+
+		game->current_camera->near_plane = 0.1f;
+		game->current_camera->far_plane = 50000.f;
 		
 		if (world->worldInfo.playerModel == SPITFIRE) {
 			viewpos = Vector3(0.f, 0.7f, -1.5f);

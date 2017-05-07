@@ -14,6 +14,7 @@ private:
 public:
 	Airplane* player;
 	int current_controller;
+	int current_view;
 
 	static PlayerController* instance;
 
