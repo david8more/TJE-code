@@ -30,7 +30,7 @@ public:
 	void m60Shoot();
 	void createTorpedos();
 	void torpedoShoot();
-	void onCollision();
+	void onCollision(EntityCollider* collided_with);
 };
 
 // *******************************************************************
@@ -46,6 +46,7 @@ public:
 
 	void update(float elapsed_time);
 	void activate();
+	void onCollision(EntityCollider* collided_with);
 };
 
 // *******************************************************************

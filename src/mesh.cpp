@@ -501,7 +501,6 @@ bool Mesh::loadASE(const char* name) {
 	header.min = min_v;
 	header.max = max_v;
 
-
 	header.center = ((header.max + header.min) * 0.5);
 	header.halfsize = (header.max - header.center);
 	header.radius = header.halfsize.length();

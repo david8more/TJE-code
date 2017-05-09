@@ -69,7 +69,6 @@ void BulletManager::render() {
 	if (!bullets.vertices.size())
 		return;
 
-	glLineWidth(2);
 	glEnable(GL_BLEND);
 	bullets.render(GL_LINES);
 	glDisable(GL_BLEND);
@@ -127,7 +126,7 @@ void BulletManager::testBulletCollision() {
 				continue;
 
 			// collision made
-			std::cout << "collision made: " << current.ttl << std::endl;
+			//std::cout << "collision made: " << current.ttl << std::endl;
 			current_enemy->onBulletCollision();
 			current.ttl = -1.f;
 		}

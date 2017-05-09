@@ -183,7 +183,7 @@ void World::addEnemies() {
 	enemyShip->model.traslate(100, 0, 100);
 	root->addChild(enemyShip);
 
-	enemyShip->setStatic();
+	//enemyShip->setStatic();
 
 	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemyAir->model.setTranslation(0, 500, 200);
@@ -191,12 +191,11 @@ void World::addEnemies() {
 
 	enemyAir->setStatic();
 
-	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setTranslation(500, 500, 200);
-	root->addChild(enemy2Air);
+	//root->addChild(enemy2Air);
 
-	enemyAir->setStatic();
+	//enemyAir->setStatic();
 
 	if (!DEBUG) return;
 

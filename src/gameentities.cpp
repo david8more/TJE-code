@@ -1,5 +1,6 @@
 #include "states/state.h"
 #include "states/playstate.h"
+#include "states\endingstate.h"
 #include "gameentities.h"
 #include "camera.h"
 #include "game.h"
@@ -11,6 +12,7 @@
 #include "bulletmanager.h"
 #include "world.h"
 #include "bass.h"
+#include "mesh.h"
 
 // *************************************************************************
 // AIRPLANE 
@@ -58,10 +60,13 @@ void Airplane::render(Camera * camera) {
 	}
 }
 
+int m = 0;
+
 void Airplane::update(float elapsed_time) {
 
 	BulletManager::getInstance()->update(elapsed_time);
 	Entity::update(elapsed_time);
+	testSphereCollision();
 }
 
 void Airplane::m60Shoot() {
@@ -74,8 +79,8 @@ void Airplane::m60Shoot() {
 	Vector3 cannon_pos3;
 	switch (planeModel) {
 	case SPITFIRE:
-		cannon_pos1 = Vector3(1.9f, -0.25f, -15.f);
-		cannon_pos2 = Vector3(-1.9f, -0.25f, -15.f);
+		cannon_pos1 = Vector3(1.9f, -0.25f, -7.5f);
+		cannon_pos2 = Vector3(-1.9f, -0.25f, -7.5f);
 		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
@@ -162,8 +167,9 @@ void Airplane::torpedoShoot() {
 	}
 }
 
-void Airplane::onCollision() {
-
+void Airplane::onCollision(EntityCollider* collided_with) {
+	Game* game = Game::getInstance();
+	game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
 }
 
 // *************************************************************************
@@ -197,6 +203,8 @@ void Torpedo::update(float elapsed_time) {
 		return;
 	}
 
+	testSphereCollision();
+
 	model.traslateLocal(0, 0, (3 - ttl) * elapsed_time * -150);
 	ttl -= elapsed_time;
 }
@@ -213,5 +221,12 @@ void Torpedo::activate() {
 	ready = true;
 }
 
+void Torpedo::onCollision(EntityCollider* collided_with) {
+	int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
+	HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+	BASS_ChannelPlay(hSampleChannel, false); // play it
+	collided_with->life -= 100;
+	destroy();
+}
 
 // **************************************************************************************

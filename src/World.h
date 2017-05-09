@@ -46,7 +46,7 @@ public:
 
 	// fighters
 	Airplane* playerAir;
-	Airplane* playerShip;
+	EntityCollider* playerShip;
 
 	void create();
 	void addPlayer();

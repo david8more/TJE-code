@@ -77,7 +77,8 @@ public:
 	EntityCollider();
 	~EntityCollider();
 	virtual void onBulletCollision();
-	virtual void onCollision() {}
+	virtual void onCollision(EntityCollider* collided_with) {}
+	void testSphereCollision();
 
 	int life;
 

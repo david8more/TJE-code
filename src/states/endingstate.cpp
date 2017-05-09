@@ -30,7 +30,7 @@ void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 
 void EndingState::init() {
 
-	texture = Texture::Get("data/textures/terrain.tga");
+	texture = Texture::Get("data/textures/blur.tga");
 
 	game = Game::getInstance();
 
@@ -40,7 +40,7 @@ void EndingState::init() {
 
 void EndingState::onEnter()
 {
-	cout << "$ Entering 'how to play' state --" << endl;
+	cout << "$ Entering 'ending' state --" << endl;
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
