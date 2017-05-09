@@ -74,8 +74,8 @@ void Airplane::m60Shoot() {
 	Vector3 cannon_pos3;
 	switch (planeModel) {
 	case SPITFIRE:
-		cannon_pos1 = Vector3(1.9f, -0.25f, 5.f);
-		cannon_pos2 = Vector3(-1.9f, -0.25f, 5.f);
+		cannon_pos1 = Vector3(1.9f, -0.25f, -15.f);
+		cannon_pos2 = Vector3(-1.9f, -0.25f, -15.f);
 		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;

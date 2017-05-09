@@ -110,7 +110,7 @@ Shader* Shader::Load(const char* vsf, const char* psf)
 void Shader::ReloadAll()
 {
 	for( std::map<std::string,Shader*>::iterator it = s_Shaders.begin(); it!=s_Shaders.end();it++)
-		it->second->compile();
+		it->second->recompile();
 	std::cout << "Shaders recompiled" << std::endl;
 }
 

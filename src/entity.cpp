@@ -144,7 +144,7 @@ void EntityMesh::render(Camera * camera) {
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
 	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
-	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
+	shader->setTexture("u_sky_texture", Texture::Get(Game::getInstance()->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga"));
 	shader->setFloat("u_time", Game::getInstance()->time);
 	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
 	mesh->render(GL_TRIANGLES, shader);

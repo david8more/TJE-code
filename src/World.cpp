@@ -135,9 +135,11 @@ void World::addPlayerConst() {
 
 void World::addWorldConst() {
 	
+	Game* game = Game::getInstance();
+
 	// WORLD
 	sky = new EntityMesh();
-	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
+	sky->set("cielo.ASE", game->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga", "simple");
 	
 	EntityCollider* sea = new EntityCollider();
 	sea->setName("sea");
@@ -147,7 +149,7 @@ void World::addWorldConst() {
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityCollider* ground = new EntityCollider();
-			ground->set("island.ASE", "data/textures/island.tga", "fog");
+			ground->set("island.ASE", "data/textures/island.tga", game->gameMode ? "fog-heroic" : "fog");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
