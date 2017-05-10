@@ -267,9 +267,13 @@ void PlayState::renderHUD() {
 
 	// vidas enemigas
 
-	ss.str("");
-	ss << EntityCollider::static_colliders[0]->life;
-	drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 3.0);
+	
+	if (EntityCollider::static_colliders.size())
+	{
+		ss.str("");
+		ss << EntityCollider::static_colliders[0]->life;
+		drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 3.0);
+	}
 
 	// FINISHED RENDER INTERFACE ****************************************************************
 }

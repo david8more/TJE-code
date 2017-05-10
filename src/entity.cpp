@@ -55,7 +55,10 @@ void Entity::render(Camera * camera) {
 			children[i]->render(camera);
 			glDisable(GL_BLEND);
 		}
-		children[i]->render(camera);
+		else
+		{
+			children[i]->render(camera);
+		}
 	}
 }
 
@@ -76,7 +79,8 @@ void Entity::addChild(Entity * entity) {
 void Entity::removeChild(Entity* entity) {
 
 	auto it = std::find(children.begin(), children.end(), entity);
-	if (it == children.end()) return;
+	if (it == children.end())
+		return;
 
 	children.erase(it);
 	entity->parent = NULL;
@@ -97,13 +101,16 @@ void Entity::destroy(){
 
 void Entity::destroy_entities() {
 
-	for (int i = 0; i < destroy_pending.size(); i++) {
+	for (int i = 0; i < destroy_pending.size(); i++)
+	{
 		Entity* ent = destroy_pending[i];
+  		EntityCollider::removeStatic(ent);
 		ent->parent->removeChild(ent);
 		ent->parent = NULL;
 		delete(ent);
 
 	}
+
 	destroy_pending.clear();
 }
 
@@ -113,6 +120,8 @@ void Entity::destroy_entities() {
 
 EntityMesh::EntityMesh(bool culling) {
 	this->culling = culling;
+	this->cullFace = true;
+	this->alpha = false;
 }
 EntityMesh::~EntityMesh() {}
 
@@ -138,7 +147,15 @@ void EntityMesh::render(Camera * camera) {
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling)
+		return;
+
+	if (alpha)
+	{
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	}
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -150,11 +167,14 @@ void EntityMesh::render(Camera * camera) {
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
-	// no pintar helice
-	if (this->name == "NO_CHILD") return;
+	if (alpha)
+	{
+		glDisable(GL_BLEND);
+	}
 			
-	for (int i = 0; i < this->children.size(); i++) {
-		this->children[i]->render(camera);
+	for (int i = 0; i < this->children.size(); i++)
+	{
+			this->children[i]->render(camera);
 	}
 }
 
@@ -237,7 +257,25 @@ void EntityCollider::testSphereCollision()
 	}
 }
 
-void EntityCollider::onBulletCollision() {}
+void EntityCollider::removeStatic(Entity* ent)
+{
+	std::vector<EntityCollider*>::iterator it;
+
+	it = std::find(static_colliders.begin(), static_colliders.end(), ent);
+
+ 	if (it != static_colliders.end())
+		static_colliders.erase(it);
+}
+
+void EntityCollider::onBulletCollision()
+{
+	this->life -= 5;
+	this->life = max(this->life, 0);
+
+	if (!this->life) {
+		destroy();
+	}
+}
 
 // *************************************************************************
 // ENTITYENEMY
@@ -288,12 +326,4 @@ void EntityEnemy::render(Camera * camera) {
 
 void EntityEnemy::update(float elapsed_time) {
 	
-}
-
-void EntityEnemy::onBulletCollision() {
-
-	this->life -= 5;
-	this->life = max(this->life, 0);
-
-	if (this->life == 0) World::getInstance()->root->removeChild(this);
 }

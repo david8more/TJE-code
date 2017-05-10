@@ -20,6 +20,24 @@
 
 Airplane::Airplane(bool culling) {
 
+	EntityCollider* wh_right = new EntityCollider();
+	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "simple");
+	wh_right->model.setTranslation(-0.82, -0.58, 0.16);
+	wh_right->model.rotateLocal(1.57, Vector3(0, 0, -1));
+	this->addChild(wh_right);
+
+	EntityCollider* wh_left = new EntityCollider();
+	wh_left->set("spitfire_wheel_left.ASE", "data/textures/spitfire.tga", "simple");
+	wh_left->model.setTranslation(0.82, -0.58, 0.16);
+	wh_left->model.rotateLocal(1.57, Vector3(0, 0, 1));
+	this->addChild(wh_left);
+
+	EntityCollider* helix = new EntityCollider();
+	helix->alpha = true;
+	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
+	helix->model.traslate(0.f, 0.f, 2.f);
+	helix->model.rotateLocal(3.1415, Vector3(0, 1, 0));
+	this->addChild(helix);
 }
 
 Airplane::~Airplane() {}
@@ -56,11 +74,9 @@ void Airplane::render(Camera * camera) {
 	shader->disable();
 
 	for (int i = 0; i < this->children.size(); i++) {
-		this->children[i]->render(camera);
+			this->children[i]->render(camera);
 	}
 }
-
-int m = 0;
 
 void Airplane::update(float elapsed_time) {
 
@@ -182,7 +198,7 @@ Torpedo::Torpedo(bool culling) {
 
 	mesh = "torpedo.ASE";
 	texture = "data/textures/torpedo.tga";
-	std::string shader_string("simple");
+	std::string shader_string = "texture";
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	shader = Shader::Load(vs.c_str(), fs.c_str());
@@ -225,7 +241,16 @@ void Torpedo::onCollision(EntityCollider* collided_with) {
 	int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
 	HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 	BASS_ChannelPlay(hSampleChannel, false); // play it
+
 	collided_with->life -= 100;
+	collided_with->life = max(collided_with->life, 0);
+
+	// destruir current enemy
+	if (!collided_with->life) {
+		collided_with->destroy();
+	}
+
+	// destruir torpedo
 	destroy();
 }
 

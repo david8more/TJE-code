@@ -15,8 +15,7 @@
 
 #define DEBUG 0
 
-EntityMesh* eMesh = NULL; // plane mesh
-EntityMesh* helix = NULL; // helix mesh
+Airplane* eMesh = NULL; // plane mesh
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
@@ -48,15 +47,9 @@ void SelectionState::init() {
 	// create semi-WORLD
 
 	// plane
-	eMesh = new EntityMesh();
-	eMesh->name = "NO_CHILD";
+	eMesh = new Airplane();
 	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 	eMesh->model.rotateLocal(0.5f, Vector3(0, -1, 0));
-
-	helix = new EntityMesh();
-	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
-	eMesh->addChild(helix);
-	helix->model.traslate(0.f, 0.f, 2.f);
 
 	// sky
 	bMesh = new EntityMesh();
@@ -140,7 +133,7 @@ void SelectionState::render() {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
 		eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
-		helix->model.setTranslation(0.f, 0.f, 2.f);
+		//helix->model.setTranslation(0.f, 0.f, 2.f);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
@@ -149,7 +142,7 @@ void SelectionState::render() {
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
 		eMesh->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
-		helix->model.setTranslation(0.f, 0.f, 3.25f);
+		//helix->model.setTranslation(0.f, 0.f, 3.25f);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
@@ -163,14 +156,6 @@ void SelectionState::render() {
 	lastRendered = playerModel;
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);
-
-	if (playerModel == SPITFIRE || playerModel == WILDCAT) {
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-		helix->render(cam3D);
-		glDisable(GL_BLEND);
-	}
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -206,6 +191,13 @@ void SelectionState::update(double time_elapsed) {
 			cam3D->rotate(game->mouse_delta.x * 0.005f, Vector3(0.0f, -0.5f, 0.0f));
 			cam3D->rotate(game->mouse_delta.y * 0.005f, cam3D->getLocalVector(Vector3(-0.5f, 0.0f, 0.0f)));
 		}
+
+		//async input to move the camera around
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) cam3D->move(Vector3(0.0f, 0.0f, 0.1f) * speed);
+		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) cam3D->move(Vector3(0.0f, 0.0f, -0.1f) * speed);
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) cam3D->move(Vector3(0.1f, 0.0f, 0.0f) * speed);
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) cam3D->move(Vector3(-0.1f, 0.0f, 0.0f) * speed);
 	}
 	else
 	{
@@ -287,6 +279,7 @@ void SelectionState::selectionChosen()
 	world->worldInfo.playerModel = playerModel;
 	world->addPlayer();
 	world->setGameMode();
+
 	SManager->changeCurrentState(PlayState::getInstance(SManager));
 }
 

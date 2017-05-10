@@ -122,13 +122,13 @@ void BulletManager::testBulletCollision() {
 
 			Vector3 front = current.last_position - current.position;
 
-			if (!collisionModel->rayCollision(current.last_position.v, front.v, false))
-				continue;
-
-			// collision made
-			//std::cout << "collision made: " << current.ttl << std::endl;
-			current_enemy->onBulletCollision();
-			current.ttl = -1.f;
+			if (collisionModel->rayCollision(current.last_position.v, front.v, false))
+			{
+				// collision made
+				current_enemy->onBulletCollision();
+				current.ttl = -1.f;
+			}
+			
 		}
 	}
 

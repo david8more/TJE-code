@@ -57,7 +57,10 @@ public:
 	std::string mesh;
 	std::string texture;
 	Shader* shader;
+	
 	bool culling;
+	bool alpha;
+	bool cullFace;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
@@ -79,6 +82,7 @@ public:
 	virtual void onBulletCollision();
 	virtual void onCollision(EntityCollider* collided_with) {}
 	void testSphereCollision();
+	static void removeStatic(Entity* ent);
 
 	int life;
 
@@ -100,7 +104,6 @@ public:
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
-	void onBulletCollision();
 };
 
 #endif

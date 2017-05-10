@@ -50,7 +50,7 @@ void World::addPlayer() {
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
-		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "texture");
 		playerAir->life = 350;
 		playerAir->cadence = 15.f;
 		playerAir->damageM60 = 10;
@@ -149,7 +149,7 @@ void World::addWorldConst() {
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityCollider* ground = new EntityCollider();
-			ground->set("island.ASE", "data/textures/island.tga", game->gameMode ? "fog-heroic" : "fog");
+			ground->set("island.ASE", "data/textures/island.tga", "fog-heroic");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
 			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
@@ -214,9 +214,14 @@ void World::addEnemies() {
 }
 
 void World::setGameMode() {
-	enemyAir->life = Game::getInstance()->gameMode ? 225 : 150;
-	enemy2Air->life = Game::getInstance()->gameMode ? 225 : 150;
-	enemyShip->life = Game::getInstance()->gameMode ? 1500 : 1000;
+
+	Game* game = Game::getInstance();
+
+	enemyAir->life = game->gameMode ? 225 : 150;
+	enemy2Air->life = game->gameMode ? 225 : 150;
+	enemyShip->life = game->gameMode ? 1500 : 1000;
+
+	sky->set("cielo.ASE", game->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga", "simple");
 }
 
 bool World::isGameOver() {
