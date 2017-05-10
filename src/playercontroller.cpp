@@ -29,9 +29,17 @@ PlayerController::~PlayerController()
 
 }
 
+float ct = 0;
+
 void PlayerController::update(float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
+	if (!game->start)
+	{
+		return;
+	}
+
+	ct += seconds_elapsed;
 
 	// SHOOTING
 
@@ -161,8 +169,15 @@ void PlayerController::update(float seconds_elapsed)
 		}
 	}
 
+
 	// MOVING
-	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
+	if (ct < 8.0)
+	{
+		player->model.traslateLocal(0, 0, speed * seconds_elapsed * ct);
+	}
+	else {
+		player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
+	}
 }
 
 void PlayerController::moveY(float axis, float seconds_elapsed, float speed)

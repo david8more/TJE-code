@@ -61,6 +61,8 @@ public:
 	bool culling;
 	bool alpha;
 	bool cullFace;
+	bool depthTest;
+	bool depthMask;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
@@ -94,16 +96,5 @@ public:
 };
 
 // *******************************************************************
-
-class EntityEnemy : public EntityCollider {
-public:
-
-	EntityEnemy(bool culling = true);
-	~EntityEnemy();
-
-	void set(const char * mesh, const char * texture, const char * shader);
-	void render(Camera * camera);
-	void update(float elapsed_time);
-};
 
 #endif

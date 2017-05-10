@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#define DEBUG 0
+#define DEBUG 1
 
 //some globals
 Game* Game::instance = NULL;
@@ -37,6 +37,7 @@ Game::Game(SDL_Window* window)
 
 	keystate = NULL;
 	joystick = NULL;
+	start = false;
 	mouse_locked = false;
 	music_enabled = true; 
 	effects_enabled = true; 
@@ -56,7 +57,19 @@ void Game::init(void)
 	nbFrames = 0;
 
 	sManager = new StateManager();
-	sManager->setInitialState(LoadingState::getInstance(sManager));
+
+	if (DEBUG)
+	{
+		MenuState::getInstance(sManager)->init();
+		SelectionState::getInstance(sManager)->init();
+		PlayState::getInstance(sManager)->init();
+		sManager->setInitialState(SelectionState::getInstance(sManager));
+	}
+	else
+	{
+		sManager->setInitialState(LoadingState::getInstance(sManager));
+	}
+
 }
 
 //what to do when the image has to be draw

@@ -11,9 +11,10 @@
 
 World* World::instance = NULL;
 
-EntityEnemy* enemyShip = NULL;
-EntityEnemy* enemyAir = NULL;
-EntityEnemy* enemy2Air = NULL;
+EntityCollider* enemyShip = NULL;
+EntityCollider* enemyAir = NULL;
+EntityCollider* enemy2Air = NULL;
+EntityMesh* init_zone = NULL;
 
 World::World()
 {
@@ -50,9 +51,9 @@ void World::addPlayer() {
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
-		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "texture");
+		playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
 		playerAir->life = 350;
-		playerAir->cadence = 15.f;
+		playerAir->cadence = 30.f;
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
 
@@ -60,7 +61,7 @@ void World::addPlayer() {
 	case P38:
 		playerAir->set("p38.ASE", "data/textures/p38.tga", "simple");
 		playerAir->life = 400;
-		playerAir->cadence = 10.f;
+		playerAir->cadence = 20.f;
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
 
@@ -68,7 +69,7 @@ void World::addPlayer() {
 	case WILDCAT:
 		playerAir->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
 		playerAir->life = 250;
-		playerAir->cadence = 30.f;
+		playerAir->cadence = 35.f;
 		playerAir->damageM60 = 40;
 		playerAir->damageMissile = 100;
 
@@ -76,7 +77,7 @@ void World::addPlayer() {
 	case BOMBER:
 		playerAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
 		playerAir->life = 500;
-		playerAir->cadence = 20.f;
+		playerAir->cadence = 40.f;
 		playerAir->damageM60 = 15;
 		playerAir->damageMissile = 300;
 
@@ -90,7 +91,9 @@ void World::addPlayer() {
 		playerAir->damageMissile -= 100;
 	}
 
-	playerAir->model.setTranslation(0, 500, 500);
+	
+	playerAir->model = playerAir->model * init_zone->model;
+	playerAir->model.traslate(0, 5, 15);
 	root->addChild(playerAir);
 	playerAir->createTorpedos();
 }
@@ -99,10 +102,10 @@ void World::addPlayerConst() {
 
 	// PLAYER SHIP ************************************************************************************
 
-	playerShip = new Airplane();
+	playerShip = new EntityCollider();
 
 	playerShip->set("barco.ASE", "data/textures/barco.tga", "simple");
-	//playerShip->model.traslateLocal(5500, -2100, 5500);
+	playerShip->model.setTranslation(1600, -10, 1600);
 	playerShip->life = 750;
 	root->addChild(playerShip);
 
@@ -131,6 +134,14 @@ void World::addPlayerConst() {
 	cannonTwo->set("barco_cannons.ASE", "data/textures/barco_turret.tga", "simple");
 	cannonTwo->model.traslate(0.f, 0.01f, 0.f);
 	turretTwo->addChild(cannonTwo);
+
+	// initial zone
+	init_zone = new EntityMesh();
+
+	init_zone->set("submarino.ASE", "data/textures/submarino.tga", "simple");
+	init_zone->model.setTranslation(2000, -10, -2000);
+	root->addChild(init_zone);
+
 }
 
 void World::addWorldConst() {
@@ -146,35 +157,34 @@ void World::addWorldConst() {
 	sea->set("agua.ASE", "data/textures/agua.tga", "water");
 	//sea->setStatic();
 
-	for (int i = -3; i <= 3; i++) {
-		for (int j = -3; j <= 3; j++) {
+	for (int i = -2; i <= 2; i++) {
+		for (int j = -2; j <= 2; j++) {
 			EntityCollider* ground = new EntityCollider();
 			ground->set("island.ASE", "data/textures/island.tga", "fog-heroic");
 			ground->model.setIdentity();
 			ground->model.traslate(i * 14000, 0, j * 14000);
-			//ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
+			ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
 			root->addChild(ground);
 			//ground->setStatic();
 		}
 	}
 
-
-	for (int i = 1; i <= 50; i++) {
+	/*for (int i = 1; i <= 50; i++) {
 		EntityMesh* reload_zone = new EntityMesh(NO_CULLING);
 		reload_zone->name = "RELOAD_ZONE";
 		reload_zone->set("box.ASE", "data/textures/smoke_alpha_green.tga", "simple");
 		reload_zone->model.traslate(0, 200 + i*100, 0);
 		root->addChild(reload_zone);
-	}
+	}*/
 }
 
 void World::addEnemies() {
 	
 	// ENEMIES
 
-	enemyShip = new EntityEnemy();
-	enemyAir = new EntityEnemy();
-	enemy2Air = new EntityEnemy();
+	enemyShip = new EntityCollider();
+	enemyAir = new EntityCollider();
+	enemy2Air = new EntityCollider();
 
 	enemyShip->setName("enemy_ship");
 	enemyShip->life = Game::getInstance()->gameMode ? 1500:1000;
@@ -183,7 +193,7 @@ void World::addEnemies() {
 	enemyShip->model.traslate(100, 0, 100);
 	root->addChild(enemyShip);
 
-	//enemyShip->setStatic();
+	enemyShip->setStatic();
 
 	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemyAir->model.setTranslation(0, 500, 200);
@@ -193,9 +203,9 @@ void World::addEnemies() {
 
 	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
 	enemy2Air->model.setTranslation(500, 500, 200);
-	//root->addChild(enemy2Air);
+	root->addChild(enemy2Air);
 
-	//enemyAir->setStatic();
+	enemy2Air->setStatic();
 
 	if (!DEBUG) return;
 

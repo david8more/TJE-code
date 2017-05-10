@@ -118,10 +118,12 @@ void Entity::destroy_entities() {
 // ENTITYMESH 
 // *************************************************************************
 
-EntityMesh::EntityMesh(bool culling) {
-	this->culling = culling;
-	this->cullFace = true;
-	this->alpha = false;
+EntityMesh::EntityMesh(bool frust_culling) {
+	culling = frust_culling;
+	cullFace = true;
+	alpha = false;
+	depthTest = true;
+	depthMask = true;
 }
 EntityMesh::~EntityMesh() {}
 
@@ -157,6 +159,11 @@ void EntityMesh::render(Camera * camera) {
 		glEnable(GL_BLEND);
 	}
 
+	if (!depthTest)
+		glDisable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_FALSE);
+
 	shader->enable();
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
@@ -167,6 +174,11 @@ void EntityMesh::render(Camera * camera) {
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
+	if (!depthTest)
+		glEnable(GL_DEPTH_TEST);
+	if(!depthMask)
+		glDepthMask(GL_TRUE);
+
 	if (alpha)
 	{
 		glDisable(GL_BLEND);
@@ -174,12 +186,12 @@ void EntityMesh::render(Camera * camera) {
 			
 	for (int i = 0; i < this->children.size(); i++)
 	{
-			this->children[i]->render(camera);
+		this->children[i]->render(camera);
 	}
 }
 
-void EntityMesh::update( float elapsed_time ) {
-
+void EntityMesh::update( float elapsed_time )
+{
 	
 }
 
@@ -187,27 +199,34 @@ void EntityMesh::update( float elapsed_time ) {
 // ENTITYCOLLIDER
 // *************************************************************************
 
-EntityCollider::EntityCollider() {}
+EntityCollider::EntityCollider()
+{
+	is_static = false;
+	is_dynamic = false;
+}
+
 EntityCollider::~EntityCollider() {}
 
 std::vector<EntityCollider*> EntityCollider::static_colliders;
 std::vector<EntityCollider*> EntityCollider::dynamic_colliders;
 
-void EntityCollider::setStatic() {
+void EntityCollider::setStatic()
+{
 	static_colliders.push_back(this);
 	is_static = true;
 }
 
-void EntityCollider::setDynamic() {
+void EntityCollider::setDynamic()
+{
 	dynamic_colliders.push_back(this);
 	is_dynamic = true;
 }
 
-bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist, Vector3& collisions) {
-
+bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist, Vector3& collisions)
+{
 	for (int j = 0; j < static_colliders.size(); j++) {
 
-		EntityEnemy * current_enemy = (EntityEnemy*)static_colliders[j];
+		EntityCollider * current_enemy = static_colliders[j];
 
 		//si queremos especificar la model de la mesh usamos setTransform
 
@@ -224,14 +243,11 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 			continue;
 
 		collisionModel->getCollisionPoint(collisions.v, false);
-
 		current_enemy->onBulletCollision();
-
 		return true;
 	}
 
 	return false;
-
 }
 
 void EntityCollider::testSphereCollision()
@@ -246,7 +262,7 @@ void EntityCollider::testSphereCollision()
 		Vector3 my_position = model * my_mesh->header.center;
 		Vector3 enemy_position = current->model * enemy_mesh->header.center;
 
-		float margin = 5.0;
+		float margin = current->name == "enemy_ship" ? 25.0 : 5.0;
 		float dist = my_position.distance(enemy_position) + margin;
 
 		if (dist < (my_mesh->header.radius + enemy_mesh->header.radius))
@@ -275,55 +291,4 @@ void EntityCollider::onBulletCollision()
 	if (!this->life) {
 		destroy();
 	}
-}
-
-// *************************************************************************
-// ENTITYENEMY
-// *************************************************************************
-
-EntityEnemy::EntityEnemy(bool culling) {
-	
-}
-EntityEnemy::~EntityEnemy() {}
-
-//meshfile sin path, texturefile con path
-void EntityEnemy::set(const char * meshf, const char * texturef, const char * shaderf) {
-
-	mesh = meshf;
-	texture = texturef;
-
-	std::string shader_string(shaderf);
-	std::string fs = "data/shaders/" + shader_string + ".fs";
-	std::string vs = "data/shaders/" + shader_string + ".vs";
-
-	shader = Shader::Load(vs.c_str(), fs.c_str());
-}
-
-void EntityEnemy::render(Camera * camera) {
-
-	Matrix44 m = this->getGlobalMatrix();
-	Matrix44 mvp = m * camera->viewprojection_matrix;
-	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
-	Vector3 pos = m * center;
-
-	Mesh* mesh = Mesh::Get(this->mesh.c_str());
-
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
-
-	shader->enable();
-	shader->setMatrix44("u_model", m);
-	shader->setMatrix44("u_mvp", mvp);
-	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
-	mesh->render(GL_TRIANGLES, shader);
-	shader->disable();
-
-	for (int i = 0; i < this->children.size(); i++)
-	{
-		this->children[i]->render(camera);
-	}
-
-}
-
-void EntityEnemy::update(float elapsed_time) {
-	
 }

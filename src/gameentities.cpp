@@ -34,6 +34,7 @@ Airplane::Airplane(bool culling) {
 
 	EntityCollider* helix = new EntityCollider();
 	helix->alpha = true;
+	helix->depthMask = false;
 	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
 	helix->model.traslate(0.f, 0.f, 2.f);
 	helix->model.rotateLocal(3.1415, Vector3(0, 1, 0));
@@ -95,10 +96,10 @@ void Airplane::m60Shoot() {
 	Vector3 cannon_pos3;
 	switch (planeModel) {
 	case SPITFIRE:
-		cannon_pos1 = Vector3(1.9f, -0.25f, -7.5f);
-		cannon_pos2 = Vector3(-1.9f, -0.25f, -7.5f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		cannon_pos1 = Vector3(1.9f, -0.25f, 2.f);
+		cannon_pos2 = Vector3(-1.9f, -0.25f, 2.f);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
 		break;
 	case P38:
 		cannon_pos1 = Vector3(0.5f, -0.25f, 10.f);
@@ -111,13 +112,13 @@ void Airplane::m60Shoot() {
 		break;
 	case WILDCAT:
 		cannon_pos1 = Vector3(0.f, -0.50f, 10.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
 	case BOMBER:
 		cannon_pos1 = Vector3(2.40f, -0.25f, 5.f);
 		cannon_pos2 = Vector3(-2.55f, -0.25f, 5.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
 	}
 
@@ -184,8 +185,9 @@ void Airplane::torpedoShoot() {
 }
 
 void Airplane::onCollision(EntityCollider* collided_with) {
-	Game* game = Game::getInstance();
-	game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
+	//Game* game = Game::getInstance();
+	exit(1);
+	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
 }
 
 // *************************************************************************
@@ -205,7 +207,7 @@ Torpedo::Torpedo(bool culling) {
 
 	ready = false;
 
-	ttl = 3;
+	ttl = 4;
 }
 
 Torpedo::~Torpedo() {}
@@ -221,7 +223,7 @@ void Torpedo::update(float elapsed_time) {
 
 	testSphereCollision();
 
-	model.traslateLocal(0, 0, (3 - ttl) * elapsed_time * -150);
+	model.traslateLocal(0, 0, (4 - ttl) * elapsed_time * -150 * 0.5);
 	ttl -= elapsed_time;
 }
 

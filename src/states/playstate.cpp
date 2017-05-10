@@ -86,7 +86,6 @@ void PlayState::onEnter()
 	cout << "$ Entering play state -- ..." << endl;
 	
 	player = World::getInstance()->playerAir;
-	
 	// views things
 	current_view = 0;
 
@@ -184,13 +183,13 @@ void PlayState::update(double seconds_elapsed) {
 	world->root->update(seconds_elapsed);
 
 	// interpolate current and previous camera
-	Vector3 eye = world->playerAir->model * viewpos;
+	Vector3 eye = player->model * viewpos;
 
 	// evitamos que se mueva en la vista de cabina
 	if(current_view == FULLVIEW)
-		eye = game->current_camera->eye * 0.9 + eye * 0.1;
+		eye = game->current_camera->eye * 0.85 + eye * 0.15;
 	
-	game->fixed_camera->lookAt(eye, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
+	game->fixed_camera->lookAt(eye, player->model * viewtarget, player->model.rotateVector(Vector3(0, 1, 0)));
 
 	// COLISIONES
 
@@ -218,7 +217,12 @@ void PlayState::update(double seconds_elapsed) {
 	Entity::destroy_entities();
 
 	// comprobar si es fin del juego
-	if (world->isGameOver()) SManager->changeCurrentState(EndingState::getInstance(SManager));
+	if (world->isGameOver())
+	{
+		std::cout << "Game has finished!" << std::endl;
+		SManager->changeCurrentState(EndingState::getInstance(SManager));
+	}
+
 }
 
 void PlayState::renderHUD() {
@@ -257,7 +261,7 @@ void PlayState::renderHUD() {
 	ss.str("");
 	ss << percent_used << "%";
 	drawText(game->window_width*0.8, game->window_height*0.95, ss.str(), v, 2.0); // % engine !!!
-	if (player->overused) drawText(game->window_width*0.1, game->window_height*0.75, "ALERT: ENGINE OVERUSED. COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
+	if (player->overused) drawText(game->window_width*0.1, game->window_height*0.75, "** ALERT: ENGINE OVERHEAT ** COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
 
 	// MISSILES
 
@@ -270,10 +274,18 @@ void PlayState::renderHUD() {
 	
 	if (EntityCollider::static_colliders.size())
 	{
-		ss.str("");
-		ss << EntityCollider::static_colliders[0]->life;
-		drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 3.0);
+		for (int i = 0; i < EntityCollider::static_colliders.size(); i++)
+		{
+			ss.str("");
+			ss << EntityCollider::static_colliders[i]->life;
+			drawText(game->window_width*0.1, game->window_height*0.1*(i+1), ss.str(), Vector3(1, 0, 0), 3.0);
+		}
+
+		
 	}
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
 	// FINISHED RENDER INTERFACE ****************************************************************
 }
@@ -282,6 +294,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	switch (event.keysym.sym)
 	{
+	case SDLK_0: // full plane view
+		game->start = true;
+		break;
 	case SDLK_1: // full plane view
 		current_view = FULLVIEW;
 		setView();
@@ -312,7 +327,8 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 	{
 	case SDLK_SPACE:
 		world->playerAir->shooting = false;
-		if (!player->overused) player->shootingtime = 0;
+		if (!player->overused)
+			player->shootingtime = 0;
 		break;
 	case SDLK_t:
 		world->playerAir->torpedoShoot();
@@ -328,8 +344,10 @@ void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
 		
 		// si es el model 2, irá a la posición 2*2 = 4(full plane). Si current view = 0, 4+4 = 0(full plane)
 		// si cv = 1, 4+1 = 5 que es de la cabina
-		if (inZoom) viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;	
-		else setView();
+		if (inZoom)
+			viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;	
+		else
+			setView();
 	}
 }
 

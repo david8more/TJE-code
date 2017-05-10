@@ -39,59 +39,53 @@ void BulletManager::createBullet(Vector3 position, Vector3 velocity, float ttl, 
 	last_free++;
 }
 
-void BulletManager::render() {
+void BulletManager::render()
+{	
+	if (last_free == 0)
+		return;
+
 	Mesh bullets;
 
-	for (int i = 0; i < last_free; i++) {
-
+	for (int i = 0; i < last_free; i++)
+	{
 		Bullet& current = bullet_vector[i];
-
-		if (current.ttl < 0.0)
-			continue;
-
+		
 		bullets.vertices.push_back(current.position);
 		bullets.vertices.push_back(current.last_position);
-
-		switch (current.type) {
-		case 1:
-			bullets.colors.push_back(Vector4(1.f, 0.f, 0.f, 1.f));
-			break;
-		case 2:
-			bullets.colors.push_back(Vector4(1, 0, 1, 1));
-			break;
-		default:
-			break;
-		}
-
+		
+		bullets.colors.push_back(Vector4(1.f, 0.f, 0.f, 1.f));
 		bullets.colors.push_back(Vector4(1, 1, 0, 1));
 	}
 
 	if (!bullets.vertices.size())
 		return;
 
-	glEnable(GL_BLEND);
+	glLineWidth(1.5);
 	bullets.render(GL_LINES);
-	glDisable(GL_BLEND);
 }
 
-void BulletManager::update(float elapsed_time) {
-	
-	for (int i = 0; i < last_free; i++) {
-
+void BulletManager::update(float elapsed_time)
+{	
+	for (int i = 0; i < last_free; i++)
+	{
 		Bullet& current = bullet_vector[i];
-
 		current.ttl -= elapsed_time;
 
-		if (current.ttl < 0.0) {
-			current = bullet_vector[last_free - 1];
-			last_free--;
-			i = i - 1;
+		if (current.ttl <= 0.0)
+		{	
+			if (last_free)
+			{
+				current = bullet_vector[last_free - 1];
+				last_free--;
+				i--;
+			}
 			continue;
 		}
-
 		current.last_position = current.position;
-		current.position += current.velocity * elapsed_time*0.5;
-	
+		current.position += current.velocity * elapsed_time;
+		current.velocity += Vector3(0.f, -50.f * elapsed_time, 0.f);
+		// friccion aire
+		current.velocity = current.velocity * 0.99;
 	}
 
 	testBulletCollision();

@@ -19,6 +19,7 @@ class Game
 {
 public:
 	static Game* instance;
+	bool start;
 
 	// SINGLETON
 	static Game* getInstance() {
