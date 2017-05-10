@@ -163,6 +163,8 @@ void EntityMesh::render(Camera * camera) {
 		glDisable(GL_DEPTH_TEST);
 	if (!depthMask)
 		glDepthMask(GL_FALSE);
+	if (!cullFace)
+		glDisable(GL_CULL_FACE);
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -173,6 +175,9 @@ void EntityMesh::render(Camera * camera) {
 	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
+
+	if (!cullFace)
+		glEnable(GL_CULL_FACE);
 
 	if (!depthTest)
 		glEnable(GL_DEPTH_TEST);
@@ -243,7 +248,7 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 			continue;
 
 		collisionModel->getCollisionPoint(collisions.v, false);
-		current_enemy->onBulletCollision();
+		current_enemy->onCollision(current_enemy);
 		return true;
 	}
 

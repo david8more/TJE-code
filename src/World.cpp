@@ -137,11 +137,9 @@ void World::addPlayerConst() {
 
 	// initial zone
 	init_zone = new EntityMesh();
-
-	init_zone->set("submarino.ASE", "data/textures/submarino.tga", "simple");
+	init_zone->set("antiaircraft_cannon.ASE", "data/textures/antiaircraft.tga", "simple");
 	init_zone->model.setTranslation(2000, -10, -2000);
 	root->addChild(init_zone);
-
 }
 
 void World::addWorldConst() {

@@ -9,6 +9,9 @@ public:
 	Airplane(bool culling = true);
 	~Airplane();
 
+	bool engine;
+	void engineOnOff();
+
 	int life;
 	int torpedosLeft;
 	float cadence;

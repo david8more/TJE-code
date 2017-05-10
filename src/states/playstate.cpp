@@ -22,9 +22,12 @@ BulletManager* bManager = NULL;
 World * world = NULL; 
 
 Mesh debug_mesh;
-bool inZoom = false;
 
-PlayState::PlayState(StateManager* SManager) : State(SManager) {}
+PlayState::PlayState(StateManager* SManager) : State(SManager)
+{
+	inZoom = false;
+}
+
 PlayState::~PlayState() {}
 
 void PlayState::init() {
@@ -47,7 +50,7 @@ void PlayState::init() {
 	//game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
-	game->free_camera->lookAt(Vector3(0, 500, 500), Vector3(0,0, 0), Vector3(0, 1, 0));
+	game->free_camera->lookAt(Vector3(2000, 0, -2000), Vector3(0,0, 0), Vector3(0, 1, 0));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
 
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
@@ -103,9 +106,6 @@ void PlayState::onEnter()
 	player->cadenceCounter = 0;
 	player->shooting = player->overused = false;
 
-
-	PlayerController::getInstance()->current_controller = CONTROLLER_MODE_KEYBOARD;
-
 	// Sounds
 	if (game->music_enabled) {
 		b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
@@ -113,10 +113,6 @@ void PlayState::onEnter()
 		BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
 		BASS_ChannelPlay(hSampleChannel, false); // play it
 	}
-
-	e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-	e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
-	BASS_ChannelPlay(e_channel, false); // play it
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -167,16 +163,6 @@ void PlayState::update(double seconds_elapsed) {
 	else
 	{	
 		player_controller->update(seconds_elapsed);
-
-		if (player_controller->current_controller == CONTROLLER_MODE_GAMEPAD)
-		{
-			if (player_controller->current_view != current_view)
-			{
-				current_view = player_controller->current_view;
-				setView();
-			}
-		}
-
 	}
 
 	// update bullets and more
@@ -193,12 +179,12 @@ void PlayState::update(double seconds_elapsed) {
 
 	// COLISIONES
 
-	/*Vector3 ray_origin;
+	Vector3 ray_origin;
 	Vector3 ray_dir;
 
 	if (DEBUG) {
-		ray_origin = game->current_camera->eye;
-		ray_dir = (game->current_camera->center - ray_origin).normalize();
+		//ray_origin = game->current_camera->eye;
+		//ray_dir = (game->current_camera->center - ray_origin).normalize();
 	}
 	else {
 		ray_origin = game->current_camera->eye;
@@ -211,7 +197,7 @@ void PlayState::update(double seconds_elapsed) {
 		//std::cout << coll.x << coll.y << coll.z;
 		debug_mesh.vertices.push_back(coll);
 		debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
-	}*/
+	}
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -220,7 +206,8 @@ void PlayState::update(double seconds_elapsed) {
 	if (world->isGameOver())
 	{
 		std::cout << "Game has finished!" << std::endl;
-		SManager->changeCurrentState(EndingState::getInstance(SManager));
+		exit(1);
+		//SManager->changeCurrentState(EndingState::getInstance(SManager));
 	}
 
 }
@@ -294,15 +281,15 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	switch (event.keysym.sym)
 	{
-	case SDLK_0: // full plane view
+	case SDLK_0:
 		game->start = true;
+		player->engineOnOff();
+		e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
+		e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
+		BASS_ChannelPlay(e_channel, false); // play it
 		break;
-	case SDLK_1: // full plane view
-		current_view = FULLVIEW;
-		setView();
-		break;
-	case SDLK_2: // cabine view
-		current_view = CABINEVIEW;
+	case SDLK_1: // full plane view or cabine view
+		current_view = current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
 		setView();
 		break;
 	case SDLK_3:
@@ -312,7 +299,21 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		Shader::ReloadAll();
 		break;
 	case SDLK_5:
-		PlayerController::getInstance()->current_controller = PlayerController::getInstance()->current_controller ? CONTROLLER_MODE_KEYBOARD : CONTROLLER_MODE_GAMEPAD;
+		PlayerController::getInstance()->current_controller = CONTROLLER_MODE_KEYBOARD;
+		break;
+	case SDLK_p: // PARAR MOTOR
+		player->engineOnOff();
+	
+		if (player->engine)
+		{
+			PlayerController::getInstance()->arranque = 0;
+			e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
+			e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
+			BASS_ChannelPlay(e_channel, false); // play it
+		}
+		else {
+			BASS_ChannelStop(e_channel);
+		}
 		break;
 	case SDLK_SPACE:
 		world->playerAir->shooting = true;
@@ -341,14 +342,17 @@ void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
 	if (event.button == SDL_BUTTON_RIGHT) //right mouse
 	{
 		inZoom = !inZoom;
-		
-		// si es el model 2, irá a la posición 2*2 = 4(full plane). Si current view = 0, 4+4 = 0(full plane)
-		// si cv = 1, 4+1 = 5 que es de la cabina
-		if (inZoom)
-			viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;	
-		else
-			setView();
 	}
+}
+
+void PlayState::setZoom()
+{
+	// si es el model 2, irá a la posición 2*2 = 4(full plane). Si current view = 0, 4+4 = 0(full plane)
+	// si cv = 1, 4+1 = 5 que es de la cabina
+	if (inZoom)
+		viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;
+	else
+		setView();
 }
 
 void PlayState::onLeave(int fut_state) {

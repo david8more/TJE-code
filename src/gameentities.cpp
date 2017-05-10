@@ -14,6 +14,8 @@
 #include "bass.h"
 #include "mesh.h"
 
+double max_rotation = 0;
+
 // *************************************************************************
 // AIRPLANE 
 // *************************************************************************
@@ -35,13 +37,21 @@ Airplane::Airplane(bool culling) {
 	EntityCollider* helix = new EntityCollider();
 	helix->alpha = true;
 	helix->depthMask = false;
+	helix->cullFace = false;
 	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
 	helix->model.traslate(0.f, 0.f, 2.f);
 	helix->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 	this->addChild(helix);
+
+	engine = false;
 }
 
 Airplane::~Airplane() {}
+
+void Airplane::engineOnOff()
+{
+	engine = !engine;
+}
 
 //meshfile sin path, texturefile con path
 void Airplane::set(const char * meshf, const char * texturef, const char * shaderf) {
@@ -84,6 +94,17 @@ void Airplane::update(float elapsed_time) {
 	BulletManager::getInstance()->update(elapsed_time);
 	Entity::update(elapsed_time);
 	testSphereCollision();
+
+	if (!Game::getInstance()->start)
+		return;
+
+	max_rotation += elapsed_time;
+
+	if (max_rotation < 10.0 && max_rotation > 2.25)
+	{
+		children[0]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, 1));
+		children[1]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, -1));
+	}
 }
 
 void Airplane::m60Shoot() {

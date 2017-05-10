@@ -69,6 +69,8 @@ public:
 		float qnt;
 	}sTransZoom;
 
+	bool inZoom;
+	void setZoom();
 	std::vector<sTransZoom> vTranslations;
 
 	void sTransZoomCreator(int view, int model, float qnt) {

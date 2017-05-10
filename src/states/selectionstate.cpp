@@ -152,10 +152,10 @@ void SelectionState::render() {
 		break;
 	}
 	
-	eMesh->render(cam3D);
 	lastRendered = playerModel;
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);
+	eMesh->render(cam3D);
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -177,11 +177,16 @@ void SelectionState::render() {
 	drawText(game->window_width*0.4, game->window_height*0.935, "A/D - Move", Vector3(1.f, 1.f, 1.f), 2.0);
 	drawText(game->window_width*0.7, game->window_height*0.935, "ENTER - Select", Vector3(1.f, 1.f, 1.f), 2.0);
 	
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
 }
 
 void SelectionState::update(double time_elapsed) {
 
 	float speed = time_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
+
+	eMesh->update(time_elapsed);
 
 	if (DEBUG)
 	{

@@ -16,7 +16,8 @@ float controller_timer = 0;
 
 PlayerController::PlayerController()
 {
-	current_view = FULLVIEW;
+	arranque = 0;
+	current_controller = CONTROLLER_MODE_KEYBOARD;
 }
 
 void PlayerController::setPlayer(Airplane* player)
@@ -29,17 +30,13 @@ PlayerController::~PlayerController()
 
 }
 
-float ct = 0;
-
 void PlayerController::update(float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
-	if (!game->start)
-	{
-		return;
-	}
+	PlayState* playstate = PlayState::getInstance(game->sManager);
 
-	ct += seconds_elapsed;
+	if (!game->start)
+		return;
 
 	// SHOOTING
 
@@ -81,7 +78,7 @@ void PlayerController::update(float seconds_elapsed)
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 25; //move faster with left shift
 
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) moveY(-1.f, seconds_elapsed, speed);
 
@@ -141,9 +138,27 @@ void PlayerController::update(float seconds_elapsed)
 			moveX(-1.f, seconds_elapsed, speed);
 		}
 
+		if (state.button[START_BUTTON] && controller_timer > 0.25)
+		{
+			game->start = true;
+			player->engineOnOff();
+			controller_timer = 0;
+
+			if (player->engine)
+				arranque = 0;
+		}
+
 		if (state.button[Y_BUTTON] && controller_timer > 0.25)
 		{
-			current_view = current_view ? FULLVIEW : CABINEVIEW;
+			playstate->current_view = playstate->current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
+			playstate->setView();
+			controller_timer = 0;
+		}
+
+		if (state.button[RB_BUTTON] && controller_timer > 0.25)
+		{
+			playstate->inZoom = !playstate->inZoom;
+			playstate->setZoom();
 			controller_timer = 0;
 		}
 
@@ -169,14 +184,34 @@ void PlayerController::update(float seconds_elapsed)
 		}
 	}
 
+	arranque += seconds_elapsed;
 
 	// MOVING
-	if (ct < 8.0)
+	if (arranque < 8.0)
 	{
-		player->model.traslateLocal(0, 0, speed * seconds_elapsed * ct);
+		player->model.traslateLocal(0, 0, speed * seconds_elapsed * arranque);
 	}
 	else {
-		player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
+		if (player->engine)
+		{
+			player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
+		}
+		else
+		{
+			player->model.traslate(0, -seconds_elapsed * 29.8, speed * seconds_elapsed * 8);
+		}
+
+	}
+
+	// controlled changed?
+
+	if (game->joystick == NULL)
+		return;
+
+	if (getJoystickState(game->joystick).button[BACK_BUTTON])
+	{
+		current_controller = CONTROLLER_MODE_GAMEPAD;
+		return;
 	}
 }
 
@@ -204,9 +239,9 @@ void PlayerController::shoot()
 void PlayerController::updateCamera(Camera * camera, float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
-	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 120; //the speed is defined by the seconds_elapsed so it goes constant
 
-	if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 150;
+	if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 100;
 	if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->free_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
 	if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->free_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
 	if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->free_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
