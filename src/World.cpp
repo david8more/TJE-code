@@ -146,7 +146,7 @@ void World::addWorldConst() {
 
 	// WORLD
 	sky = new EntityMesh();
-	sky->set("cielo.ASE", game->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga", "simple");
+	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 	
 	EntityCollider* sea = new EntityCollider();
 	sea->setName("sea");

@@ -39,7 +39,7 @@ Game::Game(SDL_Window* window)
 	joystick = NULL;
 	start = false;
 	mouse_locked = false;
-	music_enabled = true; 
+	music_enabled = false;
 	effects_enabled = true; 
 	bkg_music_playing = false;
 	

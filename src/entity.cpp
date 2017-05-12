@@ -169,8 +169,9 @@ void EntityMesh::render(Camera * camera) {
 	shader->enable();
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", mvp);
+	shader->setTexture("u_normal_texture", Texture::Get("data/textures/normal_water.tga"));
 	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
-	shader->setTexture("u_sky_texture", Texture::Get(Game::getInstance()->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga"));
+	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
 	shader->setFloat("u_time", Game::getInstance()->time);
 	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
 	mesh->render(GL_TRIANGLES, shader);
@@ -256,7 +257,7 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 void EntityCollider::testSphereCollision()
 {
-	// concatenate two vector
+	// concatenate two vectors
 	/*std::vector<EntityCollider*> all;
 	all.reserve(EntityCollider::static_colliders.size() + EntityCollider::dynamic_colliders.size()); // preallocate memory
 	all.insert(all.end(), EntityCollider::static_colliders.begin(), EntityCollider::static_colliders.end());
@@ -284,10 +285,31 @@ void EntityCollider::testSphereCollision()
 	}
 }
 
-void EntityCollider::testHeightCollision()
+void EntityCollider::testStaticCollisions()
 {
+	if (!Game::getInstance()->start)
+		return;
+
 	if (this->getPosition().y < -7.5)
 	{
+		onCollision(NULL);
+		return;
+	}
+
+	// get current position after updating
+	Vector3 current_position = getPosition();
+
+	Vector3 ray_origin;
+	Vector3 ray_dir;
+
+	ray_origin = last_position;
+	ray_dir = (current_position - ray_origin).normalize();
+
+	Vector3 coll;
+	int maxT = (current_position - ray_origin).length();
+
+	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll)) {
+		std::cout << "CRASHED" << std::endl;
 		onCollision(NULL);
 	}
 }

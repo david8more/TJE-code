@@ -125,7 +125,7 @@ void Airplane::update(float elapsed_time) {
 	Entity::update(elapsed_time);
 
 	testSphereCollision();
-	testHeightCollision();
+	testStaticCollisions();
 
 	if (getPosition().y > 10.f && wheels_rotation < 7.5)
 	{
@@ -212,11 +212,11 @@ void Airplane::createTorpedos()
 
 void Airplane::torpedoShoot() {
 
-	if (!torpedosLeft) {
+	if (!torpedosLeft)
 		return;
-	}
 
 	torpedosLeft--;
+
 	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it

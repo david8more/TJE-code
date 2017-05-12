@@ -32,8 +32,8 @@ PlayState::~PlayState() {}
 
 void PlayState::init() {
 
-	game = Game::getInstance();
 	bManager = BulletManager::getInstance();
+	game = Game::getInstance();
 	world = World::getInstance();
 	world->create();
 
@@ -67,7 +67,7 @@ void PlayState::init() {
 	sTransZoomCreator(FULLVIEW, BOMBER, 7.5f);
 	sTransZoomCreator(CABINEVIEW, BOMBER, 0.75f);
 
-	// collision models
+	// set collision models
 
 	for (int i = 0; i < EntityCollider::static_colliders.size(); i++) {
 		EntityCollider * current_collider = EntityCollider::static_colliders[i];
@@ -107,7 +107,8 @@ void PlayState::onEnter()
 	player->shooting = player->overused = false;
 
 	// Sounds
-	if (game->music_enabled) {
+	if (game->music_enabled)
+	{
 		b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 		hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 		BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
@@ -168,7 +169,7 @@ void PlayState::update(double seconds_elapsed) {
 		player_controller->update(seconds_elapsed);
 	}
 
-	// update bullets and more
+	// update all scene
 	world->root->update(seconds_elapsed);
 
 	// interpolate current and previous camera
@@ -179,34 +180,6 @@ void PlayState::update(double seconds_elapsed) {
 		eye = game->current_camera->eye * 0.85 + eye * 0.15;
 	
 	game->fixed_camera->lookAt(eye, player->model * viewtarget, player->model.rotateVector(Vector3(0, 1, 0)));
-
-	// COLISIONES
-
-	// get current position after updating
-	Vector3 current_position = player->getPosition();
-
-	Vector3 ray_origin;
-	Vector3 ray_dir;
-
-	ray_origin = player->last_position;
-	ray_dir = (current_position - ray_origin).normalize();
-
-	Vector3 coll;
-	int maxT = (current_position - ray_origin).length();
-
-	if (!game->start)
-		return;
-
-	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll)) {
-		std::cout << "CRASHED" << std::endl;
-		exit(1);
-		if (DEBUG)
-		{
-			std::cout << coll.x << coll.y << coll.z;
-			debug_mesh.vertices.push_back(coll);
-			debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
-		}
-	}
 
 	// borrar pendientes
 	Entity::destroy_entities();

@@ -9,8 +9,6 @@ public:
 	Airplane(int model, bool culling = true);
 	~Airplane();
 
-	Vector3 last_position;
-
 	bool engine;
 	void engineOnOff();
 

@@ -55,7 +55,7 @@ void PlayerController::update(float seconds_elapsed)
 	if (player->cadenceCounter > 0)
 		player->cadenceCounter -= seconds_elapsed * 100;
 
-	// cooling system timer
+	//  overused off
 	if (player->overused)
 		player->timer += seconds_elapsed;
 
@@ -64,6 +64,7 @@ void PlayerController::update(float seconds_elapsed)
 		player->timer = player->shootingtime = 0;
 		player->overused = false;
 	}
+	//
 
 	// CONTROLLER
 
@@ -82,12 +83,10 @@ void PlayerController::update(float seconds_elapsed)
 		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
 
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
-			if (player->getPosition().z > -2000.f)
-				moveY(-1.f, seconds_elapsed, speed);
+			moveY(-1.f, seconds_elapsed, speed);
 
 		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN])
-			if (player->getPosition().z > -2000.f)
-				moveY(1.f, seconds_elapsed, speed);
+			moveY(1.f, seconds_elapsed, speed);
 
 		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT])
 			moveX(1.f, seconds_elapsed, speed);
@@ -192,7 +191,7 @@ void PlayerController::update(float seconds_elapsed)
 		}
 	}
 
-	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
+	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
 	
 
 	// controlled changed?

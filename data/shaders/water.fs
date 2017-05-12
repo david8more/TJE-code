@@ -7,6 +7,7 @@ varying vec4 v_color;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_sky_texture;
+uniform sampler2D u_normal_texture;
 uniform vec3 u_camera_pos;
 uniform float u_time;
 
@@ -14,6 +15,18 @@ void main()
 {
 	vec4 color = 0.5 * texture2D(u_texture, -v_world_position.xz * 0.001 + vec2(sin(u_time + 3.0) * 0.01, cos(u_time * 1.2) * 0.02));
 	color += 0.5 * texture2D(u_texture, v_world_position.xz * 0.001 + vec2(sin(u_time) * 0.01, cos(u_time * 1.2) * 0.02));
+
+	// coger textura
+	vec4 normal_map = texture2D(u_normal_texture, v_world_position.xz);
+
+	// pasar de -1 1 a 0 1
+	normal_map = normalize(normal_map * 0.5 + 0.5);
+
+	// cambiar Y por Z
+
+	vec4 normal_z_map = vec4(normal_map.x, normal_map.z, normal_map.y, normal_map.a);
+
+	vec3 N_M = normal_z_map.xyz;
 
 	vec3 N = normalize(v_normal);
 	vec3 E = normalize(v_world_position - u_camera_pos);
@@ -35,5 +48,5 @@ void main()
 
 	color = mix(color, sky_color, fresnel);
 
-	gl_FragColor = color;
+	gl_FragColor = color * normal_z_map;
 }

@@ -76,6 +76,8 @@ public:
 	bool is_static;
 	bool is_dynamic;
 
+	Vector3 last_position;
+
 	static std::vector<EntityCollider*> dynamic_colliders;
 	static std::vector<EntityCollider*> static_colliders;
 
@@ -86,7 +88,7 @@ public:
 	static void remove(Entity* ent);
 	
 	void testSphereCollision();
-	void testHeightCollision();
+	void testStaticCollisions();
 
 	int life;
 
