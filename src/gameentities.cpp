@@ -14,13 +14,11 @@
 #include "bass.h"
 #include "mesh.h"
 
-double max_rotation = 0;
-
 // *************************************************************************
 // AIRPLANE 
 // *************************************************************************
 
-Airplane::Airplane(bool culling) {
+Airplane::Airplane(int model, bool culling) {
 
 	EntityCollider* wh_right = new EntityCollider();
 	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "simple");
@@ -34,16 +32,48 @@ Airplane::Airplane(bool culling) {
 	wh_left->model.rotateLocal(1.57, Vector3(0, 0, 1));
 	this->addChild(wh_left);
 
-	EntityCollider* helix = new EntityCollider();
-	helix->alpha = true;
-	helix->depthMask = false;
-	helix->cullFace = false;
-	helix->set("helice.ASE", "data/textures/helice.tga", "simple");
-	helix->model.traslate(0.f, 0.f, 2.f);
+	Helix* helix = new Helix();
+
+	if (model == SPITFIRE)
+	{
+		set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		helix->model.setTranslation(0.f, 0.f, 2.1f);
+	}
+
+	else if (model == P38)
+	{
+		set("p38.ASE", "data/textures/p38.tga", "simple");
+		helix->model.setTranslation(2.44f, 0.f, 2.85f);
+		
+		Helix* helix2 = new Helix();
+		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
+		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
+		this->addChild(helix2);
+	}
+
+	else if (model == WILDCAT)
+	{
+		set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
+		helix->model.setTranslation(0.f, 0.f, 3.1f);
+	}
+
+	else if (model == BOMBER)
+	{
+		set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
+		helix->model.setTranslation(2.65f, -0.88f, 4.65f);
+
+		Helix* helix2 = new Helix();
+		helix2->model.setTranslation(-2.65f, -0.88f, 4.65f);
+		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
+		this->addChild(helix2);
+	}
+
 	helix->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 	this->addChild(helix);
 
+	// plane properties
 	engine = false;
+	wheels_rotation = 0;
 }
 
 Airplane::~Airplane() {}
@@ -93,15 +123,14 @@ void Airplane::update(float elapsed_time) {
 
 	BulletManager::getInstance()->update(elapsed_time);
 	Entity::update(elapsed_time);
+
 	testSphereCollision();
+	testHeightCollision();
 
-	if (!Game::getInstance()->start)
-		return;
-
-	max_rotation += elapsed_time;
-
-	if (max_rotation < 10.0 && max_rotation > 2.25)
+	if (getPosition().y > 10.f && wheels_rotation < 7.5)
 	{
+		//std::cout << getPosition().y << std::endl;
+		wheels_rotation += elapsed_time;
 		children[0]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, 1));
 		children[1]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, -1));
 	}
@@ -152,9 +181,6 @@ void Airplane::createTorpedos()
 {
 	Torpedo * t1 = new Torpedo(NO_CULLING);
 	Torpedo * t2 = new Torpedo(NO_CULLING);
-
-	t1->setDynamic();
-	t2->setDynamic();
 
 	switch (World::getInstance()->worldInfo.playerModel) {
 	case SPITFIRE:
@@ -207,6 +233,7 @@ void Airplane::torpedoShoot() {
 
 void Airplane::onCollision(EntityCollider* collided_with) {
 	//Game* game = Game::getInstance();
+	std::cout << "CRASHED!" << std::endl;
 	exit(1);
 	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
 }
@@ -275,6 +302,18 @@ void Torpedo::onCollision(EntityCollider* collided_with) {
 
 	// destruir torpedo
 	destroy();
+}
+
+// *************************************************************************
+// HELIX
+// *************************************************************************
+
+Helix::Helix()
+{
+	alpha = true;
+	depthMask = false;
+	cullFace = false;
+	set("helice.ASE", "data/textures/helice.tga", "simple");
 }
 
 // **************************************************************************************

@@ -104,7 +104,7 @@ void Entity::destroy_entities() {
 	for (int i = 0; i < destroy_pending.size(); i++)
 	{
 		Entity* ent = destroy_pending[i];
-  		EntityCollider::removeStatic(ent);
+  		EntityCollider::remove(ent);
 		ent->parent->removeChild(ent);
 		ent->parent = NULL;
 		delete(ent);
@@ -244,11 +244,10 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 		//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 		//al origen del rayo o nos conformamos con saber si colisiona. 
 
-		if (!collisionModel->rayCollision(origin.v, dir.v, true))
+		if (!collisionModel->rayCollision(origin.v, dir.v, 0.0, max_dist, true))
 			continue;
 
 		collisionModel->getCollisionPoint(collisions.v, false);
-		current_enemy->onCollision(current_enemy);
 		return true;
 	}
 
@@ -257,9 +256,16 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 void EntityCollider::testSphereCollision()
 {
-	for (int i = 0; i < EntityCollider::static_colliders.size(); i++)
+	// concatenate two vector
+	/*std::vector<EntityCollider*> all;
+	all.reserve(EntityCollider::static_colliders.size() + EntityCollider::dynamic_colliders.size()); // preallocate memory
+	all.insert(all.end(), EntityCollider::static_colliders.begin(), EntityCollider::static_colliders.end());
+	all.insert(all.end(), EntityCollider::dynamic_colliders.begin(), EntityCollider::dynamic_colliders.end());
+	*/
+
+	for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 	{
-		EntityCollider* current = EntityCollider::static_colliders[i];
+		EntityCollider* current = EntityCollider::dynamic_colliders[i];
 
 		Mesh * my_mesh = Mesh::Get(mesh.c_str());
 		Mesh * enemy_mesh = Mesh::Get(current->mesh.c_str());
@@ -278,7 +284,15 @@ void EntityCollider::testSphereCollision()
 	}
 }
 
-void EntityCollider::removeStatic(Entity* ent)
+void EntityCollider::testHeightCollision()
+{
+	if (this->getPosition().y < -7.5)
+	{
+		onCollision(NULL);
+	}
+}
+
+void EntityCollider::remove(Entity* ent)
 {
 	std::vector<EntityCollider*>::iterator it;
 
@@ -286,6 +300,11 @@ void EntityCollider::removeStatic(Entity* ent)
 
  	if (it != static_colliders.end())
 		static_colliders.erase(it);
+
+	it = std::find(dynamic_colliders.begin(), dynamic_colliders.end(), ent);
+
+	if (it != dynamic_colliders.end())
+		dynamic_colliders.erase(it);
 }
 
 void EntityCollider::onBulletCollision()

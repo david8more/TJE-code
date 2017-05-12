@@ -16,6 +16,7 @@
 #define DEBUG 0
 
 Airplane* eMesh = NULL; // plane mesh
+EntityMesh* helix = NULL;
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
@@ -47,9 +48,7 @@ void SelectionState::init() {
 	// create semi-WORLD
 
 	// plane
-	eMesh = new Airplane();
-	eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
-	eMesh->model.rotateLocal(0.5f, Vector3(0, -1, 0));
+	eMesh = new Airplane(SPITFIRE);
 
 	// sky
 	bMesh = new EntityMesh();
@@ -132,26 +131,24 @@ void SelectionState::render() {
 	switch (playerModel) {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
-		eMesh->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
-		//helix->model.setTranslation(0.f, 0.f, 2.f);
+		eMesh = new Airplane(SPITFIRE);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
-		eMesh->set("p38.ASE", "data/textures/p38.tga", "simple");
+		eMesh = new Airplane(P38);
 		break;
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
-		eMesh->set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
-		//helix->model.setTranslation(0.f, 0.f, 3.25f);
+		eMesh = new Airplane(WILDCAT);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
-		eMesh->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
+		eMesh = new Airplane(BOMBER);
 		break;
 	default:
 		break;
 	}
-	
+
 	lastRendered = playerModel;
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);

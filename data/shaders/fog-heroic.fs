@@ -16,7 +16,7 @@ void main()
 
 	vec4 fog_color = vec4(90.0/256.0, 90.0/256.0, 90.0/256.0, 1.0);
 	float distance = length(v_world_position - u_camera_pos);
-	float factor = clamp(pow(distance / 13500.0, 0.5), 0.0, 1.0);
+	float factor = clamp(pow(distance / 10000.0, 0.5), 0.0, 1.0);
 	color = mix(color, fog_color, factor);
 
 	gl_FragColor = color;

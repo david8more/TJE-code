@@ -95,9 +95,9 @@ void BulletManager::update(float elapsed_time)
 void BulletManager::testBulletCollision() {
 
 	// colisiona alguna bala con los enemigos?
-	for (int i = 0; i < EntityCollider::static_colliders.size(); i++) {
+	for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++) {
 
-		EntityCollider * current_enemy = EntityCollider::static_colliders[i];
+		EntityCollider * current_enemy = EntityCollider::dynamic_colliders[i];
 
 		//si queremos especificar la model de la mesh usamos setTransform
 

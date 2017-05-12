@@ -26,7 +26,7 @@ void main()
 
 	float fresnel = clamp(1.0 - pow(-dot(N, E), 0.5), 0.0, 1.0);
 
-	vec4 sky_color = texture2D(u_sky_texture, uv_polar, 3.0);
+	vec4 sky_color = texture2DLod(u_sky_texture, uv_polar, 3.0);
 
 	vec4 fog_color = vec4(156.0/256.0, 178.0/256.0, 186.0/256.0, 1.0);
 	float distance = length(v_world_position - u_camera_pos);

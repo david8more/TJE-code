@@ -13,7 +13,6 @@ private:
 	~PlayerController();
 public:
 	Airplane* player;
-	float arranque;
 	int current_controller;
 
 	static PlayerController* instance;

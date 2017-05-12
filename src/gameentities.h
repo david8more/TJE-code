@@ -6,11 +6,15 @@
 class Airplane : public EntityCollider {
 public:
 
-	Airplane(bool culling = true);
+	Airplane(int model, bool culling = true);
 	~Airplane();
+
+	Vector3 last_position;
 
 	bool engine;
 	void engineOnOff();
+
+	double wheels_rotation;
 
 	int life;
 	int torpedosLeft;
@@ -50,6 +54,16 @@ public:
 	void update(float elapsed_time);
 	void activate();
 	void onCollision(EntityCollider* collided_with);
+};
+
+// *******************************************************************
+
+class Helix : public EntityMesh {
+public:
+
+	Helix();
+	~Helix();
+
 };
 
 // *******************************************************************

@@ -16,7 +16,6 @@ float controller_timer = 0;
 
 PlayerController::PlayerController()
 {
-	arranque = 0;
 	current_controller = CONTROLLER_MODE_KEYBOARD;
 }
 
@@ -33,10 +32,11 @@ PlayerController::~PlayerController()
 void PlayerController::update(float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
-	PlayState* playstate = PlayState::getInstance(game->sManager);
-
+	
 	if (!game->start)
 		return;
+
+	PlayState* playstate = PlayState::getInstance(game->sManager);
 
 	// SHOOTING
 
@@ -78,19 +78,28 @@ void PlayerController::update(float seconds_elapsed)
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 25; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 5; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
 
-		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) moveY(-1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
+			if (player->getPosition().z > -2000.f)
+				moveY(-1.f, seconds_elapsed, speed);
 
-		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) moveY(1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN])
+			if (player->getPosition().z > -2000.f)
+				moveY(1.f, seconds_elapsed, speed);
 
-		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) moveX(1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT])
+			moveX(1.f, seconds_elapsed, speed);
 
-		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT]) moveX(-1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_D] || game->keystate[SDL_SCANCODE_RIGHT])
+			moveX(-1.f, seconds_elapsed, speed);
 
-		if (game->keystate[SDL_SCANCODE_Q]) moveXY(1.f, -1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_Q])
+			moveXY(1.f, -1.f, seconds_elapsed, speed);
 
-		if (game->keystate[SDL_SCANCODE_E]) moveXY(-1.f, 1.f, seconds_elapsed, speed);
+		if (game->keystate[SDL_SCANCODE_E])
+			moveXY(-1.f, 1.f, seconds_elapsed, speed);
 
 		// to navigate with the mouse fixed in the middle
 		if (game->mouse_locked)
@@ -117,7 +126,8 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (state.axis[LEFT_ANALOG_Y] > 0.2 || state.axis[LEFT_ANALOG_Y] < -0.2)
 		{
-			moveY(state.axis[LEFT_ANALOG_Y], seconds_elapsed, speed);
+			if(player->getPosition().z > -2000.f)
+				moveY(state.axis[LEFT_ANALOG_Y], seconds_elapsed, speed);
 		}
 
 		if (state.axis[RIGHT_ANALOG_X] > 0.2 || state.axis[RIGHT_ANALOG_X] < -0.2)
@@ -143,14 +153,11 @@ void PlayerController::update(float seconds_elapsed)
 			game->start = true;
 			player->engineOnOff();
 			controller_timer = 0;
-
-			if (player->engine)
-				arranque = 0;
 		}
 
 		if (state.button[Y_BUTTON] && controller_timer > 0.25)
 		{
-			playstate->current_view = playstate->current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
+			playstate->current_view = playstate->current_view ? FULLVIEW : CABINEVIEW;
 			playstate->setView();
 			controller_timer = 0;
 		}
@@ -170,7 +177,7 @@ void PlayerController::update(float seconds_elapsed)
 		
 		if (state.axis[4] > 0.1)
 		{
-			speed *= 50;
+			speed *= 5;
 		}
 
 		if (state.axis[5] > 0.1)
@@ -180,28 +187,13 @@ void PlayerController::update(float seconds_elapsed)
 		else
 		{
 			player->shooting = false;
-			if (!player->overused) player->shootingtime = 0;
+			if (!player->overused)
+				player->shootingtime = 0;
 		}
 	}
 
-	arranque += seconds_elapsed;
-
-	// MOVING
-	if (arranque < 8.0)
-	{
-		player->model.traslateLocal(0, 0, speed * seconds_elapsed * arranque);
-	}
-	else {
-		if (player->engine)
-		{
-			player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
-		}
-		else
-		{
-			player->model.traslate(0, -seconds_elapsed * 29.8, speed * seconds_elapsed * 8);
-		}
-
-	}
+	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 10);
+	
 
 	// controlled changed?
 

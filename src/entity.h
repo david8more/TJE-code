@@ -83,8 +83,10 @@ public:
 	~EntityCollider();
 	virtual void onBulletCollision();
 	virtual void onCollision(EntityCollider* collided_with) {}
+	static void remove(Entity* ent);
+	
 	void testSphereCollision();
-	static void removeStatic(Entity* ent);
+	void testHeightCollision();
 
 	int life;
 

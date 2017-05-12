@@ -37,8 +37,6 @@ void PlayState::init() {
 	world = World::getInstance();
 	world->create();
 
-	PlayerController::getInstance()->setPlayer(world->playerAir);
-
 	// posicion y direccion de la vista seleccionada
 	viewpos = Vector3(0, 5, -15);
 	viewtarget = Vector3(0, 5, 0);
@@ -47,7 +45,6 @@ void PlayState::init() {
 	game->free_camera = new Camera(); //our global camera
 	game->fixed_camera = new Camera();
 
-	//game->fixed_camera->lookAt(world->playerAir->model * viewpos, world->playerAir->model * viewtarget, world->playerAir->model.rotateVector(Vector3(0, 1, 0)));
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(2000, 0, -2000), Vector3(0,0, 0), Vector3(0, 1, 0));
@@ -81,7 +78,7 @@ void PlayState::init() {
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 25, 25);
 
-	crosshair_tex = "data/textures/target_32.tga";
+	crosshair_tex = "data/textures/crosshair.tga";
 }
 
 void PlayState::onEnter()
@@ -89,6 +86,9 @@ void PlayState::onEnter()
 	cout << "$ Entering play state -- ..." << endl;
 	
 	player = World::getInstance()->playerAir;
+
+	PlayerController::getInstance()->setPlayer(player);
+
 	// views things
 	current_view = 0;
 
@@ -151,6 +151,9 @@ void PlayState::render() {
 
 void PlayState::update(double seconds_elapsed) {
 
+	// get last position before updating
+	player->last_position = player->getPosition();
+
 	PlayerController* player_controller = PlayerController::getInstance();
 
 	// ********************************************************************
@@ -179,24 +182,30 @@ void PlayState::update(double seconds_elapsed) {
 
 	// COLISIONES
 
+	// get current position after updating
+	Vector3 current_position = player->getPosition();
+
 	Vector3 ray_origin;
 	Vector3 ray_dir;
 
-	if (DEBUG) {
-		//ray_origin = game->current_camera->eye;
-		//ray_dir = (game->current_camera->center - ray_origin).normalize();
-	}
-	else {
-		ray_origin = game->current_camera->eye;
-		ray_dir = (game->current_camera->center - ray_origin).normalize();
-	}
+	ray_origin = player->last_position;
+	ray_dir = (current_position - ray_origin).normalize();
 
 	Vector3 coll;
+	int maxT = (current_position - ray_origin).length();
 
-	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, 10000000, coll)) {
-		//std::cout << coll.x << coll.y << coll.z;
-		debug_mesh.vertices.push_back(coll);
-		debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
+	if (!game->start)
+		return;
+
+	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll)) {
+		std::cout << "CRASHED" << std::endl;
+		exit(1);
+		if (DEBUG)
+		{
+			std::cout << coll.x << coll.y << coll.z;
+			debug_mesh.vertices.push_back(coll);
+			debug_mesh.colors.push_back(Vector4(1, 0, 0, 0));
+		}
 	}
 
 	// borrar pendientes
@@ -259,12 +268,12 @@ void PlayState::renderHUD() {
 	// vidas enemigas
 
 	
-	if (EntityCollider::static_colliders.size())
+	if (EntityCollider::dynamic_colliders.size())
 	{
-		for (int i = 0; i < EntityCollider::static_colliders.size(); i++)
+		for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 		{
 			ss.str("");
-			ss << EntityCollider::static_colliders[i]->life;
+			ss << EntityCollider::dynamic_colliders[i]->life;
 			drawText(game->window_width*0.1, game->window_height*0.1*(i+1), ss.str(), Vector3(1, 0, 0), 3.0);
 		}
 
@@ -306,7 +315,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	
 		if (player->engine)
 		{
-			PlayerController::getInstance()->arranque = 0;
 			e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
 			e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
 			BASS_ChannelPlay(e_channel, false); // play it
