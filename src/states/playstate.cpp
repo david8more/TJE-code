@@ -38,7 +38,7 @@ void PlayState::init() {
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0, 5, -15);
+	viewpos = Vector3(0, 3.5, -12.5);
 	viewtarget = Vector3(0, 5, 0);
 
 	//create our camera
@@ -323,6 +323,7 @@ void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
 	if (event.button == SDL_BUTTON_RIGHT) //right mouse
 	{
 		inZoom = !inZoom;
+		setZoom();
 	}
 }
 
@@ -351,9 +352,9 @@ void PlayState::setView() {
 		game->current_camera->far_plane = 50000.f;
 
 		if (world->worldInfo.playerModel == SPITFIRE) {
-			world->playerAir->set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
-		viewpos = Vector3(0, 5, -15);
+		viewpos = Vector3(0, 5, -10);
 		viewtarget = Vector3(0, 5, 10.f);
 		break;
 
@@ -365,7 +366,7 @@ void PlayState::setView() {
 		if (world->worldInfo.playerModel == SPITFIRE) {
 			viewpos = Vector3(0.f, 0.7f, -1.5f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
-			world->playerAir->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
+			player->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 
 		}
 		else if (world->worldInfo.playerModel == P38) {

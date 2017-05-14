@@ -192,7 +192,6 @@ void PlayerController::update(float seconds_elapsed)
 	}
 
 	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
-	
 
 	// controlled changed?
 

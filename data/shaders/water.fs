@@ -48,5 +48,5 @@ void main()
 
 	color = mix(color, sky_color, fresnel);
 
-	gl_FragColor = color * normal_z_map;
+	gl_FragColor = color;
 }

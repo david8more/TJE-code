@@ -83,7 +83,7 @@ void BulletManager::update(float elapsed_time)
 		}
 		current.last_position = current.position;
 		current.position += current.velocity * elapsed_time;
-		current.velocity += Vector3(0.f, -50.f * elapsed_time, 0.f);
+		current.velocity += Vector3(0.f, -28.f * elapsed_time, 0.f);
 		// friccion aire
 		current.velocity = current.velocity * 0.99;
 	}

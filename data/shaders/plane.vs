@@ -22,7 +22,7 @@ void main()
 	
 	//calcule the vertex in object space
 	v_position = a_vertex;
-	v_world_position = (u_model * vec4( v_position, 1.0) ).xyz;
+	v_world_position = (u_model * vec4( a_vertex, 1.0) ).xyz;
 	
 	//store the color in the varying var to use it from the pixel shader
 	v_color = a_color;
@@ -31,5 +31,5 @@ void main()
 	v_uv = a_uv;
 
 	//calcule the position of the vertex using the matrices
-	gl_Position = u_mvp * vec4( v_position, 1.0 );
+	gl_Position = u_mvp * vec4( a_vertex, 1.0 );
 }

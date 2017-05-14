@@ -335,6 +335,9 @@ void EntityCollider::onBulletCollision()
 	this->life = max(this->life, 0);
 
 	if (!this->life) {
+		int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
+		HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
+		BASS_ChannelPlay(hSampleChannel, false); // play it
 		destroy();
 	}
 }

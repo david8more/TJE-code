@@ -21,28 +21,30 @@
 Airplane::Airplane(int model, bool culling) {
 
 	EntityCollider* wh_right = new EntityCollider();
-	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "simple");
-	wh_right->model.setTranslation(-0.82, -0.58, 0.16);
-	wh_right->model.rotateLocal(1.57, Vector3(0, 0, -1));
-	this->addChild(wh_right);
+	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "plane");
 
 	EntityCollider* wh_left = new EntityCollider();
-	wh_left->set("spitfire_wheel_left.ASE", "data/textures/spitfire.tga", "simple");
-	wh_left->model.setTranslation(0.82, -0.58, 0.16);
-	wh_left->model.rotateLocal(1.57, Vector3(0, 0, 1));
-	this->addChild(wh_left);
+	wh_left->set("spitfire_wheel_left.ASE", "data/textures/spitfire.tga", "plane");
 
 	Helix* helix = new Helix();
 
 	if (model == SPITFIRE)
 	{
-		set("spitfire.ASE", "data/textures/spitfire.tga", "simple");
+		set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		helix->model.setTranslation(0.f, 0.f, 2.1f);
+
+		wh_right->model.setTranslation(-0.82, -0.58, 0.16);
+		wh_right->model.rotateLocal(1.57, Vector3(0, 0, -1));
+		this->addChild(wh_right);
+
+		wh_left->model.setTranslation(0.82, -0.58, 0.16);
+		wh_left->model.rotateLocal(1.57, Vector3(0, 0, 1));
+		this->addChild(wh_left);
 	}
 
 	else if (model == P38)
 	{
-		set("p38.ASE", "data/textures/p38.tga", "simple");
+		set("p38.ASE", "data/textures/p38.tga", "plane");
 		helix->model.setTranslation(2.44f, 0.f, 2.85f);
 		
 		Helix* helix2 = new Helix();
@@ -53,13 +55,13 @@ Airplane::Airplane(int model, bool culling) {
 
 	else if (model == WILDCAT)
 	{
-		set("wildcat.ASE", "data/textures/wildcat.tga", "simple");
+		set("wildcat.ASE", "data/textures/wildcat.tga", "plane");
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
 	}
 
 	else if (model == BOMBER)
 	{
-		set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "simple");
+		set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "plane");
 		helix->model.setTranslation(2.65f, -0.88f, 4.65f);
 
 		Helix* helix2 = new Helix();
@@ -313,7 +315,7 @@ Helix::Helix()
 	alpha = true;
 	depthMask = false;
 	cullFace = false;
-	set("helice.ASE", "data/textures/helice.tga", "simple");
+	set("helice.ASE", "data/textures/helice.tga", "plane");
 }
 
 // **************************************************************************************

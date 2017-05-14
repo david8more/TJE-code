@@ -16,7 +16,6 @@
 #define DEBUG 0
 
 Airplane* eMesh = NULL; // plane mesh
-EntityMesh* helix = NULL;
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
@@ -52,12 +51,12 @@ void SelectionState::init() {
 
 	// sky
 	bMesh = new EntityMesh();
-	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "color");
-	bMesh->model.setTranslation(0.f, -500.f, 0.f);
+	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "simple");
+	bMesh->model.setTranslation(0.f, -100.f, 0.f);
 
 	// ground
 	gMesh = new EntityMesh();
-	gMesh->set("terrain.ASE", "data/textures/terrain.tga", "color");
+	gMesh->set("agua.ASE", "data/textures/agua.tga", "water");
 	gMesh->model.setTranslation(0.f, -500.f, 0.f);
 
 	// rendering properties
@@ -183,7 +182,7 @@ void SelectionState::update(double time_elapsed) {
 
 	float speed = time_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
-	eMesh->update(time_elapsed);
+	eMesh->model.rotate(-time_elapsed * 0.2, Vector3(0, 1, 0));
 
 	if (DEBUG)
 	{
