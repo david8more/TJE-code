@@ -60,7 +60,7 @@ void BulletManager::render()
 	if (!bullets.vertices.size())
 		return;
 
-	glLineWidth(1.5);
+	glLineWidth(1.25);
 	bullets.render(GL_LINES);
 }
 

@@ -18,7 +18,9 @@
 // AIRPLANE 
 // *************************************************************************
 
-Airplane::Airplane(int model, bool culling) {
+Airplane::Airplane(int model, IAController* controller, bool culling) {
+
+	planeModel = model;
 
 	EntityCollider* wh_right = new EntityCollider();
 	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "plane");
@@ -76,6 +78,18 @@ Airplane::Airplane(int model, bool culling) {
 	// plane properties
 	engine = false;
 	wheels_rotation = 0;
+
+
+	// controller
+
+	this->controller = NULL;
+
+	if (controller != NULL)
+	{
+		std::cout << "wfrfw" << std::endl;
+		this->controller = controller;
+		controller->setPlayer(this);
+	}
 }
 
 Airplane::~Airplane() {}
@@ -117,7 +131,7 @@ void Airplane::render(Camera * camera) {
 	shader->disable();
 
 	for (int i = 0; i < this->children.size(); i++) {
-			this->children[i]->render(camera);
+		this->children[i]->render(camera);
 	}
 }
 
@@ -129,6 +143,12 @@ void Airplane::update(float elapsed_time) {
 	testSphereCollision();
 	testStaticCollisions();
 
+	if (controller != NULL)
+	{
+		controller->setTarget(World::getInstance()->playerAir->getPosition());
+		controller->update(elapsed_time);
+	}
+
 	if (getPosition().y > 10.f && wheels_rotation < 7.5)
 	{
 		//std::cout << getPosition().y << std::endl;
@@ -136,41 +156,34 @@ void Airplane::update(float elapsed_time) {
 		children[0]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, 1));
 		children[1]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, -1));
 	}
+
+	/*if (life < 0)
+	{
+		std::cout << "plane crashed" << std::endl;
+		destroy();
+	}*/
 }
 
-void Airplane::m60Shoot() {
+void Airplane::shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
 	Game*game = Game::getInstance();
-	int planeModel = World::getInstance()->worldInfo.playerModel;
 
-	Vector3 cannon_pos1;
-	Vector3 cannon_pos2;
-	Vector3 cannon_pos3;
 	switch (planeModel) {
 	case SPITFIRE:
-		cannon_pos1 = Vector3(1.9f, -0.25f, 2.f);
-		cannon_pos2 = Vector3(-1.9f, -0.25f, 2.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(1.9f, -0.25f, 2.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(-1.9f, -0.25f, 2.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
 		break;
 	case P38:
-		cannon_pos1 = Vector3(0.5f, -0.25f, 10.f);
-		cannon_pos2 = Vector3(-0.5f, -0.25f, 10.f);
-		cannon_pos3 = Vector3(0.f, -0.1f, 10.f);
-
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos3, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
 		break;
 	case WILDCAT:
-		cannon_pos1 = Vector3(0.f, -0.50f, 10.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(0.f, -0.50f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
 	case BOMBER:
-		cannon_pos1 = Vector3(2.40f, -0.25f, 5.f);
-		cannon_pos2 = Vector3(-2.55f, -0.25f, 5.f);
-		bManager->createBullet(model*cannon_pos1, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
-		bManager->createBullet(model*cannon_pos2, model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
+		bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
 		break;
 	}
 
@@ -184,7 +197,7 @@ void Airplane::createTorpedos()
 	Torpedo * t1 = new Torpedo(NO_CULLING);
 	Torpedo * t2 = new Torpedo(NO_CULLING);
 
-	switch (World::getInstance()->worldInfo.playerModel) {
+	switch (planeModel) {
 	case SPITFIRE:
 		t1->model.traslate(0.75f, -0.75f, -0.5f);
 		t2->model.traslate(-0.75f, -0.75f, -0.5f);
@@ -225,9 +238,10 @@ void Airplane::torpedoShoot() {
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (!torpedos[i]->ready)
+		if (torpedos[i] != NULL)
 		{
 			torpedos[i]->activate();
+			torpedos[i] = NULL;
 			return;
 		}
 	}
@@ -235,8 +249,24 @@ void Airplane::torpedoShoot() {
 
 void Airplane::onCollision(EntityCollider* collided_with) {
 	//Game* game = Game::getInstance();
-	std::cout << "CRASHED!" << std::endl;
-	exit(1);
+	
+	std::cout << "COLISION!" << std::endl;
+
+	if (name == "player")
+	{
+		std::cout << "CRASHED!" << std::endl;
+		exit(1);
+	}
+
+	else if (name == "ia_1")
+	{
+		std::cout << "IA 1 CRASHED!" << std::endl;
+	}
+
+	else if (name == "ia_2")
+	{
+		std::cout << "IA 2 CRASHED!" << std::endl;
+	}
 	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
 }
 
@@ -264,10 +294,12 @@ Torpedo::~Torpedo() {}
 
 void Torpedo::update(float elapsed_time) {
 
-	if (!ready) return;
+	if (!ready)
+		return;
 
-	if (this->ttl < 0) {
+	if (ttl < 0) {
 		destroy();
+		std::cout << "torpedo destroyed (ttl < 0)" << std::endl;
 		return;
 	}
 
@@ -275,6 +307,7 @@ void Torpedo::update(float elapsed_time) {
 
 	model.traslateLocal(0, 0, (4 - ttl) * elapsed_time * -150 * 0.5);
 	ttl -= elapsed_time;
+	
 }
 
 void Torpedo::activate() {
@@ -294,16 +327,13 @@ void Torpedo::onCollision(EntityCollider* collided_with) {
 	HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 	BASS_ChannelPlay(hSampleChannel, false); // play it
 
+	//collided_with->onCollision(this);
 	collided_with->life -= 100;
 	collided_with->life = max(collided_with->life, 0);
-
-	// destruir current enemy
-	if (!collided_with->life) {
-		collided_with->destroy();
-	}
+	std::cout << "torpedo collided";
 
 	// destruir torpedo
-	destroy();
+	ttl = -1.0;
 }
 
 // *************************************************************************

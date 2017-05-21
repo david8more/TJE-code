@@ -131,7 +131,8 @@ void mainLoop()
 		if ((game->frame % 10) == 0)
 			game->fps = 1.0 / elapsed_time;
 
-		if (elapsed_time > 0.1) elapsed_time = 0.1;
+		if (elapsed_time > 0.5 && game->time > 5)
+			elapsed_time = 0.2;
 
 		game->update(elapsed_time); 
 

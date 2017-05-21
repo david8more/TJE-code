@@ -3,11 +3,17 @@
 
 #include "entity.h"
 
+class IAController;
+
 class Airplane : public EntityCollider {
 public:
 
-	Airplane(int model, bool culling = true);
+	Airplane(int model, IAController* controller, bool culling = true);
 	~Airplane();
+
+	IAController* controller;
+
+	int planeModel;
 
 	bool engine;
 	void engineOnOff();
@@ -25,14 +31,13 @@ public:
 	bool overused;
 	int shootingtime;
 	bool shooting;
-	float cadenceCounter;
 
 	Torpedo* torpedos[2];
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
-	void m60Shoot();
+	void shoot();
 	void createTorpedos();
 	void torpedoShoot();
 	void onCollision(EntityCollider* collided_with);

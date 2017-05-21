@@ -216,6 +216,11 @@ EntityCollider::~EntityCollider() {}
 std::vector<EntityCollider*> EntityCollider::static_colliders;
 std::vector<EntityCollider*> EntityCollider::dynamic_colliders;
 
+void EntityCollider::setLife(int life)
+{
+	this->life = life;
+}
+
 void EntityCollider::setStatic()
 {
 	static_colliders.push_back(this);
@@ -263,10 +268,16 @@ void EntityCollider::testSphereCollision()
 	all.insert(all.end(), EntityCollider::static_colliders.begin(), EntityCollider::static_colliders.end());
 	all.insert(all.end(), EntityCollider::dynamic_colliders.begin(), EntityCollider::dynamic_colliders.end());
 	*/
-
 	for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 	{
 		EntityCollider* current = EntityCollider::dynamic_colliders[i];
+
+		// no queremos hacer las colisiones jugador/barcos, se hará con el rayo
+		// -> tiene más precision
+		if (current == this)
+			continue;
+
+		//std::cout << this->name << ": " << current->name << endl;
 
 		Mesh * my_mesh = Mesh::Get(mesh.c_str());
 		Mesh * enemy_mesh = Mesh::Get(current->mesh.c_str());
@@ -274,15 +285,17 @@ void EntityCollider::testSphereCollision()
 		Vector3 my_position = model * my_mesh->header.center;
 		Vector3 enemy_position = current->model * enemy_mesh->header.center;
 
-		float margin = current->name == "enemy_ship" ? 25.0 : 5.0;
+		float margin = 3.0;
 		float dist = my_position.distance(enemy_position) + margin;
 
 		if (dist < (my_mesh->header.radius + enemy_mesh->header.radius))
 		{
-			onCollision(current);
+			//std::cout << "Collided with:" << current->name << std::endl;
+			this->onCollision(current);
 		}
 
 	}
+
 }
 
 void EntityCollider::testStaticCollisions()
@@ -292,6 +305,7 @@ void EntityCollider::testStaticCollisions()
 
 	if (this->getPosition().y < -7.5)
 	{
+		std::cout << "Water collision" << std::endl;
 		onCollision(NULL);
 		return;
 	}
@@ -303,13 +317,16 @@ void EntityCollider::testStaticCollisions()
 	Vector3 ray_dir;
 
 	ray_origin = last_position;
+
+	if (current_position == last_position)
+		return;
+
 	ray_dir = (current_position - ray_origin).normalize();
 
 	Vector3 coll;
 	int maxT = (current_position - ray_origin).length();
 
 	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll)) {
-		std::cout << "CRASHED" << std::endl;
 		onCollision(NULL);
 	}
 }
@@ -333,6 +350,8 @@ void EntityCollider::onBulletCollision()
 {
 	this->life -= 5;
 	this->life = max(this->life, 0);
+
+	std::cout << "bullet collision made" << std::endl;
 
 	if (!this->life) {
 		int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);

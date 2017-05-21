@@ -99,6 +99,14 @@ Vector3 Vector3::operator += (const Vector3& v)
 	return *this;
 }
 
+bool Vector3::operator == (const Vector3& v)
+{
+	if (x == v.x && y == v.y && z == v.z)
+		return true;
+	return false;
+}
+
+
 //*********************************
 Matrix44::Matrix44()
 {

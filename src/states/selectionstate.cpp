@@ -47,7 +47,7 @@ void SelectionState::init() {
 	// create semi-WORLD
 
 	// plane
-	eMesh = new Airplane(SPITFIRE);
+	eMesh = new Airplane(SPITFIRE, NULL);
 
 	// sky
 	bMesh = new EntityMesh();
@@ -130,19 +130,19 @@ void SelectionState::render() {
 	switch (playerModel) {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(SPITFIRE);
+		eMesh = new Airplane(SPITFIRE, NULL);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(P38);
+		eMesh = new Airplane(P38, NULL);
 		break;
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(WILDCAT);
+		eMesh = new Airplane(WILDCAT, NULL);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(BOMBER);
+		eMesh = new Airplane(BOMBER, NULL);
 		break;
 	default:
 		break;

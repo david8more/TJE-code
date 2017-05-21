@@ -86,6 +86,7 @@ public:
 	float dot( const Vector3& v ) const;
 
 	Vector3 operator += (const Vector3& v);
+	bool operator == (const Vector3& v);
 
 	void sumame(Vector3 v);
 };

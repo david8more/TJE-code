@@ -8,6 +8,9 @@
 #define CAMERA_H
 
 #include "framework.h"
+#include "gameentities.h"
+
+class Airplane;
 
 class Camera
 {
@@ -53,6 +56,7 @@ public:
 	void setPerspective(float fov, float aspect, float near_plane, float far_plane);
 	void setOrthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
 	void lookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
+	void lookAtPlane(Airplane* plane);
 
 	void extractFrustum();
 

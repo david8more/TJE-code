@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "entity.h"
 #include "gameentities.h"
+#include "iacontroller.h"
 
 class Entity;
 class EntityMesh;

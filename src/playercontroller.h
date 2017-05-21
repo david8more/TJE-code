@@ -1,19 +1,19 @@
 #ifndef PLAYERCONTROLLER_H
 #define PLAYERCONTROLLER_H
 
-#include "gameentities.h"
+#include "controller.h"
 #include "camera.h"
 
 #define CONTROLLER_MODE_KEYBOARD 0
 #define CONTROLLER_MODE_GAMEPAD 1
 
-class PlayerController {
+class PlayerController : public Controller{
+
 private:
 	PlayerController();
 	~PlayerController();
+
 public:
-	Airplane* player;
-	int current_controller;
 
 	static PlayerController* instance;
 
@@ -22,14 +22,16 @@ public:
 		if (instance == NULL) instance = new PlayerController();
 		return instance;
 	}
-	void setPlayer(Airplane* player);
+
 	void update(float time_elapsed);
 
 	// controller actions
+	int current_controller;
+
 	void moveX(float axis, float seconds_elapsed, float speed);
 	void moveXY(float Xaxis, float Yaxis, float seconds_elapsed, float speed);
 	void moveY(float axis, float seconds_elapsed, float speed);
-	void shoot();
+	void shoot(float time_elapsed);
 	void updateCamera(Camera * camera, float seconds_elapsed);
 };
 

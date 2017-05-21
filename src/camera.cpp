@@ -111,6 +111,15 @@ void Camera::lookAt(const Vector3& eye, const Vector3& center, const Vector3& up
 	updateViewMatrix();
 }
 
+void Camera::lookAtPlane(Airplane* plane)
+{
+	this->eye = plane->model * Vector3(-10, 10, -25);
+	this->center = plane->model * Vector3(0, 0, 100);
+	this->up = plane->model.rotateVector(Vector3(0, 1, 0));
+
+	updateViewMatrix();
+}
+
 
 void Camera::extractFrustum()
 {

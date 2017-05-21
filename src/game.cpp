@@ -83,10 +83,6 @@ void Game::render(void)
 		string stime = "TIME ELAPSED: " + std::to_string(time);
 		drawText(5, 5, stime, Vector3(1, 1, 1), 2);
 
-		// calcular fps
-		double currentTime = time;
-		nbFrames++;
-
 		ss.str("");
 		ss << "FPS: " << fps;
 		drawText(5, 25, ss.str(), Vector3(1, 1, 1), 2);
@@ -110,7 +106,8 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: 
-			if(!sManager->stateID() || sManager->stateID() == -1) exit(1);
+			if(!sManager->stateID() || sManager->stateID() == -1)
+				exit(1);
 			sManager->changeCurrentState( MenuState::getInstance(sManager) );
 			break;
 	}

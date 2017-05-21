@@ -84,7 +84,7 @@ public:
 	EntityCollider();
 	~EntityCollider();
 	virtual void onBulletCollision();
-	virtual void onCollision(EntityCollider* collided_with) {}
+	virtual void onCollision(EntityCollider* collided_with) { std::cout << "metodo vacio"; }
 	static void remove(Entity* ent);
 	
 	void testSphereCollision();
@@ -92,6 +92,7 @@ public:
 
 	int life;
 
+	void setLife(int life);
 	void setStatic();
 	void setDynamic();
 

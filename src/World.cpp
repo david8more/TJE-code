@@ -12,8 +12,6 @@
 World* World::instance = NULL;
 
 EntityCollider* enemyShip = NULL;
-EntityCollider* enemyAir = NULL;
-EntityCollider* enemy2Air = NULL;
 EntityCollider* init_zone = NULL;
 
 World::World()
@@ -48,7 +46,8 @@ void World::create() {
 void World::addPlayer() {
 	// PLAYER AIRPLANE ************************************************************************************
 
-	playerAir = new Airplane(worldInfo.playerModel);
+	playerAir = new Airplane(worldInfo.playerModel, NULL);
+	playerAir->setName("player");
 
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
@@ -97,14 +96,16 @@ void World::addPlayerConst() {
 	// PLAYER SHIP ************************************************************************************
 
 	playerShip = new EntityCollider();
-
+	playerShip->setName("ship");
 	playerShip->set("barco.ASE", "data/textures/barco.tga", "simple");
 	playerShip->model.setTranslation(1600, -10, 1600);
 	playerShip->life = 750;
-	playerShip->setStatic();
-	root->addChild(playerShip);
 
 	playerShip->setStatic();
+	if(Game::getInstance()->ffire_on)
+		playerShip->setDynamic();
+
+	root->addChild(playerShip);
 
 	EntityMesh* turretOne = new EntityMesh();
 
@@ -178,31 +179,42 @@ void World::addEnemies() {
 	// ENEMIES
 
 	enemyShip = new EntityCollider();
-	enemyAir = new EntityCollider();
-	enemy2Air = new EntityCollider();
+	//enemy2Air = new EntityCollider();
 
-	enemyShip->setName("enemy_ship");
-	enemyShip->life = Game::getInstance()->gameMode ? 1500:1000;
+	enemyShip->setName("ship");
+	enemyShip->setLife(1000);
 	enemyShip->set("barco.ASE", "data/textures/barco.tga", "color");
 	enemyShip->model = playerShip->model * enemyShip->model;
 	enemyShip->model.traslate(100, 0, 100);
 	root->addChild(enemyShip);
 
-	//enemyShip->setStatic();
+	enemyShip->setStatic();
+	enemyShip->setDynamic();
 
-	enemyAir->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
+	// ***********************************
+
+	Airplane* enemyAir = new Airplane(BOMBER, new IAController());
+	enemyAir->setName("ia_1");
+	enemyAir->setLife(150);
 	enemyAir->model.setTranslation(0, 500, 200);
+	enemyAir->last_position = enemyAir->getPosition();
 	root->addChild(enemyAir);
 
 	enemyAir->setDynamic();
 
-	enemy2Air->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
+	// ***********************************
+
+	Airplane* enemy2Air = new Airplane(BOMBER, new IAController());
+	enemy2Air->setName("ia_2");
+	enemy2Air->setLife(150);
 	enemy2Air->model.setTranslation(500, 500, 200);
+	enemy2Air->last_position = enemy2Air->getPosition();
 	root->addChild(enemy2Air);
 
 	enemy2Air->setDynamic();
 
-	if (!DEBUG) return;
+	if (!DEBUG)
+		return;
 
 	for (int i = 0; i < 20; i++) {
 		for (int j = 0; j < 20; j++) {
@@ -222,11 +234,7 @@ void World::setGameMode() {
 
 	Game* game = Game::getInstance();
 
-	enemyAir->life = game->gameMode ? 225 : 150;
-	enemy2Air->life = game->gameMode ? 225 : 150;
-	enemyShip->life = game->gameMode ? 1500 : 1000;
-
-	sky->set("cielo.ASE", game->gameMode ? "data/textures/cielo-heroic.tga" : "data/textures/cielo.tga", "simple");
+	// TODO
 }
 
 bool World::isGameOver() {

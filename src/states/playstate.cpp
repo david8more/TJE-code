@@ -20,8 +20,9 @@
 //globals
 BulletManager* bManager = NULL;
 World * world = NULL; 
-
 Mesh debug_mesh;
+
+bool controlIA = false;
 
 PlayState::PlayState(StateManager* SManager) : State(SManager)
 {
@@ -38,8 +39,8 @@ void PlayState::init() {
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0, 3.5, -12.5);
-	viewtarget = Vector3(0, 5, 0);
+	viewpos = Vector3(0.f, 5.f, -15.f);
+	viewtarget = Vector3(0.f, 5.f, 10.f);
 
 	//create our camera
 	game->free_camera = new Camera(); //our global camera
@@ -47,8 +48,8 @@ void PlayState::init() {
 
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
-	game->free_camera->lookAt(Vector3(2000, 0, -2000), Vector3(0,0, 0), Vector3(0, 1, 0));
-	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1, 100000.f);
+	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
+	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 10.0, 50000.f);
 
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
 
@@ -87,6 +88,9 @@ void PlayState::onEnter()
 	
 	player = World::getInstance()->playerAir;
 
+	Airplane * ia_1 = (Airplane*)Entity::getEntity("ia_1");
+	//Airplane * ia_2 = (Airplane*)Entity::getEntity("ia_2");
+
 	PlayerController::getInstance()->setPlayer(player);
 
 	// views things
@@ -103,7 +107,6 @@ void PlayState::onEnter()
 
 	//m60 init
 	player->timer = player->shootingtime = 0;
-	player->cadenceCounter = 0;
 	player->shooting = player->overused = false;
 
 	// Sounds
@@ -156,13 +159,12 @@ void PlayState::update(double seconds_elapsed) {
 	player->last_position = player->getPosition();
 
 	PlayerController* player_controller = PlayerController::getInstance();
-
+	
 	// ********************************************************************
 
 	if (game->current_camera == game->free_camera)
 	{	
 		player_controller->updateCamera(game->current_camera, seconds_elapsed);
-		return;
 	}
 	else
 	{	
@@ -180,6 +182,9 @@ void PlayState::update(double seconds_elapsed) {
 		eye = game->current_camera->eye * 0.85 + eye * 0.15;
 	
 	game->fixed_camera->lookAt(eye, player->model * viewtarget, player->model.rotateVector(Vector3(0, 1, 0)));
+
+	if (controlIA)
+		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_1"));
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -239,19 +244,23 @@ void PlayState::renderHUD() {
 	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0); // % engine !!!
 
 	// vidas enemigas
-
+	int i = 0;
 	
 	if (EntityCollider::dynamic_colliders.size())
 	{
-		for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
+		for (i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 		{
 			ss.str("");
-			ss << EntityCollider::dynamic_colliders[i]->life;
+			ss << EntityCollider::dynamic_colliders[i]->life << ": " << EntityCollider::dynamic_colliders[i]->name;
 			drawText(game->window_width*0.1, game->window_height*0.1*(i+1), ss.str(), Vector3(1, 0, 0), 3.0);
 		}
-
-		
 	}
+
+	/*ss.str("");
+	Airplane* ia_1 = (Airplane*)Entity::getEntity("ia_1");
+	ss << ia_1->life << ": " << ia_1->name;
+	drawText(game->window_width*0.1, game->window_height*0.1*(i + 1), ss.str(), Vector3(1, 0, 0), 3.0);*/
+
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -283,6 +292,10 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_5:
 		PlayerController::getInstance()->current_controller = CONTROLLER_MODE_KEYBOARD;
 		break;
+	case SDLK_6:
+		game->current_camera = game->free_camera;
+		controlIA = !controlIA;
+		break;
 	case SDLK_p: // PARAR MOTOR
 		player->engineOnOff();
 	
@@ -296,10 +309,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 			BASS_ChannelStop(e_channel);
 		}
 		break;
-	case SDLK_SPACE:
-		world->playerAir->shooting = true;
-		break;
-	
 	}
 }
 
@@ -332,7 +341,11 @@ void PlayState::setZoom()
 	// si es el model 2, irá a la posición 2*2 = 4(full plane). Si current view = 0, 4+4 = 0(full plane)
 	// si cv = 1, 4+1 = 5 que es de la cabina
 	if (inZoom)
+	{
 		viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;
+		game->current_camera->near_plane = 2.5f;
+		game->current_camera->far_plane = 50000.f;
+	}
 	else
 		setView();
 }
@@ -344,6 +357,8 @@ void PlayState::onLeave(int fut_state) {
 
 void PlayState::setView() {
 
+	int plane_model = player->planeModel;
+
 	switch (current_view)
 	{
 	case FULLVIEW:
@@ -351,11 +366,12 @@ void PlayState::setView() {
 		game->current_camera->near_plane = 7.5f;
 		game->current_camera->far_plane = 50000.f;
 
-		if (world->worldInfo.playerModel == SPITFIRE) {
+		if (plane_model == SPITFIRE)
+		{
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
-		viewpos = Vector3(0, 5, -10);
-		viewtarget = Vector3(0, 5, 10.f);
+		viewpos = Vector3(0.f, 5.f, -15.f);
+		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
 
 	case CABINEVIEW:
@@ -363,21 +379,25 @@ void PlayState::setView() {
 		game->current_camera->near_plane = 0.1f;
 		game->current_camera->far_plane = 50000.f;
 		
-		if (world->worldInfo.playerModel == SPITFIRE) {
+		if (plane_model == SPITFIRE)
+		{
 			viewpos = Vector3(0.f, 0.7f, -1.5f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
 			player->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 
 		}
-		else if (world->worldInfo.playerModel == P38) {
+		else if (plane_model == P38)
+		{
 			viewpos = Vector3(-0.03f, 0.75f, 0.752f);
 			viewtarget = Vector3(0.f, 0.5f, 10.f);
 		} 
-		else if (world->worldInfo.playerModel == WILDCAT) {
+		else if (plane_model == WILDCAT)
+		{
 			viewpos = Vector3(0.f, 1.f, -0.5f);
 			viewtarget = Vector3(0.f, 1.f, 10.f);
 		}
-		else if (world->worldInfo.playerModel == BOMBER) {
+		else if (plane_model == BOMBER)
+		{
 			viewpos = Vector3(0.5f, 0.f, 2.5f);
 			viewtarget = Vector3(0.f, 1.f, 10.f);
 		}

@@ -1,27 +1,16 @@
 #include "playercontroller.h"
 #include "camera.h"
 #include "game.h"
-#include "utils.h"
-#include "mesh.h"
-#include "texture.h"
-#include "shader.h"
-#include "bass.h"
-#include "entity.h"
 #include "world.h"
-#include "bulletmanager.h"
 #include "states\playstate.h"
 
 PlayerController * PlayerController::instance = NULL;
 float controller_timer = 0;
+float last_shoot = 0;
 
 PlayerController::PlayerController()
 {
 	current_controller = CONTROLLER_MODE_KEYBOARD;
-}
-
-void PlayerController::setPlayer(Airplane* player)
-{
-	this->player = player;
 }
 
 PlayerController::~PlayerController()
@@ -37,34 +26,6 @@ void PlayerController::update(float seconds_elapsed)
 		return;
 
 	PlayState* playstate = PlayState::getInstance(game->sManager);
-
-	// SHOOTING
-
-	// overusing y cadencia
-
-	if (!player->overused && player->shootingtime > 30)
-		player->overused = true;
-
-	if (player->shooting && !player->overused && player->cadenceCounter <= 0)
-	{
-		player->shootingtime++;
-		player->m60Shoot();
-		player->cadenceCounter = player->cadence;
-	}
-
-	if (player->cadenceCounter > 0)
-		player->cadenceCounter -= seconds_elapsed * 100;
-
-	//  overused off
-	if (player->overused)
-		player->timer += seconds_elapsed;
-
-	if (player->timer > 5)
-	{
-		player->timer = player->shootingtime = 0;
-		player->overused = false;
-	}
-	//
 
 	// CONTROLLER
 
@@ -99,6 +60,9 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (game->keystate[SDL_SCANCODE_E])
 			moveXY(-1.f, 1.f, seconds_elapsed, speed);
+
+		if (game->keystate[SDL_SCANCODE_SPACE])
+			shoot(seconds_elapsed);
 
 		// to navigate with the mouse fixed in the middle
 		if (game->mouse_locked)
@@ -181,17 +145,22 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (state.axis[5] > 0.1)
 		{
-			shoot();
+			shoot(seconds_elapsed);
 		}
-		else
-		{
-			player->shooting = false;
-			if (!player->overused)
-				player->shootingtime = 0;
-		}
+		
 	}
 
 	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
+
+	//  overused off
+	if (player->overused)
+		player->timer += seconds_elapsed;
+
+	if (player->timer > 5)
+	{
+		player->timer = player->shootingtime = 0;
+		player->overused = false;
+	}
 
 	// controlled changed?
 
@@ -221,17 +190,31 @@ void PlayerController::moveXY(float Zaxis, float Yaxis, float seconds_elapsed, f
 	player->model.rotateLocal(seconds_elapsed, Vector3(0, Yaxis, 0) * speed);
 }
 
-void PlayerController::shoot()
+void PlayerController::shoot(float seconds_elapsed)
 {	
-	player->shooting = true;
+	// SHOOTING
+	
+	if (getTime() > last_shoot && !player->overused)
+	{
+		player->shoot();
+		last_shoot = getTime() + player->cadence * 10;
+
+		if (!player->overused)
+		{
+			player->shootingtime += 2;
+		}
+
+		if (!player->overused && player->shootingtime > 30)
+			player->overused = true;
+	}
 }
 
 void PlayerController::updateCamera(Camera * camera, float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
-	double speed = seconds_elapsed * 120; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = seconds_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
-	if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 100;
+	if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50;
 	if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP]) game->free_camera->move(Vector3(0.f, 0.f, 1.f) * speed);
 	if (game->keystate[SDL_SCANCODE_S] || game->keystate[SDL_SCANCODE_DOWN]) game->free_camera->move(Vector3(0.f, 0.f, -1.f) * speed);
 	if (game->keystate[SDL_SCANCODE_A] || game->keystate[SDL_SCANCODE_LEFT]) game->free_camera->move(Vector3(1.f, 0.f, 0.f) * speed);
