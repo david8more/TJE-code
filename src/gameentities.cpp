@@ -14,6 +14,8 @@
 #include "world.h"
 #include "bass.h"
 #include "mesh.h"
+#include <algorithm>
+#include <cassert>
 
 // *************************************************************************
 // AIRPLANE 
@@ -47,6 +49,11 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 		wh_left->model.setTranslation(0.82, -0.58, 0.16);
 		wh_left->model.rotateLocal(1.57, Vector3(0, 0, 1));
 		this->addChild(wh_left);
+
+		life = 175.0;
+		cadence = 75.0;
+		damageM60 = 10.0;
+		speed = 100.0;
 	}
 
 	else if (model == P38)
@@ -58,12 +65,22 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
 		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 		this->addChild(helix2);
+
+		life = 200.0;
+		cadence = 85.0;
+		damageM60 = 5.0;
+		speed = 90.0;
 	}
 
 	else if (model == WILDCAT)
 	{
 		set("wildcat.ASE", "data/textures/wildcat.tga", "plane");
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
+
+		life = 300.0;
+		cadence = 60.f;
+		damageM60 = 40.0;
+		speed = 70.0;
 	}
 
 	else if (model == BOMBER)
@@ -75,6 +92,11 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 		helix2->model.setTranslation(-2.65f, -0.88f, 4.65f);
 		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 		this->addChild(helix2);
+
+		life = 350.0;
+		cadence = 55.0;
+		damageM60 = 15.0;
+		speed = 80.0;
 	}
 
 	helix->model.rotateLocal(3.1415, Vector3(0, 1, 0));
@@ -163,6 +185,16 @@ void Airplane::update(float elapsed_time) {
 		children[1]->model.rotateLocal(elapsed_time*0.2, Vector3(0, 0, -1));
 	}
 
+	//  cooling to overheat
+	if (overused)
+		timer += elapsed_time;
+
+	if (timer > 5.0)
+	{
+		timer = shootingtime = 0;
+		overused = false;
+	}
+
 	/*if (life < 0)
 	{
 		std::cout << "plane crashed" << std::endl;
@@ -176,27 +208,26 @@ void Airplane::shoot() {
 
 	if (getTime() > last_shoot && !overused)
 	{
-	
-		// shoot
-		std::cout << "shooting" << std::endl;
+		//std::cout << "shooting" << std::endl;
 		Vector3 vel = model.rotateVector(Vector3(0.f, 0.f, 1500));
 
 		switch (planeModel) {
 		case SPITFIRE:
-			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, this->damageM60, this, 1);
-			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
 			break;
 		case P38:
-			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, this->damageM60, this, 1);
-			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), vel, 1, this->damageM60, this, 1);
-			bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), vel, 1, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), vel, 1, damageM60, this, 1);
 			break;
 		case WILDCAT:
-			bManager->createBullet(model*Vector3(0.f, -0.50f, 10.f), vel, 2, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.25f, -0.50f, 3.f), vel, 2, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(2.25f, -0.50f, 3.f), vel, 2, damageM60, this, 1);
 			break;
 		case BOMBER:
-			bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), vel, 2, this->damageM60, this, 1);
-			bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), vel, 2, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), vel, 2, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), vel, 2, damageM60, this, 1);
 			break;
 		}
 
@@ -206,16 +237,19 @@ void Airplane::shoot() {
 
 		// end shoot
 
-		last_shoot = getTime() + cadence * 10;
+		last_shoot = getTime() + (1000 - cadence * 10);
 
 		if (!overused)
 			shootingtime += 2;
 
-		if (1)
+		if (!overused && shootingtime == 50)
 		{
-			if (!overused && shootingtime == 30)
-				overused = true;
+			overused = true;
+			shootingtime = 0;
 		}
+
+		//std::string s = overused ? "ON" : "OFF";
+		//std::cout << "s_time: " << shootingtime << " - overused " << s << std::endl;
 	}
 }
 
@@ -388,3 +422,114 @@ Helix::Helix()
 }
 
 // **************************************************************************************
+
+Clouds::Clouds()
+{
+	mesh = "plane";
+	shader = Shader::Load("data/shaders/cloud.vs", "data/shaders/cloud.fs");
+	texture = "data/textures/cloud.TGA";
+	alpha = true;
+	depthMask = false;
+	cullFace = false;
+
+	clouds.resize(100);
+
+	for (int i = 0; i < clouds.size(); i++)
+	{
+		Vector3 pos;
+		pos.random(Vector3(15000, 10000 + random() * 1000, 15000));
+		clouds[i].pos = pos;
+		clouds[i].size = 3500 + random()*1500;
+	}
+}
+
+bool mySort(Clouds::sCloudInfo &a, Clouds::sCloudInfo &b)
+{
+	return a.distance > b.distance;
+}
+
+void Clouds::render(Camera* camera)
+{
+	Mesh m;
+
+	Vector3 up = Vector3(0, 1, 0);
+	Vector3 right = Vector3(1, 0, 0);
+
+	for (int i = 0; i < clouds.size(); i++)
+	{
+		sCloudInfo& c = clouds[i];
+		c.distance = c.pos.distance(camera->eye);
+	}
+
+	// ordenar por distancia a la camara
+	std::sort(clouds.begin(), clouds.end(), mySort);
+
+	for (int i = 0; i < clouds.size(); i++)
+	{
+		sCloudInfo& c = clouds[i];
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+
+		m.uvs.push_back(Vector2(0, 1));
+		m.uvs.push_back(Vector2(1, 1));
+		m.uvs.push_back(Vector2(0, 0));
+
+		m.uvs.push_back(Vector2(1, 1));
+		m.uvs.push_back(Vector2(1, 0));
+		m.uvs.push_back(Vector2(0, 0));
+	}
+
+	/*Vector3 to_player;
+	float angle;
+
+	model.rotateLocal(angle, up);
+
+	*/
+
+	if (alpha)
+	{
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	}
+
+	if (!depthTest)
+		glDisable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_FALSE);
+	if (!cullFace)
+		glDisable(GL_CULL_FACE);
+
+	assert(shader);
+
+	shader->enable();
+	shader->setMatrix44("u_model", model);
+	shader->setMatrix44("u_mvp", camera->viewprojection_matrix);
+	shader->setTexture("u_normal_texture", Texture::Get("data/textures/normal_water.tga"));
+	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
+	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
+	shader->setFloat("u_time", Game::getInstance()->time);
+	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
+
+	m.render(GL_TRIANGLES, shader);
+	
+	shader->disable();
+
+	if (!cullFace)
+		glEnable(GL_CULL_FACE);
+
+	if (!depthTest)
+		glEnable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_TRUE);
+
+	if (alpha)
+	{
+		glDisable(GL_BLEND);
+	}
+}

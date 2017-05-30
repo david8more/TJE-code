@@ -238,18 +238,18 @@ void PlayState::renderGUI() {
 	Mesh heatIndicator;
 
 	float indicatorWidth = !player->shootingtime ? 5 : game->window_height * player->shootingtime * 0.0075;
-	float pRcolor = player->shootingtime / 30.f;
+	float pRcolor = player->shootingtime / 50.f;
 	Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
 
-	heatIndicator.createBox(game->window_width*0.75 + game->window_height * 15 * 0.0075, game->window_height*0.95, game->window_height * 30 * 0.0075, 25);
+	heatIndicator.createBox(game->window_width*0.7 + game->window_height * 25 * 0.0075, game->window_height*0.95, game->window_height * 50 * 0.0075, 25);
 	heatIndicator.render(GL_LINES);
 
-	heatIndicator.createQuad(game->window_width*0.75 + indicatorWidth * 0.5, game->window_height*0.95, indicatorWidth, 25);
+	heatIndicator.createQuad(game->window_width*0.7 + indicatorWidth * 0.5, game->window_height*0.95, indicatorWidth, 25);
 	glColor4f(v.x, v.y, v.z, 1.f);
 	heatIndicator.render(GL_TRIANGLES);
 
 	ss.str("");
-	ss << (int)min(((float)player->shootingtime / 30) * 100, 100.f ) << "%";
+	ss << (int)min(((float)player->shootingtime / 50) * 100, 100.f ) << "%";
 	drawText(game->window_width * 0.81, game->window_height * 0.94, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0); // % engine !!!
 
 	if (player->overused)
@@ -282,6 +282,55 @@ void PlayState::renderGUI() {
 		}
 	}
 
+	Camera camUp;
+	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
+	Vector3 center = player->model * Vector3();
+	Vector3 eye = center + Vector3(0, 5000, 0);
+	Vector3 up = Vector3(0, 0, 1);
+	camUp.lookAt(eye, center, up);
+	camUp.set();
+
+	// set mark enemy airplanes
+	Texture * t = Texture::Get("data/textures/crosshair.tga");
+	t->bind();
+
+	for (int i = 0; i < World::instance->airplanes.size(); i++)
+	{
+		Entity* current = World::instance->airplanes[i];
+
+		if (current == player)
+			continue;
+
+		Camera* cam3D = Game::instance->current_camera;
+
+		Vector3 pos3D = current->getPosition();
+		Vector3 pos2D = camUp.project(pos3D, game->window_width, game->window_height);
+
+		if (pos2D.z > 1)
+			continue;
+
+		if (pos2D.x < 0)
+			pos2D.x = 0;
+		if (pos2D.x > game->window_width)
+			pos2D.x = game->window_width;
+		if (pos2D.y < 0)
+			pos2D.y = 0;
+		if (pos2D.y > game->window_height)
+			pos2D.y = game->window_height;
+
+		float size = camUp.getProjectScale(pos3D, 50.0);
+		if (size < 25.0)
+			size = 25.0;
+
+		Mesh quads;
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		//quad.createQuad(pos2D.x, game->window_height - pos2D.y, size, size);
+		quads.createQuad(500, 400, size, size);
+		quads.render(GL_TRIANGLES);
+	}
+
+	t->unbind();
+
 	// minimap
 
 	int sizex = 195;
@@ -298,16 +347,6 @@ void PlayState::renderGUI() {
 	glViewport(15, 15, sizex, sizey);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
-
-
-	Camera camUp;
-	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
-	Vector3 center = player->model * Vector3();
-	Vector3 eye = center + Vector3(0, 5000, 0);
-	Vector3 up = Vector3(0, 0, 1);
-	camUp.lookAt(eye, center, up);
-	camUp.set();
-
 
 	for (int i = 0; i < World::instance->map_entities.size(); i++)
 	{
@@ -352,36 +391,6 @@ void PlayState::renderGUI() {
 
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-	// set mark enemy airplanes
-
-	for (int i = 0; i < World::instance->airplanes.size(); i++)
-	{
-		Entity* current = World::instance->airplanes[i];
-		Vector3 pos3D = current->model * Vector3();
-
-		Vector3 pos2D = camUp.project(pos3D, game->window_width, game->window_height);
-
-		if (pos2D.z > 1)
-			return;
-
-		if (pos2D.x < 0)
-			pos2D.x = 0;
-		if (pos2D.x > game->window_width)
-			pos2D.x = game->window_width;
-		if (pos2D.y < 0)
-			pos2D.y = 0;
-		if (pos2D.y > game->window_height)
-			pos2D.y = game->window_height;
-
-		Mesh quad;
-		Texture * t = Texture::Get("data/textures/marked.tga");
-		quad.createQuad(pos2D.x, game->window_height - pos2D.y, 50, 50);
-		t->bind();
-		quad.render(GL_TRIANGLES);
-		t ->unbind();
-
-	}
-
 	// FINISHED RENDER INTERFACE ****************************************************************
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_BLEND);
@@ -415,12 +424,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_6:
 		game->current_camera = game->free_camera;
 		controlIA = !controlIA;
-		break;
-	case SDLK_7:
-		if (Entity::s_Entities["test"] != NULL)
-		{
-			((Airplane*)Entity::getEntity("test"))->destroy();
-		}
 		break;
 	case SDLK_p:
 		pause = !pause;

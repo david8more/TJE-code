@@ -22,9 +22,9 @@ public:
 	double wheels_rotation;
 
 	int torpedosLeft;
+	float speed;
 	float cadence;
 	float damageM60;
-	float damageMissile;
 
 	// m60 attributes
 	float timer;
@@ -71,5 +71,21 @@ public:
 };
 
 // *******************************************************************
+
+class Clouds : public EntityMesh
+{
+public:
+	typedef struct {
+		Vector3 pos;
+		float size;
+		float distance;
+	}sCloudInfo;
+
+	std::vector<sCloudInfo> clouds;
+
+	Clouds();
+
+	void render(Camera* cam);
+};
 
 #endif

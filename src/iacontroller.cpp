@@ -31,30 +31,29 @@ void IAController::setTarget(Vector3 target)
 
 void IAController::update(float seconds_elapsed)
 {
-
-	// std::cout << std::endl << seconds_elapsed << std::endl;
-
 	Game* game = Game::getInstance();
 
 	if (!game->start)
 		return;
 
 	Airplane* controlled = player;
+
+	// player info
 	Airplane* playerAir = World::getInstance()->playerAir;
 	Vector3 playerPos = playerAir->getPosition();
+	//
 
-	double speed = seconds_elapsed * 50;
+	double speed = 50;
 
 	Vector3 to_target = target - controlled->getPosition();
 	Vector3 targetToPlayer = to_target;
+
+	// distance to target
 	float distance = to_target.length();
 
-	if (controlled->getPosition().y < 500)
-	{
-		controlled->model.rotateLocal(0.15, Vector3(1, 0, 0));
-	}
+	// waypoints: si estamos lejos, si tiene poca vida o si tiene que bajar más de la cuenta
 
-	if (distance > 500 || controlled->life < 50)
+	if (distance > 500 || controlled->life < 50.0 || controlled->getPosition().y < 475.0)
 	{
 		to_target = waypoints[current_Wp] - controlled->getPosition();
 		float distance_wp = to_target.length();
@@ -66,6 +65,8 @@ void IAController::update(float seconds_elapsed)
 
 	}
 
+	// rotaciones
+
 	if (to_target.length())
 		to_target.normalize();
 
@@ -74,17 +75,14 @@ void IAController::update(float seconds_elapsed)
 	float angle = 1 - front.dot(to_target);
 	float angleWithPlayer = 1 - front.dot(targetToPlayer.normalize());
 
-
 	Vector3 axis = to_target.cross(front);
 
 	Matrix44 inverse_mat = controlled->model;
 	inverse_mat.inverse();
 	axis = inverse_mat.rotateVector(axis);
 
-	if (controlled->life < 50)
-		speed = speed * 2;
+	// orient
 
-	//orient
 	Vector3 up(0, 1, 0);
 	Vector3 localUp = inverse_mat.rotateVector(up);
 	localUp.z = 0;
@@ -93,14 +91,26 @@ void IAController::update(float seconds_elapsed)
 	Vector3 axisUp = localUp.cross(Vector3(0, 1, 0));
 
 	if (axisUp.z > 0)
-		controlled->model.rotateLocal((1.0 - r)*seconds_elapsed, Vector3(0, 0, 1));
+	{
+		controlled->model.rotateLocal((1.0 - r) * seconds_elapsed, Vector3(0, 0, 1));
+	}
 	else
-		controlled->model.rotateLocal((1.0 - r)*seconds_elapsed, Vector3(0, 0, -1));
+	{
+		controlled->model.rotateLocal((1.0 - r) * seconds_elapsed, Vector3(0, 0, -1));
+	}
 
 	controlled->model.rotateLocal(angle * seconds_elapsed * 5, axis);
-	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
 
-	if (distance < 400.0 && (angleWithPlayer < 0.05 && angleWithPlayer > -0.05) && controlled->life > 50)
+	if (controlled->life < 50.0)
+	{
+		speed *= 1.25;
+		controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
+		return;
+	}
+
+	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
+
+	if (distance < 400.0 && (abs(angleWithPlayer) > 0.05))
 	{
 		controlled->shoot();
 	}

@@ -10,7 +10,7 @@ Explosion::Explosion(Vector3 collisionPoint)
 {
 	collision = collisionPoint;
     time = 0.0;
-    lifetime = 2.0;
+    lifetime = 3.0;
 }
 
 Explosion::~Explosion() {
@@ -57,7 +57,7 @@ void Explosion::render(Camera * camera)
         unsigned frame = f * 25.0;
 
         float xt = frame % 5, yt = frame / 5;
-        float step = 1.0f/5.0f;
+        float step = 0.2f;
 
         m.uvs.push_back(Vector2(xt*step, yt*step + step));
         m.uvs.push_back(Vector2(xt*step + step, yt*step + step));

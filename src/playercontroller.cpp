@@ -28,7 +28,7 @@ void PlayerController::update(float seconds_elapsed)
 
 	// CONTROLLER
 
-	double speed = 50; // poner a 100
+	double speed = player->speed;
 
 	if (current_controller == CONTROLLER_MODE_KEYBOARD)
 	{
@@ -150,16 +150,6 @@ void PlayerController::update(float seconds_elapsed)
 	}
 
 	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
-
-	//  overused off
-	if (player->overused)
-		player->timer += seconds_elapsed;
-
-	if (player->timer > 5)
-	{
-		player->timer = player->shootingtime = 0;
-		player->overused = false;
-	}
 
 	// controlled changed?
 

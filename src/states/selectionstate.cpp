@@ -260,7 +260,8 @@ void SelectionState::selectionDown()
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 	playerModel++;
-	if (playerModel == 4) playerModel = 0;
+	if (playerModel == 4)
+		playerModel = 0;
 }
 
 void SelectionState::selectionUp()
@@ -269,7 +270,8 @@ void SelectionState::selectionUp()
 	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
 	BASS_ChannelPlay(s_channel, false); // play it
 	playerModel--;
-	if (playerModel == -1) playerModel = 3;
+	if (playerModel == -1)
+		playerModel = 3;
 }
 
 void SelectionState::selectionChosen()
@@ -286,7 +288,8 @@ void SelectionState::selectionChosen()
 
 void SelectionState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	if (DEBUG) return;
+	if (DEBUG)
+		return;
 
 	switch (event.keysym.sym)
 	{

@@ -11,6 +11,7 @@
 #define DEBUG 0
 
 World* World::instance = NULL;
+std::vector<Entity*> World::airplanes;
 
 EntityCollider* enemyShip = NULL;
 EntityCollider* init_zone = NULL;
@@ -50,48 +51,18 @@ void World::addPlayer() {
 	playerAir = new Airplane(worldInfo.playerModel, NULL);
 	playerAir->setName("player");
 
-	switch (worldInfo.playerModel) {
-	case SPITFIRE:
-		playerAir->life = 350;
-		playerAir->cadence = 22.5f;
-		playerAir->damageM60 = 10;
-		playerAir->damageMissile = 250;
-		break;
-	case P38:
-		playerAir->life = 400;
-		playerAir->cadence = 15.f;
-		playerAir->damageM60 = 5;
-		playerAir->damageMissile = 150;
-		break;
-	case WILDCAT:
-		playerAir->life = 250;
-		playerAir->cadence = 35.f;
-		playerAir->damageM60 = 40;
-		playerAir->damageMissile = 100;
-		break;
-	case BOMBER:
-		playerAir->life = 500;
-		playerAir->cadence = 40.f;
-		playerAir->damageM60 = 15;
-		playerAir->damageMissile = 300;
-		break;
-	}
-
 	// REDUCIR ATRIBUTOS
 	if (Game::getInstance()->gameMode == HARD)
 	{
-		playerAir->life -= (int)(playerAir->life/(float)4) ;
-		playerAir->damageM60 -= 3;
-		playerAir->damageMissile -= 100;
+		playerAir->life -= (int)(playerAir->life / 4.f) ;
+		playerAir->damageM60 -= 5.0;
 	}
-
 	
 	playerAir->model = playerAir->model * init_zone->model;
 	playerAir->model.traslate(0, 17.75, -102.5);
 	root->addChild(playerAir);
 
 	playerAir->setDynamic();
-
 	playerAir->createTorpedos();
 }
 
@@ -157,6 +128,8 @@ void World::addWorldConst() {
 	sea->setName("sea");
 	sea->set("agua.ASE", "data/textures/agua.tga", "water");
 
+	Clouds* clouds = new Clouds();
+	root->addChild(clouds);
 
 	if (0)
 	{
@@ -203,50 +176,34 @@ void World::addEnemies() {
 	enemyShip->setDynamic();
 
 	// ***********************************
+	std::stringstream ss;
 
-	Airplane* enemyAir = new Airplane(BOMBER, new IAController());
-	enemyAir->setName("ia_1");
-	enemyAir->setLife(150);
-	enemyAir->model.setTranslation(0, 500, 200);
-	enemyAir->last_position = enemyAir->getPosition();
-	root->addChild(enemyAir);
+	for (int i = 1; i < 5; i++) {
+		Airplane* enemyAir = new Airplane(BOMBER, new IAController());
+		enemyAir->uid = 1000 + i;
+		ss.str("");
+		ss << "ia_" << i;
+		enemyAir->setName(ss.str());
+		float x = 200 + rand()%1000;
+		float y = 500 + rand()%200;
+		float z = 200 + rand()%1000;
 
-	enemyAir->setDynamic();
-	airplanes.push_back(enemyAir);
+		enemyAir->model.setTranslation(x, y, z);
+		enemyAir->last_position = enemyAir->getPosition();
 
-	Airplane* test = new Airplane(SPITFIRE, NULL);
-	test->setName("test");
-	test->model.setTranslation(250, 500, 200);
-	test->last_position = test->getPosition();
-	root->addChild(test);
-
-	// ***********************************
-
-	Airplane* enemy2Air = new Airplane(BOMBER, new IAController());
-	enemy2Air->setName("ia_2");
-	enemy2Air->setLife(150);
-	enemy2Air->model.setTranslation(500, 500, 200);
-	enemy2Air->last_position = enemy2Air->getPosition();
-	root->addChild(enemy2Air);
-
-	enemy2Air->setDynamic();
-	airplanes.push_back(enemy2Air);
-
-	if (!DEBUG)
-		return;
-
-	for (int i = 0; i < 20; i++) {
-		for (int j = 0; j < 20; j++) {
-			EntityMesh* p = new EntityMesh();
-			p->name = "p";
-			p->set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "color");
-			float x = rand() % 800;
-			float y = rand() % 800;
-			float z = rand() % 800;
-			p->model.traslate(x, y, z);
-			root->addChild(p);
-		}
+		enemyAir->setDynamic();
+		airplanes.push_back(enemyAir);
+		root->addChild(enemyAir);
 	}
+}
+
+void World::removeAirplaneFromMinimap(Entity* plane)
+{
+	// minimap
+	auto it = std::find(airplanes.begin(),airplanes.end(), plane);
+
+	if (it != airplanes.end())
+		airplanes.erase(it);
 }
 
 void World::setGameMode() {

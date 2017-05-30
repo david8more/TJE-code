@@ -1,0 +1,11 @@
+vida		daño		speed		cadencia
+
+bomber		wildcat		spitfire	p38
+wildcat		bomber		p38		spitfire
+p38		spitfire	bomber		wildcat
+spitfire	p38		wildcat		bomber
+
+1. ultra
+2. high
+3. low
+4. poor

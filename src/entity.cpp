@@ -117,6 +117,8 @@ void Entity::destroy_entities()
 		Entity* ent = destroy_pending[i];
 		std::cout << "destroying " << ent->name << std::endl;
   		EntityCollider::remove(ent); // quitarse del vector de static y dinamics SI ESTOY
+		if(ent->uid > 1000)
+			World::removeAirplaneFromMinimap(ent);
 		if(ent->parent != NULL)
 			ent->parent->removeChild(ent); // desvincular hijo del padre
 		delete(ent);
@@ -345,8 +347,8 @@ void EntityCollider::testStaticCollisions()
 
 void EntityCollider::remove(Entity* ent)
 {
+	//
 	std::vector<EntityCollider*>::iterator it;
-
 	it = std::find(static_colliders.begin(), static_colliders.end(), ent);
 
  	if (it != static_colliders.end())
@@ -356,6 +358,7 @@ void EntityCollider::remove(Entity* ent)
 
 	if (it != dynamic_colliders.end())
 		dynamic_colliders.erase(it);
+	//
 }
 
 void EntityCollider::onBulletCollision(Vector3 collisionPoint)
@@ -363,7 +366,6 @@ void EntityCollider::onBulletCollision(Vector3 collisionPoint)
 	this->life -= 5;
 	this->life = max(this->life, 0);
 
-	std::cout << "creando explosion" << std::endl;
 	Explosion::createExplosion(collisionPoint);
 
 	if (!this->life) {
