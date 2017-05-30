@@ -10,6 +10,7 @@
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
+#include "playercontroller.h"
 #include "world.h"
 #include "bass.h"
 #include "mesh.h"
@@ -21,14 +22,18 @@
 Airplane::Airplane(int model, IAController* controller, bool culling) {
 
 	planeModel = model;
+	state = "waypoints";
 
 	EntityCollider* wh_right = new EntityCollider();
+	wh_right->setName("right wheel");
 	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "plane");
 
 	EntityCollider* wh_left = new EntityCollider();
+	wh_left->setName("left wheel");
 	wh_left->set("spitfire_wheel_left.ASE", "data/textures/spitfire.tga", "plane");
 
 	Helix* helix = new Helix();
+	helix->setName("helix");
 
 	if (model == SPITFIRE)
 	{
@@ -78,7 +83,10 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 	// plane properties
 	engine = false;
 	wheels_rotation = 0;
-
+	last_shoot = 0;
+	//m60 init
+	timer = shootingtime = 0;
+	overused = false;
 
 	// controller
 
@@ -86,7 +94,6 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 
 	if (controller != NULL)
 	{
-		std::cout << "wfrfw" << std::endl;
 		this->controller = controller;
 		controller->setPlayer(this);
 	}
@@ -137,8 +144,7 @@ void Airplane::render(Camera * camera) {
 
 void Airplane::update(float elapsed_time) {
 
-	BulletManager::getInstance()->update(elapsed_time);
-	Entity::update(elapsed_time);
+	//Entity::update(elapsed_time);
 
 	testSphereCollision();
 	testStaticCollisions();
@@ -168,34 +174,57 @@ void Airplane::shoot() {
 	BulletManager* bManager = BulletManager::getInstance();
 	Game*game = Game::getInstance();
 
-	switch (planeModel) {
-	case SPITFIRE:
-		bManager->createBullet(model*Vector3(1.9f, -0.25f, 2.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
-		bManager->createBullet(model*Vector3(-1.9f, -0.25f, 2.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1.5, this->damageM60, this, 1);
-		break;
-	case P38:
-		bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 1, this->damageM60, this, 1);
-		break;
-	case WILDCAT:
-		bManager->createBullet(model*Vector3(0.f, -0.50f, 10.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
-		break;
-	case BOMBER:
-		bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
-		bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), model.rotateVector(Vector3(0.f, 0.f, 1000.f)), 2, this->damageM60, this, 1);
-		break;
-	}
+	if (getTime() > last_shoot && !overused)
+	{
+	
+		// shoot
+		std::cout << "shooting" << std::endl;
+		Vector3 vel = model.rotateVector(Vector3(0.f, 0.f, 1500));
 
-	int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
-	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
-	BASS_ChannelPlay(channel, false); // play it
+		switch (planeModel) {
+		case SPITFIRE:
+			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, this->damageM60, this, 1);
+			break;
+		case P38:
+			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), vel, 1, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), vel, 1, this->damageM60, this, 1);
+			break;
+		case WILDCAT:
+			bManager->createBullet(model*Vector3(0.f, -0.50f, 10.f), vel, 2, this->damageM60, this, 1);
+			break;
+		case BOMBER:
+			bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), vel, 2, this->damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), vel, 2, this->damageM60, this, 1);
+			break;
+		}
+
+		int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
+		int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
+		BASS_ChannelPlay(channel, false); // play it
+
+		// end shoot
+
+		last_shoot = getTime() + cadence * 10;
+
+		if (!overused)
+			shootingtime += 2;
+
+		if (1)
+		{
+			if (!overused && shootingtime == 30)
+				overused = true;
+		}
+	}
 }
 
 void Airplane::createTorpedos()
 {
 	Torpedo * t1 = new Torpedo(NO_CULLING);
 	Torpedo * t2 = new Torpedo(NO_CULLING);
+	t1->name = "torpedo1";
+	t2->name = "torpedo2";
 
 	switch (planeModel) {
 	case SPITFIRE:
@@ -255,19 +284,28 @@ void Airplane::onCollision(EntityCollider* collided_with) {
 	if (name == "player")
 	{
 		std::cout << "CRASHED!" << std::endl;
-		exit(1);
 	}
 
 	else if (name == "ia_1")
 	{
+		destroy();
 		std::cout << "IA 1 CRASHED!" << std::endl;
 	}
 
 	else if (name == "ia_2")
 	{
+		destroy();
 		std::cout << "IA 2 CRASHED!" << std::endl;
 	}
 	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
+}
+
+void Airplane::unboundController()
+{
+	if (controller->player != NULL)
+		controller->player = NULL;
+	if (controller != NULL)
+		controller = NULL;
 }
 
 // *************************************************************************
@@ -323,14 +361,15 @@ void Torpedo::activate() {
 }
 
 void Torpedo::onCollision(EntityCollider* collided_with) {
+
+	if (collided_with == PlayerController::getInstance()->player)
+		return;
+
 	int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
 	HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 	BASS_ChannelPlay(hSampleChannel, false); // play it
 
-	//collided_with->onCollision(this);
-	collided_with->life -= 100;
-	collided_with->life = max(collided_with->life, 0);
-	std::cout << "torpedo collided";
+	collided_with->onCollision(this);
 
 	// destruir torpedo
 	ttl = -1.0;

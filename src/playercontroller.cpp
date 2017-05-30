@@ -6,7 +6,6 @@
 
 PlayerController * PlayerController::instance = NULL;
 float controller_timer = 0;
-float last_shoot = 0;
 
 PlayerController::PlayerController()
 {
@@ -29,7 +28,7 @@ void PlayerController::update(float seconds_elapsed)
 
 	// CONTROLLER
 
-	double speed = seconds_elapsed * 300; //the speed is defined by the seconds_elapsed so it goes constant
+	double speed = 50; // poner a 100
 
 	if (current_controller == CONTROLLER_MODE_KEYBOARD)
 	{
@@ -40,8 +39,8 @@ void PlayerController::update(float seconds_elapsed)
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 5; //move faster with left shift
-		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 100; //move mega faster with right shift
 
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
 			moveY(-1.f, seconds_elapsed, speed);
@@ -62,7 +61,7 @@ void PlayerController::update(float seconds_elapsed)
 			moveXY(-1.f, 1.f, seconds_elapsed, speed);
 
 		if (game->keystate[SDL_SCANCODE_SPACE])
-			shoot(seconds_elapsed);
+			player->shoot();
 
 		// to navigate with the mouse fixed in the middle
 		if (game->mouse_locked)
@@ -145,12 +144,12 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (state.axis[5] > 0.1)
 		{
-			shoot(seconds_elapsed);
+			player->shoot();
 		}
 		
 	}
 
-	player->model.traslateLocal(0, 0, speed * seconds_elapsed * 8);
+	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
 	//  overused off
 	if (player->overused)
@@ -188,25 +187,6 @@ void PlayerController::moveXY(float Zaxis, float Yaxis, float seconds_elapsed, f
 {
 	player->model.rotateLocal(seconds_elapsed, Vector3(0, 0, Zaxis) * speed);
 	player->model.rotateLocal(seconds_elapsed, Vector3(0, Yaxis, 0) * speed);
-}
-
-void PlayerController::shoot(float seconds_elapsed)
-{	
-	// SHOOTING
-	
-	if (getTime() > last_shoot && !player->overused)
-	{
-		player->shoot();
-		last_shoot = getTime() + player->cadence * 10;
-
-		if (!player->overused)
-		{
-			player->shootingtime += 2;
-		}
-
-		if (!player->overused && player->shootingtime > 30)
-			player->overused = true;
-	}
 }
 
 void PlayerController::updateCamera(Camera * camera, float seconds_elapsed)

@@ -1,3 +1,4 @@
+
 #include "World.h"
 #include "mesh.h"
 #include "texture.h"
@@ -52,13 +53,13 @@ void World::addPlayer() {
 	switch (worldInfo.playerModel) {
 	case SPITFIRE:
 		playerAir->life = 350;
-		playerAir->cadence = 30.f;
+		playerAir->cadence = 22.5f;
 		playerAir->damageM60 = 10;
 		playerAir->damageMissile = 250;
 		break;
 	case P38:
 		playerAir->life = 400;
-		playerAir->cadence = 20.f;
+		playerAir->cadence = 15.f;
 		playerAir->damageM60 = 5;
 		playerAir->damageMissile = 150;
 		break;
@@ -88,6 +89,9 @@ void World::addPlayer() {
 	playerAir->model = playerAir->model * init_zone->model;
 	playerAir->model.traslate(0, 17.75, -102.5);
 	root->addChild(playerAir);
+
+	playerAir->setDynamic();
+
 	playerAir->createTorpedos();
 }
 
@@ -153,25 +157,33 @@ void World::addWorldConst() {
 	sea->setName("sea");
 	sea->set("agua.ASE", "data/textures/agua.tga", "water");
 
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			EntityCollider* ground = new EntityCollider();
-			ground->set("island.ASE", "data/textures/island_color_luz.tga", "fog");
-			ground->model.setIdentity();
-			ground->model.traslate(i * 10000, 0, j * 10000);
-			ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
-			root->addChild(ground);
-			ground->setStatic();
+
+	if (0)
+	{
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				EntityCollider* ground = new EntityCollider();
+				ground->set("island.ASE", "data/textures/island_color_luz.tga", "fog");
+				ground->model.setIdentity();
+				ground->model.traslate(i * 10000, 0, j * 10000);
+				ground->model.rotateLocal(0.785398 * i * j, Vector3(0, 1, 0));
+				root->addChild(ground);
+				ground->setStatic();
+
+				map_entities.push_back(ground);
+			}
 		}
 	}
+	else
+	{
+		EntityCollider* ground = new EntityCollider();
+		ground->set("island.ASE", "data/textures/island_color_luz.tga", "fog");
+		ground->model.setIdentity();
+		root->addChild(ground);
+		ground->setStatic();
 
-	/*for (int i = 1; i <= 50; i++) {
-		EntityMesh* reload_zone = new EntityMesh(NO_CULLING);
-		reload_zone->name = "RELOAD_ZONE";
-		reload_zone->set("box.ASE", "data/textures/smoke_alpha_green.tga", "simple");
-		reload_zone->model.traslate(0, 200 + i*100, 0);
-		root->addChild(reload_zone);
-	}*/
+		map_entities.push_back(ground);
+	}
 }
 
 void World::addEnemies() {
@@ -179,7 +191,6 @@ void World::addEnemies() {
 	// ENEMIES
 
 	enemyShip = new EntityCollider();
-	//enemy2Air = new EntityCollider();
 
 	enemyShip->setName("ship");
 	enemyShip->setLife(1000);
@@ -201,6 +212,13 @@ void World::addEnemies() {
 	root->addChild(enemyAir);
 
 	enemyAir->setDynamic();
+	airplanes.push_back(enemyAir);
+
+	Airplane* test = new Airplane(SPITFIRE, NULL);
+	test->setName("test");
+	test->model.setTranslation(250, 500, 200);
+	test->last_position = test->getPosition();
+	root->addChild(test);
 
 	// ***********************************
 
@@ -212,6 +230,7 @@ void World::addEnemies() {
 	root->addChild(enemy2Air);
 
 	enemy2Air->setDynamic();
+	airplanes.push_back(enemy2Air);
 
 	if (!DEBUG)
 		return;

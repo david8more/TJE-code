@@ -8,6 +8,7 @@
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
+#include "explosion.h"
 #include "world.h"
 #include "bass.h"
 #include <cassert>
@@ -46,29 +47,20 @@ Vector3 Entity::getPosition() {
 	return model * Vector3();
 }
 
-void Entity::render(Camera * camera) {
-	for (int i = 0; i < children.size(); i++) {
-		if (children[i]->name == "RELOAD_ZONE") {
-			glColor4f(1.0, 1.0, 1.0, 1.0);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glEnable(GL_BLEND);
-			children[i]->render(camera);
-			glDisable(GL_BLEND);
-		}
-		else
-		{
-			children[i]->render(camera);
-		}
-	}
+void Entity::render(Camera * camera)
+{
+	for (int i = 0; i < children.size(); i++)
+		children[i]->render(camera);
 }
 
-void Entity::update(float elapsed_time) {
-	for (int i = 0; i < children.size(); i++) {
+void Entity::update(float elapsed_time)
+{
+	for (int i = 0; i < children.size(); i++)
 		children[i]->update(elapsed_time);
-	}
 }
 
-void Entity::addChild(Entity * entity) {
+void Entity::addChild(Entity * entity)
+{
 	if (entity->parent) {
 		return;
 	}
@@ -76,39 +68,58 @@ void Entity::addChild(Entity * entity) {
 	children.push_back( entity );
 }
 
-void Entity::removeChild(Entity* entity) {
+void Entity::removeChild(Entity* entity)
+{
+	if (!children.size())
+		return;
 
 	auto it = std::find(children.begin(), children.end(), entity);
 	if (it == children.end())
 		return;
 
 	children.erase(it);
-	entity->parent = NULL;
-	entity->model = entity->model * this->getGlobalMatrix();
+	entity->parent = NULL; // tu padre ya no soy yo
+	entity->model = entity->model * this->getGlobalMatrix(); // tu posicion ahora es de mundo
+
+	// quitar hijos del hijo
+	for (int i = 0; i < entity->children.size(); i++)
+	{
+		Entity* son = entity->children[i];
+
+		auto it = std::find(children.begin(), children.end(), son);
+		if (it == children.end())
+			continue;
+
+		entity->children.erase(it);
+		son->parent = NULL; // tu padre ya no soy yo
+	}
 }
 
-Matrix44 Entity::getGlobalMatrix() {
+Matrix44 Entity::getGlobalMatrix()
+{
 	if( parent ) return model * parent->getGlobalMatrix();
 	else return model;
 }
 
-void Entity::destroy(){
+void Entity::destroy()
+{
 	destroy_pending.push_back(this);
-	for (int i = 0; i < children.size(); i++) {
+	for (int i = 0; i < children.size(); i++)
+	{
 		children[i]->destroy();
 	}
 }
 
-void Entity::destroy_entities() {
-
+void Entity::destroy_entities()
+{
 	for (int i = 0; i < destroy_pending.size(); i++)
 	{
 		Entity* ent = destroy_pending[i];
-  		EntityCollider::remove(ent);
-		ent->parent->removeChild(ent);
-		ent->parent = NULL;
+		std::cout << "destroying " << ent->name << std::endl;
+  		EntityCollider::remove(ent); // quitarse del vector de static y dinamics SI ESTOY
+		if(ent->parent != NULL)
+			ent->parent->removeChild(ent); // desvincular hijo del padre
 		delete(ent);
-
 	}
 
 	destroy_pending.clear();
@@ -118,7 +129,8 @@ void Entity::destroy_entities() {
 // ENTITYMESH 
 // *************************************************************************
 
-EntityMesh::EntityMesh(bool frust_culling) {
+EntityMesh::EntityMesh(bool frust_culling)
+{
 	culling = frust_culling;
 	cullFace = true;
 	alpha = false;
@@ -128,8 +140,8 @@ EntityMesh::EntityMesh(bool frust_culling) {
 EntityMesh::~EntityMesh() {}
 
 //meshfile sin path, texturefile con path
-void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf ) {
-
+void EntityMesh::set(const char * meshf, const char * texturef, const char * shaderf )
+{
 	mesh = meshf;
 	texture = texturef;
 
@@ -140,8 +152,8 @@ void EntityMesh::set(const char * meshf, const char * texturef, const char * sha
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 }
 
-void EntityMesh::render(Camera * camera) {
-	
+void EntityMesh::render(Camera * camera)
+{
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
 	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
@@ -346,17 +358,19 @@ void EntityCollider::remove(Entity* ent)
 		dynamic_colliders.erase(it);
 }
 
-void EntityCollider::onBulletCollision()
+void EntityCollider::onBulletCollision(Vector3 collisionPoint)
 {
 	this->life -= 5;
 	this->life = max(this->life, 0);
 
-	std::cout << "bullet collision made" << std::endl;
+	std::cout << "creando explosion" << std::endl;
+	Explosion::createExplosion(collisionPoint);
 
 	if (!this->life) {
 		int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
 		HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
 		BASS_ChannelPlay(hSampleChannel, false); // play it
+		unboundController();
 		destroy();
 	}
 }

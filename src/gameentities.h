@@ -14,13 +14,13 @@ public:
 	IAController* controller;
 
 	int planeModel;
+	std::string state;
 
 	bool engine;
 	void engineOnOff();
 
 	double wheels_rotation;
 
-	int life;
 	int torpedosLeft;
 	float cadence;
 	float damageM60;
@@ -30,7 +30,7 @@ public:
 	float timer;
 	bool overused;
 	int shootingtime;
-	bool shooting;
+	float last_shoot;
 
 	Torpedo* torpedos[2];
 
@@ -41,6 +41,7 @@ public:
 	void createTorpedos();
 	void torpedoShoot();
 	void onCollision(EntityCollider* collided_with);
+	void unboundController();
 };
 
 // *******************************************************************

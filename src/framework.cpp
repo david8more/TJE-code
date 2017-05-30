@@ -9,6 +9,8 @@
     #define M_PI_2 1.57079632679489661923
 #endif
 
+float random() { return (rand() % 100000) / 100000.0f; }
+
 //**************************************
 float Vector2::distance(const Vector2& v)
 {
@@ -82,30 +84,14 @@ void Vector3::random(float range)
 	z = (rand() / (float)RAND_MAX) * 2.0f * range - range; //value between -range and range
 }
 
-void Vector3::random(Vector3 range)
+Vector3& Vector3::random(Vector3 range)
 {
 	//rand returns a value between 0 and RAND_MAX
 	x = (rand() / (float)RAND_MAX) * 2.0f * range.x - range.x; //value between -range and range
 	y = (rand() / (float)RAND_MAX) * 2.0f * range.y - range.y; //value between -range and range
 	z = (rand() / (float)RAND_MAX) * 2.0f * range.z - range.z; //value between -range and range
-}
-
-Vector3 Vector3::operator += (const Vector3& v)
-{
-	x += v.x;
-	y += v.y;
-	z += v.z;
-
 	return *this;
 }
-
-bool Vector3::operator == (const Vector3& v)
-{
-	if (x == v.x && y == v.y && z == v.z)
-		return true;
-	return false;
-}
-
 
 //*********************************
 Matrix44::Matrix44()
@@ -377,9 +363,34 @@ Vector3 operator - (const Vector3& a, const Vector3& b)
 	return Vector3(a.x - b.x, a.y - b.y, a.z - b.z );
 }
 
+Vector3 operator - (const Vector3& a)
+{
+	return Vector3(-a.x, -a.y, -a.z);
+	
+}
+
+Vector3 operator * (const Vector3& a, const Vector3& b)
+{
+	return Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
 Vector3 operator * (const Vector3& a, float v) 
 {
 	return Vector3(a.x * v, a.y * v, a.z * v);
+}
+
+bool Vector3::operator == (const Vector3& v)
+{
+	return v.x == x && v.y == y && v.z == z;
+}
+
+Vector3 Vector3::operator += (const Vector3& v)
+{
+	x += v.x;
+	y += v.y;
+	z += v.z;
+
+	return *this;
 }
 
 //Multiplies a vector by a matrix and returns the new vector
@@ -389,6 +400,16 @@ Vector3 operator * (const Matrix44& matrix, const Vector3& v)
    float y = matrix.m[1] * v.x + matrix.m[5] * v.y + matrix.m[9] * v.z + matrix.m[13]; 
    float z = matrix.m[2] * v.x + matrix.m[6] * v.y + matrix.m[10] * v.z + matrix.m[14];
    return Vector3(x,y,z);
+}
+
+//Multiplies a vector by a matrix and returns the new vector
+Vector4 operator * (const Matrix44& matrix, const Vector4& v)
+{
+	float x = matrix.m[0] * v.x + matrix.m[4] * v.y + matrix.m[8] * v.z + v.w * matrix.m[12];
+	float y = matrix.m[1] * v.x + matrix.m[5] * v.y + matrix.m[9] * v.z + v.w * matrix.m[13];
+	float z = matrix.m[2] * v.x + matrix.m[6] * v.y + matrix.m[10] * v.z + v.w * matrix.m[14];
+	float w = matrix.m[3] * v.x + matrix.m[7] * v.y + matrix.m[11] * v.z + v.w * matrix.m[15];
+	return Vector4(x, y, z, w);
 }
 
 void Matrix44::setUpAndOrthonormalize(Vector3 up)
@@ -549,6 +570,54 @@ Vector3 RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal
     double D = plane_pos.dot(plane_normal);
     double numer = plane_normal.dot(ray_origin) + D;
     double denom = plane_normal.dot(ray_dir);
-    float t = -(numer / denom);
+    float t = (float)-(numer / denom);
 	return ray_origin + ray_dir * t;
+}
+
+bool RaySphereCollision( const Vector3& center, float radius, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result )
+{
+	Vector3 c = center;
+	Vector3 s = ray_origin;
+	Vector3 d = ray_dir;
+	float r = radius;
+
+	Vector3 p = s - c;
+
+	float rSquared = r * r;
+	float p_d = p.dot(d);
+
+	// The sphere is behind or surrounding the start point.
+	if (p_d > 0 || p.dot(p) < rSquared)
+		return false;
+
+	// Flatten p into the plane passing through c perpendicular to the ray.
+	// This gives the closest approach of the ray to the center.
+	Vector3 a = p - d * p_d;
+
+	float aSquared = a.dot(a);
+
+	// Closest approach is outside the sphere.
+	if (aSquared > rSquared)
+		return false;
+
+	// Calculate distance from plane where ray enters/exits the sphere.    
+	float h = sqrt(rSquared - aSquared);
+
+	// Calculate intersection point relative to sphere center.
+	Vector3 i = a - d * h;
+
+	result = c + i;
+
+	/*
+	Vector3 normal = i;
+	normal.x /= i.x;
+	normal.y /= i.y;
+	normal.z /= i.z;
+	*/
+	return true;
+}
+
+Vector3 mix(const Vector3& a, const Vector3& b, float& f)
+{
+	return a*(1.0 - f) + b*f;
 }

@@ -8,21 +8,24 @@
 #include "world.h"
 #include "framework.h"
 #include "entity.h"
+#include "explosion.h"
 
 BulletManager* BulletManager::instance = NULL;
 
-BulletManager::BulletManager() {
-	bullet_vector.resize(100);
+BulletManager::BulletManager()
+{
+	bullet_vector.resize(500);
 	last_free = 0;
 	instance = this;
 }
 
-BulletManager::~BulletManager() {
+BulletManager::~BulletManager()
+{
 	
 }
 
-void BulletManager::createBullet(Vector3 position, Vector3 velocity, float ttl, float damage, Entity* author, int type) {
-
+void BulletManager::createBullet(Vector3 position, Vector3 velocity, float ttl, float damage, Entity* author, int type)
+{
 	if (last_free == bullet_vector.size())
 		return;
 
@@ -53,15 +56,17 @@ void BulletManager::render()
 		bullets.vertices.push_back(current.position);
 		bullets.vertices.push_back(current.last_position);
 		
-		bullets.colors.push_back(Vector4(1.f, 0.f, 0.f, 1.f));
-		bullets.colors.push_back(Vector4(1, 1, 0, 1));
+		bullets.colors.push_back(Vector4(1.f, 1.f, 1.f, 1.f));
+		bullets.colors.push_back(Vector4(1.f, 1.f, 1.f, 0.0));
 	}
 
 	if (!bullets.vertices.size())
 		return;
-
-	glLineWidth(1.25);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glLineWidth(2.0);
 	bullets.render(GL_LINES);
+	glDisable(GL_BLEND);
 }
 
 void BulletManager::update(float elapsed_time)
@@ -88,7 +93,8 @@ void BulletManager::update(float elapsed_time)
 		current.velocity = current.velocity * 0.99;
 	}
 
-	testBulletCollision();
+	//if(last_free > 0)
+		testBulletCollision();
 
 }
 
@@ -110,16 +116,22 @@ void BulletManager::testBulletCollision() {
 
 			Bullet& current = bullet_vector[j];
 
+			if (current_enemy == current.author)
+				continue;
+
 			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar
 			//que el tercer valor sirve para determinar si queremos saber la colision más cercana 
 			//al origen del rayo o nos conformamos con saber si colisiona. 
 
 			Vector3 front = current.last_position - current.position;
 
-			if (collisionModel->rayCollision(current.last_position.v, front.v, false))
+			if (collisionModel->rayCollision(current.last_position.v, front.v, true))
 			{
 				// collision made
-				current_enemy->onBulletCollision();
+				Vector3 collisionPoint(0, 0, 0);
+				collisionModel->getCollisionPoint(collisionPoint.v, false);
+				std::cout << collisionPoint.x << collisionPoint.y << collisionPoint.z;
+				current_enemy->onBulletCollision(collisionPoint);
 				current.ttl = -1.f;
 			}
 			

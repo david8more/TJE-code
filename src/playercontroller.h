@@ -31,7 +31,6 @@ public:
 	void moveX(float axis, float seconds_elapsed, float speed);
 	void moveXY(float Xaxis, float Yaxis, float seconds_elapsed, float speed);
 	void moveY(float axis, float seconds_elapsed, float speed);
-	void shoot(float time_elapsed);
 	void updateCamera(Camera * camera, float seconds_elapsed);
 };
 

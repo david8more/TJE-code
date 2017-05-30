@@ -64,6 +64,11 @@ public:
 	void updateViewMatrix();
 	void updateProjectionMatrix();
 
+	Vector3 project(Vector3 pos3d, float window_width, float window_height); //to project 3D points to screen coordinates
+	float getProjectScale(Vector3 pos3D, float radius); //used to know how big one unit will look at this distance
+	Vector3 unproject(Vector3 coord2d, float window_width, float window_height); //to project screen coordinates to world coordinates
+	Vector3 getRayDirection(int mouse_x, int mouse_y, float window_width, float window_height);
+
 	//culling
 	bool testPointInFrustum( Vector3 v );
 	bool testSphereInFrustum( Vector3 v, float radius);

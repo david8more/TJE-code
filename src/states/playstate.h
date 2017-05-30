@@ -43,8 +43,9 @@ public:
 	void init();
 	void onEnter();
 	void render();
+	void renderGUI();
+	void renderWorld(Camera * camera);
 	void update(double elapsed_time);
-	void renderHUD();
 	void onLeave(int fut_state);
 
 	void onKeyPressed(SDL_KeyboardEvent event);

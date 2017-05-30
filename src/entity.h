@@ -39,6 +39,7 @@ public:
 	Matrix44 getGlobalMatrix();
 	Vector3 getPosition();
 
+	void unboundController() {}
 	void destroy();
 	static void destroy_entities();
 	static std::vector<Entity*> destroy_pending;
@@ -83,7 +84,7 @@ public:
 
 	EntityCollider();
 	~EntityCollider();
-	virtual void onBulletCollision();
+	virtual void onBulletCollision(Vector3 collisionPoint);
 	virtual void onCollision(EntityCollider* collided_with) { std::cout << "metodo vacio"; }
 	static void remove(Entity* ent);
 	

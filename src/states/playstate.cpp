@@ -11,6 +11,7 @@
 #include "../entity.h"
 #include "../world.h"
 #include "../bulletmanager.h"
+#include "../explosion.h"
 #include "../playercontroller.h"
 
 #include <cmath>
@@ -21,6 +22,7 @@
 BulletManager* bManager = NULL;
 World * world = NULL; 
 Mesh debug_mesh;
+bool pause = false;
 
 bool controlIA = false;
 
@@ -33,14 +35,16 @@ PlayState::~PlayState() {}
 
 void PlayState::init() {
 
+	std::cout << "init playstate" << std::endl;
+
 	bManager = BulletManager::getInstance();
 	game = Game::getInstance();
 	world = World::getInstance();
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 5.f, -15.f);
-	viewtarget = Vector3(0.f, 5.f, 10.f);
+	viewpos = Vector3(0.f, 6.5f, -12.5f);
+	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
 	game->free_camera = new Camera(); //our global camera
@@ -49,7 +53,7 @@ void PlayState::init() {
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
-	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 10.0, 50000.f);
+	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 5.0, 50000.f);
 
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
 
@@ -70,14 +74,15 @@ void PlayState::init() {
 
 	// set collision models
 
-	for (int i = 0; i < EntityCollider::static_colliders.size(); i++) {
+	for (int i = 0; i < EntityCollider::static_colliders.size(); i++)
+	{
 		EntityCollider * current_collider = EntityCollider::static_colliders[i];
 		Mesh::Get(current_collider->mesh.c_str())->setCollisionModel();
 	}
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 25, 25);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 30, 30);
 
 	crosshair_tex = "data/textures/crosshair.tga";
 }
@@ -105,10 +110,6 @@ void PlayState::onEnter()
 	glEnable(GL_CULL_FACE); //render both sides of every triangle
 	glEnable(GL_DEPTH_TEST); //check the occlusi  ons using the Z buffer
 
-	//m60 init
-	player->timer = player->shootingtime = 0;
-	player->shooting = player->overused = false;
-
 	// Sounds
 	if (game->music_enabled)
 	{
@@ -131,48 +132,35 @@ void PlayState::render() {
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	game->current_camera->set();
 	
-	glDisable(GL_DEPTH_TEST);
-	world->sky->model.setIdentity();
-	world->sky->model.traslate(game->current_camera->eye.x, game->current_camera->eye.y, game->current_camera->eye.z);
-	world->sky->render(game->current_camera);
-	glEnable(GL_DEPTH_TEST);
-
-	Entity * sea = Entity::getEntity("sea");
-	sea->model.setIdentity();
-	sea->model.traslate(game->current_camera->eye.x, -10, game->current_camera->eye.z);
-	sea->render(game->current_camera);
-
-	world->root->render(game->current_camera);
-
-	//
-	if (debug_mesh.vertices.size()) {
-		debug_mesh.render(GL_POINTS);
-	}
-	//
-	bManager->render();
-	renderHUD();
+	renderWorld(game->current_camera);
+	Explosion::render(game->current_camera);
+	renderGUI();
 }
 
 void PlayState::update(double seconds_elapsed) {
 
+	PlayerController* player_controller = PlayerController::getInstance();
+
+	if (game->current_camera == game->free_camera)
+		player_controller->updateCamera(game->current_camera, seconds_elapsed);
+
+	if (pause)
+		return;
+
 	// get last position before updating
 	player->last_position = player->getPosition();
 
-	PlayerController* player_controller = PlayerController::getInstance();
-	
 	// ********************************************************************
 
-	if (game->current_camera == game->free_camera)
-	{	
-		player_controller->updateCamera(game->current_camera, seconds_elapsed);
-	}
-	else
+	if (game->current_camera == game->fixed_camera)
 	{	
 		player_controller->update(seconds_elapsed);
 	}
 
 	// update all scene
 	world->root->update(seconds_elapsed);
+	BulletManager::getInstance()->update(seconds_elapsed);
+	Explosion::update(seconds_elapsed);
 
 	// interpolate current and previous camera
 	Vector3 eye = player->model * viewpos;
@@ -199,49 +187,86 @@ void PlayState::update(double seconds_elapsed) {
 
 }
 
-void PlayState::renderHUD() {
+void PlayState::renderWorld(Camera * camera)
+{
+	glDisable(GL_DEPTH_TEST);
+	world->sky->model.setIdentity();
+	world->sky->model.traslate(camera->eye.x, camera->eye.y, camera->eye.z);
+	world->sky->render(camera);
+	
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
-	// RENDER HUD ****************************************************************
+	Entity * sea = Entity::getEntity("sea");
+	sea->model.setIdentity();
+	sea->model.traslate(camera->eye.x, -10, camera->eye.z);
+	sea->render(camera);
+
+	world->root->render(camera);
+	bManager->render();
+
+	//
+	if (debug_mesh.vertices.size())
+	{
+		debug_mesh.render(GL_POINTS);
+	}
+	//
+}
+
+void PlayState::renderGUI() {
+
+	// RENDER GUI ****************************************************************
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 
 	cam2D.set();
-	glColor4f(1.f, 1.f, 1.f, 1.f);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+	
 	Texture::Get(crosshair_tex.c_str())->bind();
 	quad.render(GL_TRIANGLES);
 	Texture::Get(crosshair_tex.c_str())->unbind();
 	glColor4f(1.f, 1.f, 1.f, 1.f);
-	glDisable(GL_BLEND);
 
-	// M60 overusing HUD
+	// M60 overheat HUD
 
 	std::stringstream ss;
 
-	ss << "[";
-	for (int i = 0; i < player->shootingtime; i += 3) {
-		ss << "|";
-	}
-	ss << "]";
+	// Overheat bar
+	Mesh heatIndicator;
 
-	float pRcolor = ss.str().size() / (float)13;
+	float indicatorWidth = !player->shootingtime ? 5 : game->window_height * player->shootingtime * 0.0075;
+	float pRcolor = player->shootingtime / 30.f;
 	Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
 
-	drawText(game->window_width*0.8, game->window_height*0.9, ss.str(), v, 3.0);
-	int percent_used = (float)player->shootingtime / 30 * 100;
-	if (percent_used > 100.0) percent_used = 100.0;
+	heatIndicator.createBox(game->window_width*0.75 + game->window_height * 15 * 0.0075, game->window_height*0.95, game->window_height * 30 * 0.0075, 25);
+	heatIndicator.render(GL_LINES);
+
+	heatIndicator.createQuad(game->window_width*0.75 + indicatorWidth * 0.5, game->window_height*0.95, indicatorWidth, 25);
+	glColor4f(v.x, v.y, v.z, 1.f);
+	heatIndicator.render(GL_TRIANGLES);
+
 	ss.str("");
-	ss << percent_used << "%";
-	drawText(game->window_width*0.8, game->window_height*0.95, ss.str(), v, 2.0); // % engine !!!
-	if (player->overused) drawText(game->window_width*0.1, game->window_height*0.75, "** ALERT: ENGINE OVERHEAT ** COOLING SYSTEM...", Vector3(1, 0, 0), 3.0);
+	ss << (int)min(((float)player->shootingtime / 30) * 100, 100.f ) << "%";
+	drawText(game->window_width * 0.81, game->window_height * 0.94, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0); // % engine !!!
+
+	if (player->overused)
+	{
+		drawText(game->window_width * 0.22, game->window_height * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
+	}
 
 	// MISSILES
 
 	ss.str("");
 	ss << "Torpedos left: " << world->playerAir->torpedosLeft;
-	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0); // % engine !!!
+	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0);
+
+	Airplane* p = (Airplane*)Entity::getEntity("player");
+	ss.str("");
+	ss << p->life << ": " << p->name;
+	drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(0, 1, 0), 3.0);
 
 	// vidas enemigas
 	int i = 0;
@@ -251,21 +276,116 @@ void PlayState::renderHUD() {
 		for (i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 		{
 			ss.str("");
+
 			ss << EntityCollider::dynamic_colliders[i]->life << ": " << EntityCollider::dynamic_colliders[i]->name;
-			drawText(game->window_width*0.1, game->window_height*0.1*(i+1), ss.str(), Vector3(1, 0, 0), 3.0);
+			drawText(game->window_width*0.1, 125 + i * 40, ss.str(), Vector3(1, 0, 0), 3.0);
 		}
 	}
 
-	/*ss.str("");
-	Airplane* ia_1 = (Airplane*)Entity::getEntity("ia_1");
-	ss << ia_1->life << ": " << ia_1->name;
-	drawText(game->window_width*0.1, game->window_height*0.1*(i + 1), ss.str(), Vector3(1, 0, 0), 3.0);*/
+	// minimap
+
+	int sizex = 195;
+	int sizey = 150;
+
+	if (game->keystate[SDL_SCANCODE_LCTRL])
+	{
+		sizex = 520;
+		sizey = 400;
+	}
+
+	glScissor(15, 15, sizex, sizey);
+	glEnable(GL_SCISSOR_TEST);
+	glViewport(15, 15, sizex, sizey);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
+	Camera camUp;
+	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
+	Vector3 center = player->model * Vector3();
+	Vector3 eye = center + Vector3(0, 5000, 0);
+	Vector3 up = Vector3(0, 0, 1);
+	camUp.lookAt(eye, center, up);
+	camUp.set();
+
+
+	for (int i = 0; i < World::instance->map_entities.size(); i++)
+	{
+		Entity* current = World::instance->map_entities[i];
+		current->render(&camUp);
+	}
+
+	Mesh objectsInMap;
+
+
+	Vector3 p1 = center + Vector3(0, 2000, 0);
+	Vector3 p2 = center + Vector3(0, 2100, 0);
+
+	//std::cout << p1.y << std::endl; std::cout << p2.y << std::endl;
+
+	objectsInMap.vertices.push_back(p2);
+	objectsInMap.vertices.push_back(p1);
+
+	objectsInMap.colors.push_back(Vector4(0.95, 0.85, 0.05, 1.0));
+	objectsInMap.colors.push_back(Vector4(0.1, 0.2, 0.96, 0.75));
+
+	for (int i = 0; i < World::instance->airplanes.size(); i++)
+	{
+		Entity* current = World::instance->airplanes[i];
+		Vector3 current_center = current->model * Vector3() + Vector3(0, 1500, 0);
+		objectsInMap.vertices.push_back(current_center);
+		objectsInMap.colors.push_back(Vector4(0.9, 0.0, 0.0, 0.75));
+	}
+	
+	Shader* shader = Shader::Load("data/shaders/map.vs", "data/shaders/map.fs");
+
+	Matrix44 m;
+
+	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+	shader->enable();
+	shader->setMatrix44("u_model", m);
+	shader->setMatrix44("u_mvp", camUp.viewprojection_matrix);
+	shader->setVector3("u_camera_pos", camUp.eye);
+	objectsInMap.render(GL_POINTS, shader);
+	shader->disable();
+
+	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+	// set mark enemy airplanes
+
+	for (int i = 0; i < World::instance->airplanes.size(); i++)
+	{
+		Entity* current = World::instance->airplanes[i];
+		Vector3 pos3D = current->model * Vector3();
+
+		Vector3 pos2D = camUp.project(pos3D, game->window_width, game->window_height);
+
+		if (pos2D.z > 1)
+			return;
+
+		if (pos2D.x < 0)
+			pos2D.x = 0;
+		if (pos2D.x > game->window_width)
+			pos2D.x = game->window_width;
+		if (pos2D.y < 0)
+			pos2D.y = 0;
+		if (pos2D.y > game->window_height)
+			pos2D.y = game->window_height;
+
+		Mesh quad;
+		Texture * t = Texture::Get("data/textures/marked.tga");
+		quad.createQuad(pos2D.x, game->window_height - pos2D.y, 50, 50);
+		t->bind();
+		quad.render(GL_TRIANGLES);
+		t ->unbind();
+
+	}
 
 	// FINISHED RENDER INTERFACE ****************************************************************
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_BLEND);
+	glViewport(0, 0, game->window_width, game->window_height);
 }
 
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
@@ -296,18 +416,14 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		game->current_camera = game->free_camera;
 		controlIA = !controlIA;
 		break;
-	case SDLK_p: // PARAR MOTOR
-		player->engineOnOff();
-	
-		if (player->engine)
+	case SDLK_7:
+		if (Entity::s_Entities["test"] != NULL)
 		{
-			e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-			e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
-			BASS_ChannelPlay(e_channel, false); // play it
+			((Airplane*)Entity::getEntity("test"))->destroy();
 		}
-		else {
-			BASS_ChannelStop(e_channel);
-		}
+		break;
+	case SDLK_p:
+		pause = !pause;
 		break;
 	}
 }
@@ -317,7 +433,6 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 	switch (event.keysym.sym)
 	{
 	case SDLK_SPACE:
-		world->playerAir->shooting = false;
 		if (!player->overused)
 			player->shootingtime = 0;
 		break;
@@ -370,6 +485,7 @@ void PlayState::setView() {
 		{
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
+
 		viewpos = Vector3(0.f, 5.f, -15.f);
 		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
@@ -382,7 +498,7 @@ void PlayState::setView() {
 		if (plane_model == SPITFIRE)
 		{
 			viewpos = Vector3(0.f, 0.7f, -1.5f);
-			viewtarget = Vector3(0.f, 0.5f, 10.f);
+			viewtarget = Vector3(0.f, 0.0f, 100.f);
 			player->set("spitfire_cabina.ASE", "data/textures/spitfire_cabina_alpha.tga", "simple");
 
 		}

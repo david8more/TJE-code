@@ -45,6 +45,9 @@ public:
 	EntityMesh* sky;
 	EntityCollider* sea;
 
+	std::vector<Entity*> map_entities;
+	std::vector<Entity*> airplanes;
+
 	// fighters
 	Airplane* playerAir;
 	EntityCollider* playerShip;

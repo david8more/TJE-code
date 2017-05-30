@@ -35,7 +35,8 @@ public:
 	float distance(const Vector2& v);
 	void random(float range);
 
-	void operator *= (float v) { x*=v; y*=v; }
+	void operator *= (float v) { x *= v; y *= v; }
+	void operator /= (float v) { x /= v; y /= v; }
 };
 
 Vector2 operator * (const Vector2& a, float v);
@@ -78,17 +79,17 @@ public:
 
 	Vector3& normalize();
 	void random(float range);
-	void random(Vector3 range);
+	Vector3& random(Vector3 range);
 
 	float distance(const Vector3& v) const;
 
 	Vector3 cross( const Vector3& v ) const;
 	float dot( const Vector3& v ) const;
 
-	Vector3 operator += (const Vector3& v);
 	bool operator == (const Vector3& v);
-
-	void sumame(Vector3 v);
+	Vector3 operator += (const Vector3& v);
+	void operator *= (float v) { x *= v; y *= v; z *= v; }
+	void operator /= (float v) { x /= v; y /= v; z /= v; }
 };
 
 class Vector4
@@ -101,8 +102,9 @@ public:
 	};
     
 	Vector4() { x = y = z = w = 0.0f; }
-	Vector4(float x, float y, float z, float w) { this->x = x; this->y = y; this->z = z; this->w = w; }
 	Vector4(Vector3 v, float w) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = w; }
+	Vector4(float x, float y, float z, float w) { this->x = x; this->y = y; this->z = z; this->w = w; }
+	void set(float x, float y, float z, float w) { this->x = x; this->y = y; this->z = z; this->w = w; }
 };
 
 //****************************
@@ -176,11 +178,19 @@ class Matrix44
 //Operators, they are our friends
 //Matrix44 operator * ( const Matrix44& a, const Matrix44& b );
 Vector3 operator * (const Matrix44& matrix, const Vector3& v);
+Vector4 operator * (const Matrix44& matrix, const Vector4& v);
 Vector3 operator + (const Vector3& a, const Vector3& b);
 Vector3 operator - (const Vector3& a, const Vector3& b);
+Vector3 operator - (const Vector3& a);
+Vector3 operator * (const Vector3& a, const Vector3& b);
 Vector3 operator * (const Vector3& a, float v);
+
+Vector3 mix(const Vector3& a, const Vector3& b, float& f);
 
 float ComputeSignedAngle( Vector2 a, Vector2 b);
 Vector3 RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir );
+bool RaySphereCollision(const Vector3& center, float radius, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result );
+
+float random();
 
 #endif
