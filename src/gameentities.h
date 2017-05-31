@@ -53,6 +53,7 @@ public:
 	~Torpedo();
 
 	float ttl;
+	float max_ttl;
 	bool ready;
 
 	void update(float elapsed_time);

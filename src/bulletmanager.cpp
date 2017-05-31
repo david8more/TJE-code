@@ -130,8 +130,8 @@ void BulletManager::testBulletCollision() {
 				// collision made
 				Vector3 collisionPoint(0, 0, 0);
 				collisionModel->getCollisionPoint(collisionPoint.v, false);
-				std::cout << collisionPoint.x << collisionPoint.y << collisionPoint.z;
-				current_enemy->onBulletCollision(collisionPoint);
+				//std::cout << collisionPoint.x << collisionPoint.y << collisionPoint.z;
+				current_enemy->onBulletCollision(collisionPoint, current);
 				current.ttl = -1.f;
 			}
 			

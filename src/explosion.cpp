@@ -10,7 +10,7 @@ Explosion::Explosion(Vector3 collisionPoint)
 {
 	collision = collisionPoint;
     time = 0.0;
-    lifetime = 3.0;
+    lifetime = 3.5;
 }
 
 Explosion::~Explosion() {

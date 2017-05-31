@@ -21,6 +21,7 @@ std::map<std::string, Entity*> Entity::s_Entities;
 
 Entity::Entity() {
 	parent = NULL;
+	destroyed = false;
 }
 
 Entity::~Entity()
@@ -103,7 +104,11 @@ Matrix44 Entity::getGlobalMatrix()
 
 void Entity::destroy()
 {
+	if (destroyed)
+		return;
+	
 	destroy_pending.push_back(this);
+	
 	for (int i = 0; i < children.size(); i++)
 	{
 		children[i]->destroy();
@@ -115,12 +120,13 @@ void Entity::destroy_entities()
 	for (int i = 0; i < destroy_pending.size(); i++)
 	{
 		Entity* ent = destroy_pending[i];
+      	//
 		std::cout << "destroying " << ent->name << std::endl;
   		EntityCollider::remove(ent); // quitarse del vector de static y dinamics SI ESTOY
 		if(ent->uid > 1000)
 			World::removeAirplaneFromMinimap(ent);
 		if(ent->parent != NULL)
-			ent->parent->removeChild(ent); // desvincular hijo del padre
+		   ent->parent->removeChild(ent); // desvincular hijo del padre
 		delete(ent);
 	}
 
@@ -361,9 +367,9 @@ void EntityCollider::remove(Entity* ent)
 	//
 }
 
-void EntityCollider::onBulletCollision(Vector3 collisionPoint)
+void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 {
-	this->life -= 5;
+	this->life -= b.damage;
 	this->life = max(this->life, 0);
 
 	Explosion::createExplosion(collisionPoint);
@@ -376,3 +382,4 @@ void EntityCollider::onBulletCollision(Vector3 collisionPoint)
 		destroy();
 	}
 }
+

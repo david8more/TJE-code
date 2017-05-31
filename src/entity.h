@@ -5,6 +5,7 @@
 #include "utils.h"
 #include <iostream>
 #include <map>
+#include "bullet.h"
 
 #define NO_CULLING false
 #define CULLING true
@@ -43,7 +44,7 @@ public:
 	void destroy();
 	static void destroy_entities();
 	static std::vector<Entity*> destroy_pending;
-	
+	bool destroyed;
 };
 
 // *******************************************************************
@@ -84,7 +85,7 @@ public:
 
 	EntityCollider();
 	~EntityCollider();
-	virtual void onBulletCollision(Vector3 collisionPoint);
+	virtual void onBulletCollision(Vector3 collisionPoint, Bullet& b);
 	virtual void onCollision(EntityCollider* collided_with) { std::cout << "metodo vacio"; }
 	static void remove(Entity* ent);
 	

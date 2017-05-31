@@ -52,7 +52,7 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 
 		life = 175.0;
 		cadence = 75.0;
-		damageM60 = 10.0;
+		damageM60 = 100.0;
 		speed = 100.0;
 	}
 
@@ -62,6 +62,7 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 		helix->model.setTranslation(2.44f, 0.f, 2.85f);
 		
 		Helix* helix2 = new Helix();
+		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
 		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 		this->addChild(helix2);
@@ -89,6 +90,7 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 		helix->model.setTranslation(2.65f, -0.88f, 4.65f);
 
 		Helix* helix2 = new Helix();
+		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.65f, -0.88f, 4.65f);
 		helix2->model.rotateLocal(3.1415, Vector3(0, 1, 0));
 		this->addChild(helix2);
@@ -194,12 +196,6 @@ void Airplane::update(float elapsed_time) {
 		timer = shootingtime = 0;
 		overused = false;
 	}
-
-	/*if (life < 0)
-	{
-		std::cout << "plane crashed" << std::endl;
-		destroy();
-	}*/
 }
 
 void Airplane::shoot() {
@@ -295,7 +291,7 @@ void Airplane::torpedoShoot() {
 
 	torpedosLeft--;
 
-	int sample = BASS_SampleLoad(false, "data/sounds/missil.wav", 0L, 0, 1, 0);
+	int sample = BASS_SampleLoad(false, "data/sounds/missil2.wav", 0L, 0, 1, 0);
 	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
 	BASS_ChannelPlay(channel, false); // play it
 
@@ -313,22 +309,28 @@ void Airplane::torpedoShoot() {
 void Airplane::onCollision(EntityCollider* collided_with) {
 	//Game* game = Game::getInstance();
 	
-	std::cout << "COLISION!" << std::endl;
-
+	if (collided_with != NULL)
+	{
+		// IA no colisionan entre ellas
+		if (uid > 1000 && collided_with->uid > 1000)
+		{
+			return;
+		}
+	}
+	
 	if (name == "player")
 	{
 		std::cout << "CRASHED!" << std::endl;
+		exit(1);
 	}
 
 	else if (name == "ia_1")
 	{
-		destroy();
 		std::cout << "IA 1 CRASHED!" << std::endl;
 	}
 
 	else if (name == "ia_2")
 	{
-		destroy();
 		std::cout << "IA 2 CRASHED!" << std::endl;
 	}
 	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
@@ -359,7 +361,8 @@ Torpedo::Torpedo(bool culling) {
 
 	ready = false;
 
-	ttl = 4;
+	max_ttl = 4.0;
+	ttl = max_ttl;
 }
 
 Torpedo::~Torpedo() {}
@@ -371,13 +374,12 @@ void Torpedo::update(float elapsed_time) {
 
 	if (ttl < 0) {
 		destroy();
-		std::cout << "torpedo destroyed (ttl < 0)" << std::endl;
 		return;
 	}
 
 	testSphereCollision();
 
-	model.traslateLocal(0, 0, (4 - ttl) * elapsed_time * -150 * 0.5);
+	model.traslateLocal(0, 0, (max_ttl - ttl) * elapsed_time * -150 * 0.5);
 	ttl -= elapsed_time;
 	
 }
