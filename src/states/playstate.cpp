@@ -7,12 +7,13 @@
 #include "../mesh.h"
 #include "../texture.h"
 #include "../shader.h"
-#include "../bass.h"
 #include "../entity.h"
 #include "../world.h"
 #include "../bulletmanager.h"
 #include "../explosion.h"
 #include "../playercontroller.h"
+#include "../rendertotexture.h"
+#include "../soundmanager.h"
 
 #include <cmath>
 
@@ -26,6 +27,8 @@ bool pause = false;
 
 bool controlIA = false;
 
+RenderToTexture * rt = NULL;
+
 PlayState::PlayState(StateManager* SManager) : State(SManager)
 {
 	inZoom = false;
@@ -33,8 +36,8 @@ PlayState::PlayState(StateManager* SManager) : State(SManager)
 
 PlayState::~PlayState() {}
 
-void PlayState::init() {
-
+void PlayState::init()
+{
 	std::cout << "init playstate" << std::endl;
 
 	bManager = BulletManager::getInstance();
@@ -43,13 +46,12 @@ void PlayState::init() {
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 6.5f, -12.5f);
+	viewpos = Vector3(0.f, 6.f, -6.5f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
 	game->free_camera = new Camera(); //our global camera
 	game->fixed_camera = new Camera();
-
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
@@ -85,6 +87,9 @@ void PlayState::init() {
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 30, 30);
 
 	crosshair_tex = "data/textures/crosshair.tga";
+
+	rt = new RenderToTexture();
+	rt->create(game->window_width, game->window_height, false);
 }
 
 void PlayState::onEnter()
@@ -92,10 +97,6 @@ void PlayState::onEnter()
 	cout << "$ Entering play state -- ..." << endl;
 	
 	player = World::getInstance()->playerAir;
-
-	Airplane * ia_1 = (Airplane*)Entity::getEntity("ia_1");
-	//Airplane * ia_2 = (Airplane*)Entity::getEntity("ia_2");
-
 	PlayerController::getInstance()->setPlayer(player);
 
 	// views things
@@ -113,10 +114,9 @@ void PlayState::onEnter()
 	// Sounds
 	if (game->music_enabled)
 	{
-		b_sample = BASS_SampleLoad(false, "data/sounds/music.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-		hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-		BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
-		BASS_ChannelPlay(hSampleChannel, false); // play it
+		SoundManager::getInstance()->playSound("music", true);
+		SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
+
 	}
 
 	//hide the cursor
@@ -124,21 +124,50 @@ void PlayState::onEnter()
 
 }
 
-void PlayState::render() {
-
-	// Clear the window and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+void PlayState::render()
+{
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	game->current_camera->set();
 	
+	// render to texture
+
+	rt->enable();
+	
+	//set the clear color (the background color)
+	glClearColor(0.5, 0.7, 0.8, 1.0);
+	// Clear the window and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	renderWorld(game->current_camera);
-	Explosion::render(game->current_camera);
+
+	rt->disable();
+	
+
+	Camera cam2D;
+	cam2D.setOrthographic(-1, 1, -1, 1, -1, 1);
+	cam2D.set();
+
+	glDisable(GL_DEPTH_TEST);
+	
+	Mesh quad;
+	quad.createQuad(0, 0, 2, 2);
+	
+	Shader* shader = Shader::Load("data/shaders/fx.vs", "data/shaders/fx.fs");
+	glColor4f(1, 1, 1, 1);
+
+	rt->bind();
+	shader->enable();
+	shader->setMatrix44("u_mvp", cam2D.viewprojection_matrix);
+	shader->setTexture("u_texture", rt);
+	shader->setFloat("u_time", game->time);
+	quad.render(GL_TRIANGLES, shader);
+	shader->disable();
+	rt->unbind();
+	
 	renderGUI();
 }
 
-void PlayState::update(double seconds_elapsed) {
-
+void PlayState::update(double seconds_elapsed)
+{
 	PlayerController* player_controller = PlayerController::getInstance();
 
 	if (game->current_camera == game->free_camera)
@@ -204,6 +233,8 @@ void PlayState::renderWorld(Camera * camera)
 
 	world->root->render(camera);
 	bManager->render();
+
+	Explosion::render(camera);
 
 	//
 	if (debug_mesh.vertices.size())
@@ -282,13 +313,8 @@ void PlayState::renderGUI() {
 		}
 	}
 
-	Camera camUp;
-	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
-	Vector3 center = player->model * Vector3();
-	Vector3 eye = center + Vector3(0, 5000, 0);
-	Vector3 up = Vector3(0, 0, 1);
-	camUp.lookAt(eye, center, up);
-	camUp.set();
+	Camera cam2D;
+	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 
 	// set mark enemy airplanes
 	Texture * t = Texture::Get("data/textures/crosshair.tga");
@@ -304,7 +330,7 @@ void PlayState::renderGUI() {
 		Camera* cam3D = Game::instance->current_camera;
 
 		Vector3 pos3D = current->getPosition();
-		Vector3 pos2D = camUp.project(pos3D, game->window_width, game->window_height);
+		Vector3 pos2D = cam2D.project(pos3D, game->window_width, game->window_height);
 
 		if (pos2D.z > 1)
 			continue;
@@ -318,7 +344,7 @@ void PlayState::renderGUI() {
 		if (pos2D.y > game->window_height)
 			pos2D.y = game->window_height;
 
-		float size = camUp.getProjectScale(pos3D, 50.0);
+		float size = cam2D.getProjectScale(pos3D, 50.0);
 		if (size < 25.0)
 			size = 25.0;
 
@@ -332,6 +358,14 @@ void PlayState::renderGUI() {
 	t->unbind();
 
 	// minimap
+
+	Camera camUp;
+	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
+	Vector3 center = player->model * Vector3();
+	Vector3 eye = center + Vector3(0, 5000, 0);
+	Vector3 up = Vector3(0, 0, 1);
+	camUp.lookAt(eye, center, up);
+	camUp.set();
 
 	int sizex = 195;
 	int sizey = 150;
@@ -355,7 +389,6 @@ void PlayState::renderGUI() {
 	}
 
 	Mesh objectsInMap;
-
 
 	Vector3 p1 = center + Vector3(0, 2000, 0);
 	Vector3 p2 = center + Vector3(0, 2100, 0);
@@ -386,7 +419,9 @@ void PlayState::renderGUI() {
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", camUp.viewprojection_matrix);
 	shader->setVector3("u_camera_pos", camUp.eye);
+
 	objectsInMap.render(GL_POINTS, shader);
+	
 	shader->disable();
 
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -404,9 +439,7 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_0:
 		game->start = true;
 		player->engineOnOff();
-		e_sample = BASS_SampleLoad(false, "data/sounds/plane.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-		e_channel = BASS_SampleGetChannel(e_sample, false); // get a sample channel
-		BASS_ChannelPlay(e_channel, false); // play it
+		SoundManager::getInstance()->playSound("plane", true);
 		break;
 	case SDLK_1: // full plane view or cabine view
 		current_view = current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
@@ -468,9 +501,9 @@ void PlayState::setZoom()
 		setView();
 }
 
-void PlayState::onLeave(int fut_state) {
-	BASS_ChannelStop(hSampleChannel); // stop music
-	BASS_ChannelStop(e_channel);
+void PlayState::onLeave(int fut_state)
+{
+	SoundManager::getInstance()->stopSound("music");
 }
 
 void PlayState::setView() {
@@ -489,7 +522,7 @@ void PlayState::setView() {
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
 
-		viewpos = Vector3(0.f, 5.f, -15.f);
+		viewpos = Vector3(0.f, 6.f, -6.5f);
 		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
 

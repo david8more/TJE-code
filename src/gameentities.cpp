@@ -11,9 +11,10 @@
 #include "shader.h"
 #include "bulletmanager.h"
 #include "playercontroller.h"
+#include "soundmanager.h"
 #include "world.h"
-#include "bass.h"
 #include "mesh.h"
+#include "explosion.h"
 #include <algorithm>
 #include <cassert>
 
@@ -52,7 +53,11 @@ Airplane::Airplane(int model, IAController* controller, bool culling) {
 
 		life = 175.0;
 		cadence = 75.0;
-		damageM60 = 100.0;
+		damageM60 = 10.0;
+		if (0) // god mode XD
+		{
+			damageM60 = 1000.0;
+		}
 		speed = 100.0;
 	}
 
@@ -227,9 +232,7 @@ void Airplane::shoot() {
 			break;
 		}
 
-		int sample = BASS_SampleLoad(false, "data/sounds/shot.wav", 0L, 0, 1, 0);
-		int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
-		BASS_ChannelPlay(channel, false); // play it
+		SoundManager::getInstance()->playSound("shot", false);
 
 		// end shoot
 
@@ -291,9 +294,7 @@ void Airplane::torpedoShoot() {
 
 	torpedosLeft--;
 
-	int sample = BASS_SampleLoad(false, "data/sounds/missil2.wav", 0L, 0, 1, 0);
-	int channel = BASS_SampleGetChannel(sample, false); // get a sample channel
-	BASS_ChannelPlay(channel, false); // play it
+	SoundManager::getInstance()->playSound("missil2", false);
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -379,7 +380,7 @@ void Torpedo::update(float elapsed_time) {
 
 	testSphereCollision();
 
-	model.traslateLocal(0, 0, (max_ttl - ttl) * elapsed_time * -150 * 0.5);
+	model.traslateLocal(0, 0, (max_ttl - 0.8 * ttl) * elapsed_time * -75);
 	ttl -= elapsed_time;
 	
 }
@@ -396,16 +397,24 @@ void Torpedo::activate() {
 	ready = true;
 }
 
-void Torpedo::onCollision(EntityCollider* collided_with) {
-
+void Torpedo::onCollision(EntityCollider* collided_with)
+{
 	if (collided_with == PlayerController::getInstance()->player)
 		return;
 
-	int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
-	HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-	BASS_ChannelPlay(hSampleChannel, false); // play it
+	std::cout << "torpedo ha colisionado" << std::endl;
+	
+	Explosion::createExplosion(collided_with->model * Vector3(0, 15, 7));
+	Explosion::createExplosion(collided_with->model * Vector3(0, 15, -7));
+	SoundManager::getInstance()->playSound("explosion", false);
 
-	collided_with->onCollision(this);
+	collided_with->life -= 450.0;
+	
+	if (collided_with->life <= 0)
+	{
+		std::cout << collided_with->name << " destroyed by torpedo" << std::endl;
+		collided_with->destroy();
+	}
 
 	// destruir torpedo
 	ttl = -1.0;
@@ -434,12 +443,12 @@ Clouds::Clouds()
 	depthMask = false;
 	cullFace = false;
 
-	clouds.resize(100);
+	clouds.resize(200);
 
 	for (int i = 0; i < clouds.size(); i++)
 	{
 		Vector3 pos;
-		pos.random(Vector3(15000, 10000 + random() * 1000, 15000));
+		pos.random(Vector3(10000, 8000 + random() * 1000, 10000));
 		clouds[i].pos = pos;
 		clouds[i].size = 3500 + random()*1500;
 	}
@@ -453,9 +462,12 @@ bool mySort(Clouds::sCloudInfo &a, Clouds::sCloudInfo &b)
 void Clouds::render(Camera* camera)
 {
 	Mesh m;
+	Airplane* player = PlayerController::getInstance()->player;
 
 	Vector3 up = Vector3(0, 1, 0);
 	Vector3 right = Vector3(1, 0, 0);
+	right = (camera->center - camera->eye).cross(camera->up);
+	right.normalize();
 
 	for (int i = 0; i < clouds.size(); i++)
 	{
@@ -486,12 +498,7 @@ void Clouds::render(Camera* camera)
 		m.uvs.push_back(Vector2(0, 0));
 	}
 
-	/*Vector3 to_player;
-	float angle;
-
-	model.rotateLocal(angle, up);
-
-	*/
+	model.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
 
 	if (alpha)
 	{

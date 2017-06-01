@@ -5,8 +5,8 @@
 
 Camera::Camera()
 {
-	view_matrix.setIdentity();
-	setOrthographic(-100,100,-100, 100,-100,100);
+	lookAt(Vector3(0, 0, 0), Vector3(0, 0, -1), Vector3(0, 1, 0));
+	setOrthographic(-100, 100, -100, 100, -100, 100);
 }
 
 void Camera::set()
@@ -14,19 +14,19 @@ void Camera::set()
 	updateViewMatrix();
 	updateProjectionMatrix();
 
-	glMatrixMode( GL_MODELVIEW );
-	glLoadMatrixf( view_matrix.m );
-	glMatrixMode( GL_PROJECTION );
-	glLoadMatrixf( projection_matrix.m );
-	glMatrixMode( GL_MODELVIEW );
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(view_matrix.m);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(projection_matrix.m);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void Camera::updateViewMatrix()
 {
-	if(type == PERSPECTIVE)
-		view_matrix.lookAt(eye, center, up);
-	else
-		view_matrix.setIdentity();
+	//if(type == PERSPECTIVE)
+	view_matrix.lookAt(eye, center, up);
+	//else
+	//	view_matrix.setIdentity();
 
 	viewprojection_matrix = view_matrix * projection_matrix;
 
@@ -68,7 +68,7 @@ void Camera::move(Vector3 delta)
 void Camera::rotate(float angle, const Vector3& axis)
 {
 	Matrix44 R;
-	R.setRotation(angle,axis);
+	R.setRotation(angle, axis);
 	Vector3 new_front = R * (center - eye);
 	center = eye + new_front;
 	updateViewMatrix();
@@ -113,23 +113,22 @@ void Camera::lookAt(const Vector3& eye, const Vector3& center, const Vector3& up
 
 void Camera::lookAtPlane(Airplane* plane)
 {
-	this->eye = plane->model * Vector3(-10, 10, -25);
+     	this->eye = plane->model * Vector3(-10, 10, -25);
 	this->center = plane->model * Vector3(0, 0, 100);
 	this->up = plane->model.rotateVector(Vector3(0, 1, 0));
 
 	updateViewMatrix();
 }
 
-
 void Camera::extractFrustum()
 {
-	float   proj[16]; 
+	float   proj[16];
 	float   modl[16];
 	float   clip[16];
 	float   t;
 
-	memcpy( proj, projection_matrix.m, sizeof(Matrix44) );
-	memcpy( modl, view_matrix.m, sizeof(Matrix44));
+	memcpy(proj, projection_matrix.m, sizeof(Matrix44));
+	memcpy(modl, view_matrix.m, sizeof(Matrix44));
 
 	/* Combine the two matrices (multiply projection by modelview) */
 	clip[0] = modl[0] * proj[0] + modl[1] * proj[4] + modl[2] * proj[8] + modl[3] * proj[12];
@@ -231,24 +230,12 @@ void Camera::extractFrustum()
 	frustum[5][3] /= t;
 }
 
-bool Camera::testPointInFrustum( Vector3 v )
+bool Camera::testPointInFrustum(Vector3 v)
 {
 	int p;
 
 	for (p = 0; p < 6; p++)
 		if (frustum[p][0] * v.x + frustum[p][1] * v.y + frustum[p][2] * v.z + frustum[p][3] <= 0)
-			return false;
-	return true;
-}
-
-
-
-bool Camera::testSphereInFrustum( Vector3 v, float radius)
-{
-	int p;
-
-	for (p = 0; p < 6; p++)
-		if (frustum[p][0] * v.x + frustum[p][1] * v.y + frustum[p][2] * v.z + frustum[p][3] <= -radius)
 			return false;
 	return true;
 }
@@ -283,3 +270,15 @@ float Camera::getProjectScale(Vector3 pos3D, float radius) {
 	float dist = eye.distance(pos3D);
 	return (sin(fov*DEG2RAD) / dist) * radius * 200.0; //100 is to compensate width in pixels
 }
+
+
+bool Camera::testSphereInFrustum(Vector3 v, float radius)
+{
+	int p;
+
+	for (p = 0; p < 6; p++)
+		if (frustum[p][0] * v.x + frustum[p][1] * v.y + frustum[p][2] * v.z + frustum[p][3] <= -radius)
+			return false;
+	return true;
+}
+

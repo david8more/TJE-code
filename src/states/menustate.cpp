@@ -13,6 +13,7 @@
 #include "howto.h"
 #include <cmath>
 #include <ctime>
+#include "../soundmanager.h"
 
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
@@ -20,11 +21,8 @@ MenuState::~MenuState() {}
 Vector2 screen;
 float optimer = 0;
 
-void MenuState::init() {
-
-	//Inicializamos BASS  (id_del_device, muestras por segundo, ...)
-	BASS_Init(-1, 44100, BASS_DEVICE_DEFAULT, 0, NULL);
-
+void MenuState::init()
+{
 	// Cargamos texturas de menú
 	texture = Texture::Get("data/textures/main.tga");
 
@@ -51,9 +49,7 @@ void MenuState::onEnter()
 
 	if (game->bkg_music_playing || !game->music_enabled) return;
 	
-	b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-	hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-	BASS_ChannelPlay(hSampleChannel, false); // play it
+	SoundManager::getInstance()->playSound("lluvia", true);
 	game->bkg_music_playing = true;
 
 }
@@ -173,8 +169,9 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 
 void MenuState::onLeave(int fut_state) {
 
-	if (0) {
-		BASS_ChannelStop(hSampleChannel); // stop music
+	if (fut_state == 3) // selection state
+	{
+		SoundManager::getInstance()->stopSound("lluvia"); 
 		game->bkg_music_playing = false;
 	}
 }
@@ -185,13 +182,8 @@ void MenuState::selectionUp()
 	if (currentSelection == -1)
 		currentSelection = 3;
 
-	if (!game->effects_enabled)
-		return;
-
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
-
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void MenuState::selectionDown()
@@ -200,22 +192,15 @@ void MenuState::selectionDown()
 	if (currentSelection == 4)
 		currentSelection = 0;
 
-	if (!game->effects_enabled)
-		return;
-
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
-
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void MenuState::selectionChosen()
 {
 	if (game->effects_enabled)
 	{
-		s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-		s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-		BASS_ChannelPlay(s_channel, false); // play it
+		SoundManager::getInstance()->playSound("move_menu", false);
 	}
 
 	switch (currentSelection)

@@ -87,14 +87,8 @@ public:
 	Mesh quad;
 	std::string crosshair_tex;
 
-	// background music
-	int b_sample;
-	HCHANNEL hSampleChannel;
-
 	//engine sound
 	bool engine_on;
-	int e_sample;
-	int e_channel;
 };
 
 #endif

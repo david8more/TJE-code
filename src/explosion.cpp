@@ -34,7 +34,7 @@ void Explosion::render(Camera * camera)
 	{
 		Explosion * current = v_explosions[i];
 
-        float w = 10.0, h = 10.0;
+        float w = 12.0, h = 12.0;
         Vector3 ep = current->collision;
 		Vector3 up = camera->up;
 		Vector3 side = (camera->center - camera->eye).cross(camera->up);

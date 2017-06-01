@@ -1,7 +1,7 @@
 /*  by Javi Agenjo 2013 UPF  javi.agenjo@gmail.com
-	This class wraps the behaviour of a camera. A Camera helps to set the point of view from where we will render the scene.
-	The most important attributes are  eye and center which say where is the camera and where is it pointing.
-	This class also stores the matrices used to do the transformation and projection of the scene.
+This class wraps the behaviour of a camera. A Camera helps to set the point of view from where we will render the scene.
+The most important attributes are  eye and center which say where is the camera and where is it pointing.
+This class also stores the matrices used to do the transformation and projection of the scene.
 */
 
 #ifndef CAMERA_H
@@ -9,8 +9,6 @@
 
 #include "framework.h"
 #include "gameentities.h"
-
-class Airplane;
 
 class Camera
 {
@@ -20,19 +18,19 @@ public:
 
 	char type; //camera type
 
-	//vectors to define the orientation of the camera
+			   //vectors to define the orientation of the camera
 	Vector3 eye; //where is the camera
 	Vector3 center; //where is it pointing
 	Vector3 up; //the up pointing up
 
-	//properties of the projection of the camera
+				//properties of the projection of the camera
 	float fov;			//view angle in degrees (1/zoom)
 	float aspect;		//aspect ratio (width/height)
 	float near_plane;	//near plane
 	float far_plane;	//far plane
 
-	//for orthogonal projection
-	float left,right,top,bottom;
+						//for orthogonal projection
+	float left, right, top, bottom;
 
 	//planes
 	float frustum[6][4];
@@ -70,8 +68,8 @@ public:
 	Vector3 getRayDirection(int mouse_x, int mouse_y, float window_width, float window_height);
 
 	//culling
-	bool testPointInFrustum( Vector3 v );
-	bool testSphereInFrustum( Vector3 v, float radius);
+	bool testPointInFrustum(Vector3 v);
+	bool testSphereInFrustum(Vector3 v, float radius);
 };
 
 

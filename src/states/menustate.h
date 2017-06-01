@@ -52,11 +52,6 @@ public:
 	// Index of the current selected menu item
 	int currentSelection;
 
-	// BASS
-	int s_sample;
-	int b_sample;
-	int s_channel;
-	HCHANNEL hSampleChannel;
 	bool music_on;
 
 	// needed instances to render

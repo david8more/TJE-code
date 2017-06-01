@@ -8,9 +8,9 @@
 #include "entity.h"
 #include "shader.h"
 #include "bulletmanager.h"
+#include "soundmanager.h"
 #include "explosion.h"
 #include "world.h"
-#include "bass.h"
 #include <cassert>
 #include <algorithm>
 
@@ -29,6 +29,10 @@ Entity::~Entity()
 	auto it = s_Entities.find(name);
 	if (it != s_Entities.end())
 		s_Entities[name] = NULL;
+
+	EntityCollider::remove(this); // quitarse del vector de static y dinamics SI ESTOY
+	if (uid > 1000)
+		World::removeAirplaneFromMinimap(this);
 }
 
 void Entity::setName(std::string name)
@@ -108,6 +112,7 @@ void Entity::destroy()
 		return;
 	
 	destroy_pending.push_back(this);
+	destroyed = true;
 	
 	for (int i = 0; i < children.size(); i++)
 	{
@@ -121,10 +126,7 @@ void Entity::destroy_entities()
 	{
 		Entity* ent = destroy_pending[i];
       	//
-		std::cout << "destroying " << ent->name << std::endl;
-  		EntityCollider::remove(ent); // quitarse del vector de static y dinamics SI ESTOY
-		if(ent->uid > 1000)
-			World::removeAirplaneFromMinimap(ent);
+		std::cout << "Destroying " << ent->name << std::endl;
 		if(ent->parent != NULL)
 		   ent->parent->removeChild(ent); // desvincular hijo del padre
 		delete(ent);
@@ -375,9 +377,7 @@ void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 	Explosion::createExplosion(collisionPoint);
 
 	if (!this->life) {
-		int b_sample = BASS_SampleLoad(false, "data/sounds/explosion.wav", 0L, 0, 1, 0);
-		HCHANNEL hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-		BASS_ChannelPlay(hSampleChannel, false); // play it
+		SoundManager::getInstance()->playSound("explosion", false);
 		unboundController();
 		destroy();
 	}

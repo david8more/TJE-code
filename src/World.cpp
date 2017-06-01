@@ -32,8 +32,8 @@ World::~World()
 
 }
 
-void World::create() {
-
+void World::create()
+{
 	/*	Creacion de todo el mundo excepto el avion del jugador: se añade al elegirlo en el
 	*	loading state																	*/
 	// *****************************************************************************************
@@ -45,7 +45,8 @@ void World::create() {
 	// *****************************************************************************************
 }
 
-void World::addPlayer() {
+void World::addPlayer()
+{
 	// PLAYER AIRPLANE ************************************************************************************
 
 	playerAir = new Airplane(worldInfo.playerModel, NULL);
@@ -66,8 +67,8 @@ void World::addPlayer() {
 	playerAir->createTorpedos();
 }
 
-void World::addPlayerConst() {
-
+void World::addPlayerConst()
+{
 	// PLAYER SHIP ************************************************************************************
 
 	playerShip = new EntityCollider();
@@ -116,8 +117,8 @@ void World::addPlayerConst() {
 	root->addChild(init_zone);
 }
 
-void World::addWorldConst() {
-	
+void World::addWorldConst()
+{
 	Game* game = Game::getInstance();
 
 	// WORLD
@@ -206,14 +207,16 @@ void World::removeAirplaneFromMinimap(Entity* plane)
 		airplanes.erase(it);
 }
 
-void World::setGameMode() {
+void World::setGameMode()
+{
 
 	Game* game = Game::getInstance();
 
 	// TODO
 }
 
-bool World::isGameOver() {
+bool World::isGameOver()
+{
 
 	// aqui tratamos de averiguar si se ha llegado al final del juego
 
@@ -225,7 +228,7 @@ bool World::isGameOver() {
 	*  pero solo acaba si el barco muere!!! 
 	*/
 
-	if (enemyShip->life <= 0)
+	if (enemyShip->destroyed)
 		return true;
 
 	// si todo sigue igual:

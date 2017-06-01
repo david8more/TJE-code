@@ -65,6 +65,14 @@ void IAController::update(float seconds_elapsed)
 
 	}
 
+	if (controlled->life < 50.0)
+	{
+		speed *= 1.5;
+		controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
+		return;
+	}
+
+
 	// rotaciones
 
 	if (to_target.length())
@@ -100,13 +108,6 @@ void IAController::update(float seconds_elapsed)
 	}
 
 	controlled->model.rotateLocal(angle * seconds_elapsed * 5, axis);
-
-	if (controlled->life < 50.0)
-	{
-		speed *= 1.25;
-		controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
-		return;
-	}
 
 	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
 

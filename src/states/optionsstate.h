@@ -59,11 +59,6 @@ public:
 	Camera cam2D;
 	Mesh quad;
 
-	// BASS
-	int s_sample;
-	int s_channel;
-	HCHANNEL hSampleChannel;
-
 	// Index of the current selected menu item
 	int currentSelection;
 

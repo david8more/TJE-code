@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#define DEBUG 1
+#define DEBUG 0
 
 //some globals
 Game* Game::instance = NULL;
@@ -39,7 +39,7 @@ Game::Game(SDL_Window* window)
 	joystick = NULL;
 	start = false;
 	mouse_locked = false;
-	music_enabled = false;
+	music_enabled = true;
 	effects_enabled = true; 
 	bkg_music_playing = false;
 	

@@ -3,6 +3,7 @@
 #include "../utils.h"
 #include "../mesh.h"
 #include "../texture.h"
+#include "../soundmanager.h"
 #include "../shader.h"
 #include "optionsstate.h"
 #include "../bass.h"
@@ -41,10 +42,6 @@ void OptionsState::onEnter()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	currentSelection = 0;
-
-	MenuState* mState = MenuState::getInstance( game->sManager );
-
-	hSampleChannel = mState->hSampleChannel;
 }
 
 void OptionsState::render() {
@@ -217,16 +214,16 @@ void OptionsState::onLeave( int fut_state ){
 
 void OptionsState::upVol()
 {
-	if(game->BCK_VOL < 1.0) game->BCK_VOL += 0.1;
-	BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
-
+	if(game->BCK_VOL < 1.0)
+		game->BCK_VOL += 0.1;
+	SoundManager::getInstance()->setVolume("lluvia", game->BCK_VOL);
 }
 
 void OptionsState::downVol()
 {
-	if (game->BCK_VOL > 0.0) game->BCK_VOL -= 0.1;
-	BASS_ChannelSetAttribute(hSampleChannel, BASS_ATTRIB_VOL, game->BCK_VOL);
-
+	if (game->BCK_VOL > 0.0)
+		game->BCK_VOL -= 0.1;
+	SoundManager::getInstance()->setVolume("lluvia", game->BCK_VOL);
 }
 
 void OptionsState::selectionUp()
@@ -235,12 +232,8 @@ void OptionsState::selectionUp()
 	if (currentSelection==-1)
 		currentSelection = 6;
 
-	if (!game->effects_enabled)
-		return;
-
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void OptionsState::selectionDown()
@@ -249,39 +242,31 @@ void OptionsState::selectionDown()
 	if (currentSelection==7)
 		currentSelection = 0;
 
-	if (!game->effects_enabled)
-		return;
-
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void OptionsState::selectionChosen()
 {
 	if (game->effects_enabled)
 	{
-		s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-		s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-		BASS_ChannelPlay(s_channel, false); // play it
+		SoundManager::getInstance()->playSound("move_menu", false);
 	}
 
 	switch (currentSelection)
 	{
 	case MUSIC:
 		game->music_enabled = !game->music_enabled;
-		if(game->bkg_music_playing){
-			BASS_ChannelStop(hSampleChannel); // stop music 
+		if(!game->music_enabled)
+		{
+			SoundManager::getInstance()->stopSound("lluvia");
 			game->bkg_music_playing = false;
 		}
-		else {
-			int b_sample = BASS_SampleLoad(false, "data/sounds/lluvia.wav", 0L, 0, 1, BASS_SAMPLE_LOOP);
-			hSampleChannel = BASS_SampleGetChannel(b_sample, false); // get a sample channel
-			BASS_ChannelPlay(hSampleChannel, false); // play it
+		else 
+		{
+			SoundManager::getInstance()->playSound("lluvia", true);
 			game->bkg_music_playing = true;
 		}
-		break;
-	case MUSIC_VOL:
 		break;
 	case EFFECTS:
 		game->effects_enabled = !game->effects_enabled;

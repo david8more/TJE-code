@@ -7,6 +7,7 @@
 #include "../shader.h"
 #include "../bass.h"
 #include "../entity.h"
+#include "../soundmanager.h"
 #include "state.h"
 #include "menustate.h"
 #include "playstate.h"
@@ -183,15 +184,12 @@ void Howto::update(double time_elapsed)
 void Howto::selectionUp()
 {
 	currentSelection--;
+
 	if (currentSelection == -1)
 		currentSelection = 3;
 
-	if (!game->effects_enabled)
-		return;
-
-	int s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	int s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void Howto::selectionDown()
@@ -200,22 +198,14 @@ void Howto::selectionDown()
 	if (currentSelection == 4)
 		currentSelection = 0;
 
-	if (!game->effects_enabled)
-		return;
-
-	int s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	int s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	if (game->effects_enabled)
+		SoundManager::getInstance()->playSound("move_menu", false);
 }
 
 void Howto::selectionChosen()
 {
 	if (game->effects_enabled)
-	{
-		int s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-		int s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-		BASS_ChannelPlay(s_channel, false); // play it
-	}
+		SoundManager::getInstance()->playSound("move_menu", false);
 
 	if(currentSelection == BACK)
 		SManager->changeCurrentState(MenuState::getInstance(SManager));

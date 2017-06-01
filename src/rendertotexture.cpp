@@ -2,42 +2,10 @@
 #include <iostream>
 
 //typedef void (APIENTRY * glGenFramebuffers_func)(GLsizei n, GLuint *framebuffers); glGenFramebuffers_func glGenFramebuffersEXT = NULL;
-#ifndef USE_GLEW
-	REGISTER_GLEXT( void, glGenFramebuffersEXT, GLsizei n, GLuint *framebuffers )
-
-	REGISTER_GLEXT( void, glDeleteFramebuffersEXT, GLsizei n, const GLuint *framebuffers );
-	REGISTER_GLEXT( void, glDeleteRenderbuffersEXT, GLsizei n, const GLuint *renderbuffers );
-	REGISTER_GLEXT( void, glBindFramebufferEXT, GLenum target, GLuint framebuffer);
-	REGISTER_GLEXT( void, glGenRenderbuffersEXT, GLsizei n, GLuint *renderbuffers);
-	REGISTER_GLEXT( void, glBindRenderbufferEXT, GLenum target, GLuint renderbuffer);
-	REGISTER_GLEXT( void, glRenderbufferStorageEXT, GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-	REGISTER_GLEXT( void, glFramebufferRenderbufferEXT, GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-
-	REGISTER_GLEXT( void, glFramebufferTexture2DEXT, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level );
-	REGISTER_GLEXT( GLenum, glCheckFramebufferStatusEXT, GLenum target);
-#endif
-
 bool RenderToTexture::init()
 {
 	static bool firsttime = true;
 
-	//avoid doing this more than once
-	if(firsttime)
-	{
-		#ifndef USE_GLEW
-			IMPORT_GLEXT( glGenFramebuffersEXT );
-			IMPORT_GLEXT( glDeleteFramebuffersEXT );
-			IMPORT_GLEXT( glDeleteRenderbuffersEXT );
-			IMPORT_GLEXT( glBindFramebufferEXT );
-			IMPORT_GLEXT( glGenRenderbuffersEXT );
-			IMPORT_GLEXT( glBindRenderbufferEXT );
-			IMPORT_GLEXT( glRenderbufferStorageEXT );
-			IMPORT_GLEXT( glFramebufferRenderbufferEXT );
-			IMPORT_GLEXT( glFramebufferTexture2DEXT );
-			IMPORT_GLEXT( glCheckFramebufferStatusEXT );
-		#endif
-	}
-	
 	firsttime = false;
 	return true;
 }
