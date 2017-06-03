@@ -125,8 +125,7 @@ void Entity::destroy_entities()
 	for (int i = 0; i < destroy_pending.size(); i++)
 	{
 		Entity* ent = destroy_pending[i];
-      	//
-		std::cout << "Destroying " << ent->name << std::endl;
+		//std::cout << "Destroying " << ent->name << std::endl;
 		if(ent->parent != NULL)
 		   ent->parent->removeChild(ent); // desvincular hijo del padre
 		delete(ent);
@@ -307,7 +306,7 @@ void EntityCollider::testSphereCollision()
 		Vector3 my_position = model * my_mesh->header.center;
 		Vector3 enemy_position = current->model * enemy_mesh->header.center;
 
-		float margin = 3.0;
+		float margin = current->name == "ship" ? 15.0 : 3.0;
 		float dist = my_position.distance(enemy_position) + margin;
 
 		if (dist < (my_mesh->header.radius + enemy_mesh->header.radius))

@@ -25,7 +25,7 @@ World * world = NULL;
 Mesh debug_mesh;
 bool pause = false;
 
-bool controlIA = false;
+int controlIA = 0;
 
 RenderToTexture * rt = NULL;
 
@@ -55,7 +55,7 @@ void PlayState::init()
 	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
-	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 5.0, 50000.f);
+	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 1.0, 25000.f);
 
 	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
 
@@ -84,7 +84,7 @@ void PlayState::init()
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 30, 30);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 50, 50, true);
 
 	crosshair_tex = "data/textures/crosshair.tga";
 
@@ -200,8 +200,14 @@ void PlayState::update(double seconds_elapsed)
 	
 	game->fixed_camera->lookAt(eye, player->model * viewtarget, player->model.rotateVector(Vector3(0, 1, 0)));
 
-	if (controlIA)
+	if (controlIA == 1)
+		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ship"));
+	if (controlIA == 2)
 		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_1"));
+	if (controlIA == 3)
+		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_2"));
+	if (controlIA == 4)
+		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_3"));
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -259,7 +265,6 @@ void PlayState::renderGUI() {
 	Texture::Get(crosshair_tex.c_str())->bind();
 	quad.render(GL_TRIANGLES);
 	Texture::Get(crosshair_tex.c_str())->unbind();
-	glColor4f(1.f, 1.f, 1.f, 1.f);
 
 	// M60 overheat HUD
 
@@ -291,13 +296,12 @@ void PlayState::renderGUI() {
 	// MISSILES
 
 	ss.str("");
-	ss << "Torpedos left: " << world->playerAir->torpedosLeft;
-	drawText(game->window_width*0.75, game->window_height*0.1, ss.str(), Vector3(1, 0, 0), 2.0);
+	ss << "Torpedos left: " << player->torpedosLeft;
+	drawText(game->window_width*0.75, game->window_height*0.97, ss.str(), Vector3(1, 0, 0), 2.0);
 
-	Airplane* p = (Airplane*)Entity::getEntity("player");
 	ss.str("");
-	ss << p->life << ": " << p->name;
-	drawText(game->window_width*0.1, game->window_height*0.1, ss.str(), Vector3(0, 1, 0), 3.0);
+	ss << player->life << ": " << player->name;
+	drawText(game->window_width*0.1, 25, ss.str(), Vector3(0, 1, 0), 1.5);
 
 	// vidas enemigas
 	int i = 0;
@@ -309,16 +313,16 @@ void PlayState::renderGUI() {
 			ss.str("");
 
 			ss << EntityCollider::dynamic_colliders[i]->life << ": " << EntityCollider::dynamic_colliders[i]->name;
-			drawText(game->window_width*0.1, 125 + i * 40, ss.str(), Vector3(1, 0, 0), 3.0);
+			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
 		}
 	}
 
-	Camera cam2D;
-	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-
 	// set mark enemy airplanes
-	Texture * t = Texture::Get("data/textures/crosshair.tga");
+	Texture * t = Texture::Get("data/textures/mark.tga");
 	t->bind();
+
+	Camera* cam3D = Game::instance->current_camera;
+	cam2D.set();
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
@@ -327,10 +331,8 @@ void PlayState::renderGUI() {
 		if (current == player)
 			continue;
 
-		Camera* cam3D = Game::instance->current_camera;
-
 		Vector3 pos3D = current->getPosition();
-		Vector3 pos2D = cam2D.project(pos3D, game->window_width, game->window_height);
+		Vector3 pos2D = cam3D->project(pos3D, game->window_width, game->window_height);
 
 		if (pos2D.z > 1)
 			continue;
@@ -344,14 +346,17 @@ void PlayState::renderGUI() {
 		if (pos2D.y > game->window_height)
 			pos2D.y = game->window_height;
 
-		float size = cam2D.getProjectScale(pos3D, 50.0);
+		float size = cam3D->getProjectScale(pos3D, 50.0);
 		if (size < 25.0)
 			size = 25.0;
+		if (size > 50.0)
+			size = 50.0;
 
+		float gradual = (size - 25) / (50 - 25);
+		glColor4f(1.0, 1.0, 1.0, 1-  gradual);
+		
 		Mesh quads;
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		//quad.createQuad(pos2D.x, game->window_height - pos2D.y, size, size);
-		quads.createQuad(500, 400, size, size);
+		quads.createQuad(pos2D.x, game->window_height - pos2D.y, size, size);
 		quads.render(GL_TRIANGLES);
 	}
 
@@ -362,7 +367,7 @@ void PlayState::renderGUI() {
 	Camera camUp;
 	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
 	Vector3 center = player->model * Vector3();
-	Vector3 eye = center + Vector3(0, 5000, 0);
+	Vector3 eye = center + Vector3(0, 7000, 0);
 	Vector3 up = Vector3(0, 0, 1);
 	camUp.lookAt(eye, center, up);
 	camUp.set();
@@ -456,7 +461,10 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		break;
 	case SDLK_6:
 		game->current_camera = game->free_camera;
-		controlIA = !controlIA;
+		controlIA++;
+		break;
+	case SDLK_7:
+		World::instance->playerShip->shoot();
 		break;
 	case SDLK_p:
 		pause = !pause;

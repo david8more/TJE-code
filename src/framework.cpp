@@ -11,6 +11,14 @@
 
 float random() { return (rand() % 100000) / 100000.0f; }
 
+bool in(float x, float a, float b)
+{
+	if (x >= a)
+		if (x <= b)
+			return true;
+	return false;
+}
+
 //**************************************
 float Vector2::distance(const Vector2& v)
 {

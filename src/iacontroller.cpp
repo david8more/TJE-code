@@ -43,7 +43,7 @@ void IAController::update(float seconds_elapsed)
 	Vector3 playerPos = playerAir->getPosition();
 	//
 
-	double speed = 50;
+	double speed = 75.0;
 
 	Vector3 to_target = target - controlled->getPosition();
 	Vector3 targetToPlayer = to_target;
@@ -53,7 +53,7 @@ void IAController::update(float seconds_elapsed)
 
 	// waypoints: si estamos lejos, si tiene poca vida o si tiene que bajar más de la cuenta
 
-	if (distance > 500 || controlled->life < 50.0 || controlled->getPosition().y < 475.0)
+	if (distance > 500.0 || controlled->life < 50.0 || controlled->getPosition().y < 475.0)
 	{
 		to_target = waypoints[current_Wp] - controlled->getPosition();
 		float distance_wp = to_target.length();
@@ -108,10 +108,9 @@ void IAController::update(float seconds_elapsed)
 	}
 
 	controlled->model.rotateLocal(angle * seconds_elapsed * 5, axis);
-
 	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
-	if (distance < 400.0 && (abs(angleWithPlayer) > 0.05))
+	if (distance < 300.0 && (abs(angleWithPlayer) > 0.05))
 	{
 		controlled->shoot();
 	}

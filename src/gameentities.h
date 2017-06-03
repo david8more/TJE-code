@@ -4,11 +4,12 @@
 #include "entity.h"
 
 class IAController;
+class Missile;
 
 class Airplane : public EntityCollider {
 public:
 
-	Airplane(int model, IAController* controller, bool culling = true);
+	Airplane(int model, bool IA_PLANE, bool culling = true);
 	~Airplane();
 
 	IAController* controller;
@@ -46,6 +47,29 @@ public:
 
 // *******************************************************************
 
+class Ship : public EntityCollider {
+
+public:
+	Ship(bool ia);
+	~Ship();
+
+	std::string state;
+
+	float damage;
+	float last_shoot;
+
+	void set(const char * mesh, const char * texture, const char * shader);
+	void render(Camera * camera);
+	void update(float elapsed_time);
+	void shoot();
+	void onCollision(EntityCollider* collided_with);
+
+	std::vector<Missile*> missiles;
+
+};
+
+// *******************************************************************
+
 class Torpedo : public EntityCollider {
 public:
 
@@ -55,6 +79,22 @@ public:
 	float ttl;
 	float max_ttl;
 	bool ready;
+
+	void update(float elapsed_time);
+	void activate();
+	void onCollision(EntityCollider* collided_with);
+};
+
+// *******************************************************************
+
+class Missile : public EntityCollider {
+public:
+
+	Missile(bool culling = true);
+	~Missile();
+
+	float ttl;
+	float max_ttl;
 
 	void update(float elapsed_time);
 	void activate();
@@ -88,5 +128,7 @@ public:
 
 	void render(Camera* cam);
 };
+
+// *******************************************************************
 
 #endif

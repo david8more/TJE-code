@@ -18,7 +18,7 @@ void main()
 
 	vec4 color = text;
 	
-	float time_t = sin(u_time * 0.1) * 0.5 + 0.5;
+	float time_t = sin(u_time * 0.05) * 0.5 + 0.5;
 
 	color *= mix(day, night, 1 - time_t);
 

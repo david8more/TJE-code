@@ -192,5 +192,6 @@ Vector3 RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal
 bool RaySphereCollision(const Vector3& center, float radius, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result );
 
 float random();
+bool in(float x, float a, float b);
 
 #endif

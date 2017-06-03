@@ -20,8 +20,6 @@ SoundManager::~SoundManager()
 
 void SoundManager::playSound(const std::string& name, bool loop)
 {
-	std::cout << "playing sound.. " << name << std::endl;
-
 	std::string sound = "data/sounds/" + name + ".wav";
 
 	if (name == "shot")

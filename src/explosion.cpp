@@ -10,7 +10,7 @@ Explosion::Explosion(Vector3 collisionPoint)
 {
 	collision = collisionPoint;
     time = 0.0;
-    lifetime = 3.5;
+    lifetime = 3.0;
 }
 
 Explosion::~Explosion() {
@@ -34,7 +34,6 @@ void Explosion::render(Camera * camera)
 	{
 		Explosion * current = v_explosions[i];
 
-        float w = 12.0, h = 12.0;
         Vector3 ep = current->collision;
 		Vector3 up = camera->up;
 		Vector3 side = (camera->center - camera->eye).cross(camera->up);
@@ -42,8 +41,8 @@ void Explosion::render(Camera * camera)
         up.normalize();
         side.normalize();
 
-		Vector3 Hm = up*h*0.5;
-		Vector3 Wm = side*w*0.5;
+		Vector3 Hm = up*15.0*0.5;
+		Vector3 Wm = side*15.0*0.5;
         					
         m.vertices.push_back( ep+(Hm + Wm));
         m.vertices.push_back( ep+(-Hm + Wm));

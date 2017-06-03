@@ -25,6 +25,7 @@ void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 {
 	World* world = World::getInstance();
 	world->reset();
+	Entity::destroy_entities();
 	//exit(1);
 }
 
