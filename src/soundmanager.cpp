@@ -22,7 +22,7 @@ void SoundManager::playSound(const std::string& name, bool loop)
 {
 	std::string sound = "data/sounds/" + name + ".wav";
 
-	if (name == "shot")
+	/*if (name == "shot")
 	{
 		HSAMPLE hSample = BASS_SampleLoad(false, sound.c_str(), 0L, 0, 1, loop ? BASS_SAMPLE_LOOP : 0);
 		HCHANNEL hSampleChannel = BASS_SampleGetChannel(hSample, false);
@@ -45,7 +45,7 @@ void SoundManager::playSound(const std::string& name, bool loop)
 		}
 		BASS_ChannelPlay(hSampleChannel, loop);
 		return;
-	}
+	}*/
 
 	HSAMPLE hSample = BASS_SampleLoad(false, sound.c_str(), 0L, 0, 1, loop ? BASS_SAMPLE_LOOP : 0);
 	HCHANNEL hSampleChannel = BASS_SampleGetChannel(hSample, false);

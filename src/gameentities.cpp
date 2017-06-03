@@ -221,8 +221,8 @@ void Airplane::shoot() {
 		case SPITFIRE:
 			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
-			Explosion::createExplosion(model*Vector3(1.9f, -0.25f, 3.0));
-			Explosion::createExplosion(model*Vector3(-2.f, -0.25f, 3.0));
+			Explosion::createExplosion(model*Vector3(1.9f, -0.25f, 3.0), 2.5);
+			Explosion::createExplosion(model*Vector3(-2.f, -0.25f, 3.0), 2.5);
 			break;
 		case P38:
 			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
@@ -365,23 +365,22 @@ Ship::Ship(bool ia)
 
 	set("barco.ASE", "data/textures/barco.tga", shader.c_str());
 	setStatic();
+	setDynamic();
 
 	if (ia)
 	{
+		uid = Airplane::ENEMY_SHIP;
 		setLife(1000);
 		model.setTranslation(2000, -10, 1700);
-
-		setDynamic();
 	}
 	else
 	{
+		uid = Airplane::PLAYER_SHIP;
 		model.setRotation(180 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 		model.traslate(1600, -10, 1700);
 		life = 750;
-
-		if (Game::getInstance()->ffire_on)
-			setDynamic();
 	}
+
 
 	EntityMesh* turretOne = new EntityMesh();
 
@@ -411,7 +410,7 @@ Ship::Ship(bool ia)
 
 	// ship properties
 
-	last_shoot = 0;
+	last_shoot = getTime() + 5000;
 }
 
 Ship::~Ship()
@@ -455,18 +454,31 @@ void Ship::render(Camera * camera) {
 	}
 }
 
-void Ship::update(float elapsed_time) {
+void Ship::update(float elapsed_time)
+{
+	// each ship has a different probability of shooting 
+	
+	int r;
+	if (uid == Airplane::ENEMY_SHIP) // 1/3
+		r = rand() % 3;
+	else if (uid == Airplane::PLAYER_SHIP) // 1/4
+		r = rand() % 4;
 
 	if (getTime() > last_shoot)
 	{
-		shoot();
-		last_shoot = getTime() + 2500 + random()*2500;
+		std::cout << r << std::endl;
+		if (r == 1)
+			shoot();
+		last_shoot = getTime() + 1500 +random() * 1500;
 	}
 }
 
 void Ship::shoot()
 {
-	SoundManager::getInstance()->playSound("missil2", false);
+	//std::string a = uid == Airplane::ENEMY_SHIP ? "Enemy" : "player ";
+	//std::cout << a  << " shooting" << std::endl;
+
+	SoundManager::getInstance()->playSound("cannonship", false);
 
 	Missile * missile = new Missile(NO_CULLING);
 	missile->model.traslate(15.f, 5.25f, 66.f);
@@ -479,7 +491,7 @@ void Ship::shoot()
 	missiles.push_back(missile);
 	missile->activate();
 
-	Explosion::createExplosion(missile->getPosition());
+	Explosion::createExplosion(missile->getPosition(), 7.5);
 
 	missile = new Missile(NO_CULLING);
 	missile->model.traslate(15.f, 8, -63);
@@ -487,7 +499,7 @@ void Ship::shoot()
 	missiles.push_back(missile);
 	missile->activate();
 
-	Explosion::createExplosion(missile->getPosition());
+	Explosion::createExplosion(missile->getPosition(), 7.5);
 
 }
 
@@ -589,7 +601,7 @@ Missile::Missile(bool culling)
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
-	max_ttl = 15.0;
+	max_ttl = 10.0;
 	ttl = max_ttl;
 }
 
@@ -606,7 +618,7 @@ void Missile::update(float elapsed_time)
 
 	testSphereCollision();
 
-	model.traslateLocal(0, 0, elapsed_time * 75.0);
+	model.traslateLocal(0, 0, elapsed_time * 150.0);
 	ttl -= elapsed_time;
 
 }
@@ -626,11 +638,11 @@ void Missile::onCollision(EntityCollider* collided_with)
 	if (collided_with == PlayerController::getInstance()->player)
 		return;
 
-	Explosion::createExplosion(collided_with->model * Vector3(0, 15, 7));
-	Explosion::createExplosion(collided_with->model * Vector3(0, 15, -7));
+	Explosion::createExplosion(collided_with->model * Vector3(0, 15, random() * 10), 20.0);
+	Explosion::createExplosion(collided_with->model * Vector3(0, 15, -random() * 10), 20.0);
 	SoundManager::getInstance()->playSound("explosion", false);
 
-	collided_with->life -= random()*15.0;
+	collided_with->life -= random()*25.0;
 
 	if (collided_with->life <= 0)
 	{
@@ -702,6 +714,16 @@ void Clouds::render(Camera* camera)
 	for (int i = 0; i < clouds.size(); i++)
 	{
 		sCloudInfo& c = clouds[i];
+		/*
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
+		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
+		*/
+
 		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos + up * c.size * 0.5);
 		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
 		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);

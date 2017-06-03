@@ -43,6 +43,11 @@ public:
 	void torpedoShoot();
 	void onCollision(EntityCollider* collided_with);
 	void unboundController();
+
+	enum {
+		PLAYER_SHIP = 1,
+		ENEMY_SHIP = 2
+	};
 };
 
 // *******************************************************************
@@ -122,11 +127,11 @@ public:
 		float distance;
 	}sCloudInfo;
 
-	std::vector<sCloudInfo> clouds;
-
 	Clouds();
 
 	void render(Camera* cam);
+
+	std::vector<sCloudInfo> clouds;
 };
 
 // *******************************************************************

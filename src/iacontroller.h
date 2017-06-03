@@ -6,8 +6,6 @@
 
 class IAController : public Controller{
 
-private:
-
 public:
 	IAController();
 	~IAController();
@@ -21,6 +19,11 @@ public:
 	void setTarget(Vector3 target);
 
 	std::vector<Vector3> waypoints;
+
+	Vector3 firstWP;
+	Vector3 lastWP;
+	int totalWP;
+	float distWP;
 };
 
 #endif // !IACONTROLLER_H

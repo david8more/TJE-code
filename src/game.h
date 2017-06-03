@@ -76,6 +76,8 @@ public:
 	void onKeyUp(SDL_KeyboardEvent event);
 	void onMouseButton( SDL_MouseButtonEvent event );
     void onResize( SDL_Event e );
+
+	bool friendlyFireDisabled();
     
 	void setWindowSize(int width, int height);
 		 

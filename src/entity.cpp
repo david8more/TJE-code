@@ -314,7 +314,6 @@ void EntityCollider::testSphereCollision()
 			//std::cout << "Collided with:" << current->name << std::endl;
 			this->onCollision(current);
 		}
-
 	}
 
 }

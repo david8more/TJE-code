@@ -6,20 +6,18 @@
 
 std::vector<Explosion*> Explosion::v_explosions;
 
-Explosion::Explosion(Vector3 collisionPoint)
+Explosion::Explosion() : time(0.0)
+{ }
+
+Explosion::~Explosion()
+{ }
+
+void Explosion::createExplosion(Vector3 atCollision, float size, float ttl)
 {
-	collision = collisionPoint;
-    time = 0.0;
-    lifetime = 3.0;
-}
-
-Explosion::~Explosion() {
-
-}
-
-void Explosion::createExplosion(Vector3 atCollision)
-{
-    Explosion * newExplosion = new Explosion(atCollision);
+    Explosion * newExplosion = new Explosion();
+	newExplosion->collision = atCollision;
+	newExplosion->ttl = ttl;
+	newExplosion->size = size;
     Explosion::v_explosions.push_back(newExplosion);
 }
 
@@ -34,36 +32,40 @@ void Explosion::render(Camera * camera)
 	{
 		Explosion * current = v_explosions[i];
 
-        Vector3 ep = current->collision;
+        Vector3 c = current->collision;
 		Vector3 up = camera->up;
-		Vector3 side = (camera->center - camera->eye).cross(camera->up);
+		Vector3 right = (camera->center - camera->eye).cross(up);
 
         up.normalize();
-        side.normalize();
+        right.normalize();
 
-		Vector3 Hm = up*15.0*0.5;
-		Vector3 Wm = side*15.0*0.5;
-        					
-        m.vertices.push_back( ep+(Hm + Wm));
-        m.vertices.push_back( ep+(-Hm + Wm));
-        m.vertices.push_back( ep+(-Hm - Wm));
+		float size = current->size;
 
-        m.vertices.push_back( ep+(Hm-Wm));
-        m.vertices.push_back( ep+(Hm + Wm));
-        m.vertices.push_back( ep+(-Hm - Wm));
+		m.vertices.push_back(c - right * size * 0.5 + up * size * 0.5);
+		m.vertices.push_back(c + right * size * 0.5 + up * size * 0.5);
+		m.vertices.push_back(c - right * size * 0.5 - up * size * 0.5);
 
-        float f = current->time / current->lifetime;
-        unsigned frame = f * 25.0;
+		m.vertices.push_back(c + right * size * 0.5 + up * size * 0.5);
+		m.vertices.push_back(c + right * size * 0.5 - up * size * 0.5);
+		m.vertices.push_back(c - right * size * 0.5 - up * size * 0.5);
 
-        float xt = frame % 5, yt = frame / 5;
-        float step = 0.2f;
+		// coordenadas textura 0..1
+		// de un fuego a otro van 1/5
+		float step =  1 / 5.f;
 
-        m.uvs.push_back(Vector2(xt*step, yt*step + step));
-        m.uvs.push_back(Vector2(xt*step + step, yt*step + step));
-        m.uvs.push_back(Vector2(xt*step, yt*step));
-        m.uvs.push_back(Vector2(xt*step + step, yt*step +step));
-        m.uvs.push_back(Vector2(xt*step + step, yt*step));
-        m.uvs.push_back(Vector2(xt*step, yt*step));
+		float f = current->time / current->ttl;
+		unsigned frame = f * 25.0;
+
+		int x = frame % 5;
+		int y = frame / 5.0;
+
+		m.uvs.push_back(Vector2(x * step, y * step + step));
+		m.uvs.push_back(Vector2(x * step + step, y * step + step));
+		m.uvs.push_back(Vector2(x * step, y * step));
+		
+		m.uvs.push_back(Vector2(x * step + step, y * step + step));
+		m.uvs.push_back(Vector2(x * step + step, y * step));
+		m.uvs.push_back(Vector2(x * step, y * step));
     }
 
 	Texture * texture = Texture::Get("data/textures/explosion.tga");
@@ -95,7 +97,7 @@ void Explosion::update(float elapsed_time)
 
 	Explosion* first = *v_explosions.begin();
 
-    if(first->time >= first->lifetime)
+    if(first->time >= first->ttl)
 	{
 		v_explosions.erase(v_explosions.begin());
     }

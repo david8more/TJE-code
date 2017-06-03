@@ -140,7 +140,6 @@ void PlayState::render()
 	renderWorld(game->current_camera);
 
 	rt->disable();
-	
 
 	Camera cam2D;
 	cam2D.setOrthographic(-1, 1, -1, 1, -1, 1);
@@ -168,6 +167,13 @@ void PlayState::render()
 
 void PlayState::update(double seconds_elapsed)
 {
+
+	if(game->keystate[SDL_SCANCODE_7])
+		player->speed = 1;
+
+	Vector3 p = player->getPosition();
+	std::cout << p.x << ".." << p.y << ".." << p.z << std::endl;
+
 	PlayerController* player_controller = PlayerController::getInstance();
 
 	if (game->current_camera == game->free_camera)
@@ -215,7 +221,8 @@ void PlayState::update(double seconds_elapsed)
 	// comprobar si es fin del juego
 	if (world->isGameOver())
 	{
-		std::cout << "Game has finished!" << std::endl;
+		std::cout << "***** Game has finished! *****" << std::endl;
+		system("pause");
 		exit(1);
 		//SManager->changeCurrentState(EndingState::getInstance(SManager));
 	}
@@ -299,10 +306,6 @@ void PlayState::renderGUI() {
 	ss << "Torpedos left: " << player->torpedosLeft;
 	drawText(game->window_width*0.75, game->window_height*0.97, ss.str(), Vector3(1, 0, 0), 2.0);
 
-	ss.str("");
-	ss << player->life << ": " << player->name;
-	drawText(game->window_width*0.1, 25, ss.str(), Vector3(0, 1, 0), 1.5);
-
 	// vidas enemigas
 	int i = 0;
 	
@@ -313,7 +316,8 @@ void PlayState::renderGUI() {
 			ss.str("");
 
 			ss << EntityCollider::dynamic_colliders[i]->life << ": " << EntityCollider::dynamic_colliders[i]->name;
-			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
+			Vector3 c = EntityCollider::dynamic_colliders[i]->name == "player" ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
+			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), c, 1.5);
 		}
 	}
 
@@ -462,9 +466,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_6:
 		game->current_camera = game->free_camera;
 		controlIA++;
-		break;
-	case SDLK_7:
-		World::instance->playerShip->shoot();
 		break;
 	case SDLK_p:
 		pause = !pause;

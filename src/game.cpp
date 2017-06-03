@@ -149,3 +149,8 @@ void Game::setWindowSize(int width, int height)
 	window_height = height;
 }
 
+bool Game::friendlyFireDisabled()
+{
+	return true;
+}
+

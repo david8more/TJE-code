@@ -1,22 +1,28 @@
 #include "iacontroller.h"
 #include "World.h"
 #include "game.h"
+#include "framework.h"
 
 IAController::IAController()
 {
-	/*
-	1100, 1100
-	1100, 2100
-	2100, 1100
-	2100, 2100
-	*/
 	current_Wp = 0;
+	totalWP = 50;
 
-	waypoints.push_back(Vector3(1100, 500, 1100));
-	waypoints.push_back(Vector3(1100, 500, 2100));
-	waypoints.push_back(Vector3(2100, 500, 2100));
-	waypoints.push_back(Vector3(2100, 600, 2500));
-	waypoints.push_back(Vector3(2100, 550, 1100));
+	float fx = random() * 1000;
+	float fy = random() * 200;
+
+	Vector3 c(2000, -10, 1700);
+
+	float radius = 670.0;
+
+	for (float i = 0; i < 180 * DEG2RAD * totalWP; i += 10 * DEG2RAD)
+	{
+		float x = c.x + cos(i) * radius;
+		float y = 500.0;
+		float z = c.z + sin(i) * radius;
+
+		waypoints.push_back(Vector3(x, y, z));
+	}
 }
 
 IAController::~IAController()
