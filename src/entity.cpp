@@ -295,7 +295,7 @@ void EntityCollider::testSphereCollision()
 
 		// no queremos hacer las colisiones jugador/barcos, se hará con el rayo
 		// -> tiene más precision
-		if (current == this)
+		if (current == this || current->uid == this->uid)
 			continue;
 
 		//std::cout << this->name << ": " << current->name << endl;

@@ -117,7 +117,7 @@ void World::addEnemies() {
 	// ***********************************
 	std::stringstream ss;
 
-	for (int i = 1; i < 8; i++) {
+	for (int i = 1; i < 2; i++) {
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
 		enemyAir->uid = 1000 + i;
 		ss.str("");

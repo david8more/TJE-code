@@ -25,7 +25,6 @@
 Airplane::Airplane(int model, bool ia, bool culling) {
 
 	planeModel = model;
-	state = "waypoints";
 
 	EntityCollider* wh_right = new EntityCollider();
 	wh_right->setName("right wheel");
@@ -221,8 +220,6 @@ void Airplane::shoot() {
 		case SPITFIRE:
 			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
-			Explosion::createExplosion(model*Vector3(1.9f, -0.25f, 3.0), 2.5);
-			Explosion::createExplosion(model*Vector3(-2.f, -0.25f, 3.0), 2.5);
 			break;
 		case P38:
 			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
@@ -411,6 +408,7 @@ Ship::Ship(bool ia)
 	// ship properties
 
 	last_shoot = getTime() + 5000;
+	cannonReady = false;
 }
 
 Ship::~Ship()
@@ -456,6 +454,9 @@ void Ship::render(Camera * camera) {
 
 void Ship::update(float elapsed_time)
 {
+	if (!Game::instance->start)
+		return;
+	
 	// each ship has a different probability of shooting 
 	
 	int r;
@@ -466,25 +467,35 @@ void Ship::update(float elapsed_time)
 
 	if (getTime() > last_shoot)
 	{
-		std::cout << r << std::endl;
+		//std::cout << r << std::endl;
 		if (r == 1)
 			shoot();
-		last_shoot = getTime() + 1500 +random() * 1500;
+		last_shoot = getTime() + 3000;
 	}
 }
 
+
 void Ship::shoot()
 {
+
+	//if (uid == Airplane::ENEMY_SHIP)
+	//	return;
+
 	//std::string a = uid == Airplane::ENEMY_SHIP ? "Enemy" : "player ";
 	//std::cout << a  << " shooting" << std::endl;
 
 	SoundManager::getInstance()->playSound("cannonship", false);
 
 	Missile * missile = new Missile(NO_CULLING);
-	missile->model.traslate(15.f, 5.25f, 66.f);
+	missile->uid = uid;
+
+	if(cannonReady)
+		missile->model.traslate(20.f, 5.25f, 66.f);
+	else 
+		missile->model.traslate(20.f, 8.f, -63.f);
+
 	float angleDisp = random()*(180 * DEG2RAD);
 	missile->model.rotateLocal(angleDisp, Vector3(0, 0, 1));
-	
 	//std::cout << angleDisp << std::endl;
 
 	this->addChild(missile);
@@ -493,14 +504,7 @@ void Ship::shoot()
 
 	Explosion::createExplosion(missile->getPosition(), 7.5);
 
-	missile = new Missile(NO_CULLING);
-	missile->model.traslate(15.f, 8, -63);
-	this->addChild(missile);
-	missiles.push_back(missile);
-	missile->activate();
-
-	Explosion::createExplosion(missile->getPosition(), 7.5);
-
+	cannonReady = !cannonReady;
 }
 
 void Ship::onCollision(EntityCollider* collided_with)
@@ -568,8 +572,8 @@ void Torpedo::onCollision(EntityCollider* collided_with)
 
 	//std::cout << "torpedo ha colisionado" << std::endl;
 	
-	Explosion::createExplosion(collided_with->model * Vector3(0, 15, 7));
-	Explosion::createExplosion(collided_with->model * Vector3(0, 15, -7));
+	Explosion::createExplosion(collided_with->model * Vector3());
+	Explosion::createExplosion(collided_with->model * Vector3());
 	SoundManager::getInstance()->playSound("explosion", false);
 
 	collided_with->life -= 450.0;
@@ -601,11 +605,89 @@ Missile::Missile(bool culling)
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
-	max_ttl = 10.0;
+	max_ttl = 3.0;
 	ttl = max_ttl;
 }
 
-Missile::~Missile() {}
+Missile::~Missile()
+{
+	rastro.clear();
+}
+
+void Missile::render(Camera* camera)
+{
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	if (alpha)
+	{
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	}
+
+	if (!depthTest)
+		glDisable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_FALSE);
+	if (!cullFace)
+		glDisable(GL_CULL_FACE);
+
+	shader->enable();
+	shader->setMatrix44("u_model", m);
+	shader->setMatrix44("u_mvp", mvp);
+	shader->setTexture("u_normal_texture", Texture::Get("data/textures/normal_water.tga"));
+	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
+	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
+	shader->setFloat("u_time", Game::getInstance()->time);
+	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
+	mesh->render(GL_TRIANGLES, shader);
+	shader->disable();
+
+	if (!cullFace)
+		glEnable(GL_CULL_FACE);
+
+	if (!depthTest)
+		glEnable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_TRUE);
+
+	if (alpha)
+	{
+		glDisable(GL_BLEND);
+	}
+
+	for (int i = 0; i < this->children.size(); i++)
+	{
+		this->children[i]->render(camera);
+	}
+
+	rastro.vertices.push_back(getPosition());
+	rastro.vertices.push_back(last_position);
+
+	float alpha = min((1 - pow(ttl / max_ttl, 2)), 0.5);
+
+	if (uid == Airplane::ENEMY_SHIP)
+	{
+		rastro.colors.push_back(Vector4(1.f, 0.15, 0.f, alpha));
+		rastro.colors.push_back(Vector4(1.f, 0.15, 0.f, alpha));
+	}
+	else
+	{
+		rastro.colors.push_back(Vector4(0.f, 0.15, 1.f, alpha));
+		rastro.colors.push_back(Vector4(0.f, 0.15, 1.f, alpha));
+	}
+		
+	if (!rastro.vertices.size())
+		return;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glLineWidth(1.5);
+	rastro.render(GL_LINES);
+	glDisable(GL_BLEND);
+}
 
 void Missile::update(float elapsed_time)
 {
@@ -618,9 +700,11 @@ void Missile::update(float elapsed_time)
 
 	testSphereCollision();
 
+	last_position = getPosition();
+
 	model.traslateLocal(0, 0, elapsed_time * 150.0);
 	ttl -= elapsed_time;
-
+	//Explosion::createExplosion(getPosition(), 2.5, 1.0);
 }
 
 void Missile::activate()
@@ -714,15 +798,6 @@ void Clouds::render(Camera* camera)
 	for (int i = 0; i < clouds.size(); i++)
 	{
 		sCloudInfo& c = clouds[i];
-		/*
-		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos + up * c.size * 0.5);
-		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
-		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
-
-		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);
-		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos - up * c.size * 0.5);
-		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos - up * c.size * 0.5);
-		*/
 
 		m.vertices.push_back(c.pos - right * c.size * 0.5 + c.pos + up * c.size * 0.5);
 		m.vertices.push_back(c.pos + right * c.size * 0.5 + c.pos + up * c.size * 0.5);

@@ -17,6 +17,7 @@ public:
 	float size;
 	
 	static std::vector<Explosion*> v_explosions;
+	static std::vector<Explosion*> destroyed_exp;
 
 	static void render(Camera* camera);
     static void update(float elapsed_time);

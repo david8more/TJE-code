@@ -13,6 +13,7 @@ public:
 	bool active;
 	int current_Wp = 0;
 
+	std::string state;
 	Vector3 target;
 	void update(float time_elapsed);
 

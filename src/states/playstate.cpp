@@ -171,8 +171,8 @@ void PlayState::update(double seconds_elapsed)
 	if(game->keystate[SDL_SCANCODE_7])
 		player->speed = 1;
 
-	Vector3 p = player->getPosition();
-	std::cout << p.x << ".." << p.y << ".." << p.z << std::endl;
+	//Vector3 p = player->getPosition();
+	//std::cout << p.x << ".." << p.y << ".." << p.z << std::endl;
 
 	PlayerController* player_controller = PlayerController::getInstance();
 
@@ -299,6 +299,19 @@ void PlayState::renderGUI() {
 	{
 		drawText(game->window_width * 0.22, game->window_height * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
 	}
+
+	//
+	//
+	//
+
+	ss.str("");
+	Airplane* ia = (Airplane*)Entity::getEntity("ia_1");
+	ss << "IA STATE: " << ia->controller->state;
+	drawText(game->window_width*0.3, game->window_height*0.5, ss.str(), Vector3(0, 0, 1), 5.0);
+
+	//
+	//
+	//
 
 	// MISSILES
 
@@ -466,6 +479,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_6:
 		game->current_camera = game->free_camera;
 		controlIA++;
+		break;
+	case SDLK_7:
+		World::instance->playerShip->shoot();
 		break;
 	case SDLK_p:
 		pause = !pause;

@@ -6,10 +6,8 @@
 IAController::IAController()
 {
 	current_Wp = 0;
+	state = "";
 	totalWP = 50;
-
-	float fx = random() * 1000;
-	float fy = random() * 200;
 
 	Vector3 c(2000, -10, 1700);
 
@@ -17,9 +15,13 @@ IAController::IAController()
 
 	for (float i = 0; i < 180 * DEG2RAD * totalWP; i += 10 * DEG2RAD)
 	{
-		float x = c.x + cos(i) * radius;
-		float y = 500.0;
-		float z = c.z + sin(i) * radius;
+		float fx = random() * 500;
+		float fy = random() * 200;
+		float fz = random() * 500;
+
+		float x = c.x + cos(i) * radius + fx;
+		float y = 400.0 + fy;
+		float z = c.z + sin(i) * radius + fz;
 
 		waypoints.push_back(Vector3(x, y, z));
 	}
@@ -49,7 +51,9 @@ void IAController::update(float seconds_elapsed)
 	Vector3 playerPos = playerAir->getPosition();
 	//
 
-	double speed = 75.0;
+	double speed = World::instance->playerAir->speed;
+
+	state = "chasing";
 
 	Vector3 to_target = target - controlled->getPosition();
 	Vector3 targetToPlayer = to_target;
@@ -61,6 +65,8 @@ void IAController::update(float seconds_elapsed)
 
 	if (distance > 500.0 || controlled->life < 50.0 || controlled->getPosition().y < 475.0)
 	{
+		state = "waypoints";
+
 		to_target = waypoints[current_Wp] - controlled->getPosition();
 		float distance_wp = to_target.length();
 
@@ -73,6 +79,7 @@ void IAController::update(float seconds_elapsed)
 
 	if (controlled->life < 50.0)
 	{
+		state = "retiring";
 		speed *= 1.5;
 		controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
 		return;

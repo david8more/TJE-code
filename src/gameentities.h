@@ -2,6 +2,7 @@
 #define GAMEENTITIES_H
 
 #include "entity.h"
+#include "mesh.h"
 
 class IAController;
 class Missile;
@@ -15,7 +16,6 @@ public:
 	IAController* controller;
 
 	int planeModel;
-	std::string state;
 
 	bool engine;
 	void engineOnOff();
@@ -59,6 +59,7 @@ public:
 	~Ship();
 
 	std::string state;
+	bool cannonReady;
 
 	float damage;
 	float last_shoot;
@@ -100,7 +101,9 @@ public:
 
 	float ttl;
 	float max_ttl;
+	Mesh rastro;
 
+	void render(Camera* camera);
 	void update(float elapsed_time);
 	void activate();
 	void onCollision(EntityCollider* collided_with);

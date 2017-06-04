@@ -5,6 +5,7 @@
 #include "framework.h"
 
 std::vector<Explosion*> Explosion::v_explosions;
+std::vector<Explosion*> Explosion::destroyed_exp;
 
 Explosion::Explosion() : time(0.0)
 { }
