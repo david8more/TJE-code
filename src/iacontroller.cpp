@@ -46,45 +46,40 @@ void IAController::update(float seconds_elapsed)
 
 	Airplane* controlled = player;
 
-	// player info
+	//
 	Airplane* playerAir = World::getInstance()->playerAir;
 	Vector3 playerPos = playerAir->getPosition();
+	double speed = World::instance->playerAir->speed;
+	Vector3 targetToPlayer = target - controlled->getPosition();
 	//
 
-	double speed = World::instance->playerAir->speed;
+	// any target
+	Vector3 to_target;
+	state = "waypoints";
 
-	state = "chasing";
+	// waypoints: tb si tiene poca vida o si tiene que bajar más de la cuenta
+	to_target = waypoints[current_Wp] - controlled->getPosition();
+	float distance_wp = to_target.length();
 
-	Vector3 to_target = target - controlled->getPosition();
-	Vector3 targetToPlayer = to_target;
-
-	// distance to target
-	float distance = to_target.length();
-
-	// waypoints: si estamos lejos, si tiene poca vida o si tiene que bajar más de la cuenta
-
-	if (distance > 500.0 || controlled->life < 50.0 || controlled->getPosition().y < 475.0)
+	if (distance_wp < 100.0)
 	{
-		state = "waypoints";
-
-		to_target = waypoints[current_Wp] - controlled->getPosition();
-		float distance_wp = to_target.length();
-
-		if (distance_wp < 100.0)
-		{
-			current_Wp = (current_Wp + 1) % waypoints.size();
-		}
-
+		current_Wp = (current_Wp + 1) % waypoints.size();
 	}
 
 	if (controlled->life < 50.0)
 	{
 		state = "retiring";
 		speed *= 1.5;
-		controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
-		return;
 	}
 
+	// distance to player
+	float distanceToPlayer = targetToPlayer.length();
+
+	if (distanceToPlayer < 500.0 && state != "retiring")
+	{
+		to_target = targetToPlayer;
+		state = "chasing";
+	}
 
 	// rotaciones
 
@@ -92,15 +87,15 @@ void IAController::update(float seconds_elapsed)
 		to_target.normalize();
 
 	Vector3 front = controlled->model.rotateVector(Vector3(0, 0, 1));
-
 	float angle = 1 - front.dot(to_target);
-	float angleWithPlayer = 1 - front.dot(targetToPlayer.normalize());
-
 	Vector3 axis = to_target.cross(front);
 
 	Matrix44 inverse_mat = controlled->model;
 	inverse_mat.inverse();
 	axis = inverse_mat.rotateVector(axis);
+
+	controlled->model.rotateLocal(angle * seconds_elapsed * 5, axis);
+	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
 	// orient
 
@@ -112,19 +107,18 @@ void IAController::update(float seconds_elapsed)
 	Vector3 axisUp = localUp.cross(Vector3(0, 1, 0));
 
 	if (axisUp.z > 0)
-	{
 		controlled->model.rotateLocal((1.0 - r) * seconds_elapsed, Vector3(0, 0, 1));
-	}
 	else
-	{
 		controlled->model.rotateLocal((1.0 - r) * seconds_elapsed, Vector3(0, 0, -1));
-	}
+	
+	if (state != "chasing" || distanceToPlayer > 300.0)
+		return;
 
-	controlled->model.rotateLocal(angle * seconds_elapsed * 5, axis);
-	controlled->model.traslateLocal(0, 0, speed * seconds_elapsed);
-
-	if (distance < 300.0 && (abs(angleWithPlayer) > 0.05))
+	float angleWithPlayer = 1 - front.dot(targetToPlayer.normalize());
+	
+	if (abs(angleWithPlayer) > 0.05)
 	{
+		state = "shooting";
 		controlled->shoot();
 	}
 }
