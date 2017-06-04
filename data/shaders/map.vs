@@ -33,10 +33,14 @@ void main()
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_mvp * vec4( a_vertex, 1.0 );
 	
-	float pSize = 4.5;
+	float pSize = 7.0;
+	v_color = vec4(1, 0.75, 0, 1);
 	
 	if( gl_Position.z > 2900)
+	{
 		pSize = 8.5;
+		v_color = vec4(1, 0, 0, 0.5);
+	}
 	
 	gl_PointSize = pSize;
 	

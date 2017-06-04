@@ -300,19 +300,6 @@ void PlayState::renderGUI() {
 		drawText(game->window_width * 0.22, game->window_height * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
 	}
 
-	//
-	//
-	//
-
-	ss.str("");
-	Airplane* ia = (Airplane*)Entity::getEntity("ia_1");
-	ss << "IA STATE: " << ia->controller->state;
-	drawText(game->window_width*0.3, game->window_height*0.5, ss.str(), Vector3(0, 0, 1), 5.0);
-
-	//
-	//
-	//
-
 	// MISSILES
 
 	ss.str("");
@@ -326,11 +313,22 @@ void PlayState::renderGUI() {
 	{
 		for (i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 		{
-			ss.str("");
+			EntityCollider* c = EntityCollider::dynamic_colliders[i];
+			Airplane* aux;
 
-			ss << EntityCollider::dynamic_colliders[i]->life << ": " << EntityCollider::dynamic_colliders[i]->name;
-			Vector3 c = EntityCollider::dynamic_colliders[i]->name == "player" ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
-			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), c, 1.5);
+			/*if (c->uid > 1000)
+			{
+				ss.str("");
+				aux = (Airplane*)c;
+				ss << aux->name << " : " << aux->life << " : " << aux->controller->state;
+				drawText(game->window_width*0.1, 50 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
+				continue;
+			}*/
+
+			ss.str("");
+			ss << c->name << " : " << c->life;
+			Vector3 color = c->name == "player" ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
+			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), color, 1.5);
 		}
 	}
 
@@ -412,16 +410,11 @@ void PlayState::renderGUI() {
 
 	Mesh objectsInMap;
 
-	Vector3 p1 = center + Vector3(0, 2000, 0);
-	Vector3 p2 = center + Vector3(0, 2100, 0);
+	Vector3 p1 = center + Vector3(0, 4000, 0);
+	Vector3 p2 = center + Vector3(0, 4100, 0);
 
-	//std::cout << p1.y << std::endl; std::cout << p2.y << std::endl;
-
-	objectsInMap.vertices.push_back(p2);
 	objectsInMap.vertices.push_back(p1);
-
-	objectsInMap.colors.push_back(Vector4(0.95, 0.85, 0.05, 1.0));
-	objectsInMap.colors.push_back(Vector4(0.1, 0.2, 0.96, 0.75));
+	objectsInMap.vertices.push_back(p2);
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{

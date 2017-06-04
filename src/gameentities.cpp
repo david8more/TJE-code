@@ -666,7 +666,8 @@ void Missile::render(Camera* camera)
 	rastro.vertices.push_back(getPosition());
 	rastro.vertices.push_back(last_position);
 
-	float alpha = min((1 - pow(ttl / max_ttl, 2)), 0.5);
+	float alpha = min((1 - (ttl / max_ttl) ), 0.5);
+	alpha *= 0.6;
 
 	if (uid == Airplane::ENEMY_SHIP)
 	{
@@ -684,9 +685,11 @@ void Missile::render(Camera* camera)
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glLineWidth(1.5);
+	float size = camera->getProjectScale(getPosition(), 50.0);
+	glLineWidth(size*0.1);
 	rastro.render(GL_LINES);
 	glDisable(GL_BLEND);
+	glLineWidth(1.0);
 }
 
 void Missile::update(float elapsed_time)
