@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#define DEBUG 1
+#define DEBUG 0
 
 //some globals
 Game* Game::instance = NULL;
@@ -42,9 +42,10 @@ Game::Game(SDL_Window* window)
 	music_enabled = false;
 	effects_enabled = false;
 	bkg_music_playing = false;
+	inGame_DEBUG = false;
 	
 	fullscreen = false;
-	gameMode = NORMAL;
+	difficulty = D_BABY;
 	ffire_on = false;
 	BCK_VOL = 0.5;
 }

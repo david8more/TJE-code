@@ -99,6 +99,7 @@ public:
 	Missile(bool culling = true);
 	~Missile();
 
+	bool hasCollided;
 	float ttl;
 	float max_ttl;
 	Mesh rastro;

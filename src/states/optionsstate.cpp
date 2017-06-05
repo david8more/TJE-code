@@ -94,7 +94,10 @@ void OptionsState::render() {
 			break;
 		case GAMEMODE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->gameMode ? "HEROIC" : "CLASSIC", c, 3.0);
+			if(game->difficulty == D_INSANE)
+				drawText(game->window_width*0.35, game->window_height*0.35 + p, "INSANE", c, 3.0);
+			else
+				drawText(game->window_width*0.35, game->window_height*0.35 + p, game->difficulty == D_BABY ? "BABY" : "SKILLED", c, 3.0);
 			break; 
 		case FRIENDLYFIRE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -184,6 +187,13 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 			downVol();
 			break;
 		}
+		else if (currentSelection == GAMEMODE)
+		{
+			game->difficulty--;
+			if (game->difficulty == 0)
+				game->difficulty = 3;
+			break;
+		}
 		selectionChosen();
 		break;
 	case SDLK_RIGHT:
@@ -191,6 +201,13 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 		if(currentSelection == MUSIC_VOL)
 		{	
 			upVol();
+			break;
+		}
+		else if (currentSelection == GAMEMODE)
+		{
+			game->difficulty++;
+			if (game->difficulty == 4)
+				game->difficulty = 1;
 			break;
 		}
 		selectionChosen();
@@ -275,9 +292,6 @@ void OptionsState::selectionChosen()
 		game->fullscreen = !game->fullscreen;
 		SDL_SetWindowFullscreen(game->window, game->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP:0  );
    		break;
-	case GAMEMODE:
-		game->gameMode = !game->gameMode;
-		break; 
 	case FRIENDLYFIRE:
 		game->ffire_on = !game->ffire_on;
 		break;

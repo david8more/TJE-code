@@ -115,6 +115,11 @@ void SelectionState::onEnter()
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
+
+	if (1)
+	{
+		selectionChosen();
+	}
 }
 
 void SelectionState::render() {
@@ -257,9 +262,7 @@ void SelectionState::update(double time_elapsed) {
 
 void SelectionState::selectionDown()
 {
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	SoundManager::instance->playSound("move_menu", false);
 	playerModel++;
 	if (playerModel == 4)
 		playerModel = 0;
@@ -267,9 +270,7 @@ void SelectionState::selectionDown()
 
 void SelectionState::selectionUp()
 {
-	s_sample = BASS_SampleLoad(false, "data/sounds/move_menu.wav", 0L, 0, 1, 0);
-	s_channel = BASS_SampleGetChannel(s_sample, false); // get a sample channel
-	BASS_ChannelPlay(s_channel, false); // play it
+	SoundManager::instance->playSound("move_menu", false);
 	playerModel--;
 	if (playerModel == -1)
 		playerModel = 3;
@@ -283,6 +284,8 @@ void SelectionState::selectionChosen()
 	world->worldInfo.playerModel = playerModel;
 	world->addPlayer();
 	world->setGameMode();
+	world->addEnemies();
+	
 
 	SManager->changeCurrentState(PlayState::getInstance(SManager));
 }

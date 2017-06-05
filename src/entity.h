@@ -93,6 +93,7 @@ public:
 	void testStaticCollisions();
 
 	int life;
+	int max_life;
 
 	void setLife(int life);
 	void setStatic();

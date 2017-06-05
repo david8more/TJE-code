@@ -5,8 +5,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define NORMAL false
-#define HARD true
+#define D_BABY 1
+#define D_SKILLED 2
+#define D_INSANE 3
 
 #include "includes.h"
 #include "utils.h"
@@ -20,6 +21,7 @@ class Game
 public:
 	static Game* instance;
 	bool start;
+	bool inGame_DEBUG;
 
 	// SINGLETON
 	static Game* getInstance() {
@@ -36,7 +38,7 @@ public:
 	int fps;
 	float elapsed_time;
 
-	int gameMode; // difficulty
+	int difficulty;
 	bool ffire_on; // friendly fire
 
 	// State Delegator Instance

@@ -46,9 +46,10 @@ public:
 	EntityCollider* sea;
 
 	std::vector<Entity*> map_entities;
-	static std::vector<Entity*> airplanes;
+	std::vector<Entity*> airplanes;
+	std::vector<Entity*> ships;
 
-	static void removeAirplaneFromMinimap(Entity* plane);
+	void removeAirplaneFromMinimap(Entity* plane);
 
 	// fighters
 	Airplane* playerAir;

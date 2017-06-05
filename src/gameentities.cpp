@@ -50,9 +50,9 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		wh_left->model.rotateLocal(90.0 * DEG2RAD, Vector3(0, 0, 1));
 		this->addChild(wh_left);
 
-		life = 175.0;
+		setLife(175);
 		cadence = 75.0;
-		damageM60 = 10.0;
+		damageM60 = 25.0;
 		speed = 100.0;
 		if (0) // god mode
 		{
@@ -69,16 +69,16 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 	{
 		set("p38.ASE", "data/textures/p38.tga", "plane");
 		helix->model.setTranslation(2.44f, 0.f, 2.85f);
-		
+
 		Helix* helix2 = new Helix();
 		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		this->addChild(helix2);
 
-		life = 200.0;
+		setLife(200);
 		cadence = 85.0;
-		damageM60 = 5.0;
+		damageM60 = 15.0;
 		speed = 90.0;
 	}
 
@@ -87,7 +87,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		set("wildcat.ASE", "data/textures/wildcat.tga", "plane");
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
 
-		life = 300.0;
+		setLife(300);
 		cadence = 60.f;
 		damageM60 = 40.0;
 		speed = 70.0;
@@ -104,10 +104,14 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		this->addChild(helix2);
 
-		life = 350.0;
+		setLife(350);
 		cadence = 55.0;
 		damageM60 = 15.0;
 		speed = 80.0;
+	}
+	else
+	{
+		exit(0);
 	}
 
 	helix->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
@@ -375,7 +379,7 @@ Ship::Ship(bool ia)
 		uid = Airplane::PLAYER_SHIP;
 		model.setRotation(180 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 		model.traslate(1600, -10, 1700);
-		life = 750;
+		setLife(750);
 	}
 
 
@@ -494,8 +498,6 @@ void Ship::shoot()
 	else 
 		missile->model.traslate(20.f, 8.f, -63.f);
 
-	float angleDisp = random()*(180 * DEG2RAD);
-	missile->model.rotateLocal(angleDisp, Vector3(0, 0, 1));
 	//std::cout << angleDisp << std::endl;
 
 	this->addChild(missile);
@@ -605,8 +607,9 @@ Missile::Missile(bool culling)
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
-	max_ttl = 3.0;
+	max_ttl = 3.5;
 	ttl = max_ttl;
+	hasCollided = false;
 }
 
 Missile::~Missile()
@@ -696,7 +699,8 @@ void Missile::update(float elapsed_time)
 {
 	if (ttl < 0)
 	{
-		//std::cout << "missil no ha colisionado (destroy by ttl)" << std::endl;
+		if(!hasCollided)
+			std::cout << "missil no ha colisionado (destroy by ttl)" << std::endl;
 		destroy();
 		return;
 	}
@@ -738,6 +742,7 @@ void Missile::onCollision(EntityCollider* collided_with)
 	}
 
 	// destruir torpedo
+	hasCollided = true;
 	ttl = -1.0;
 }
 

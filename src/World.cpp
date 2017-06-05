@@ -12,7 +12,6 @@
 #define IA true
 
 World* World::instance = NULL;
-std::vector<Entity*> World::airplanes;
 
 Ship* enemyShip = NULL;
 EntityCollider* init_zone = NULL;
@@ -35,14 +34,15 @@ World::~World()
 
 void World::create()
 {
-	/*	Creacion de todo el mundo excepto el avion del jugador: se añade al elegirlo en el
-	*	loading state																	*/
+	/*
+		Creacion de las constantes del mundo:
+		Jugador y enemigos se crean cuando se sabe el nivel escogido
+	*/
+
 	// *****************************************************************************************
 	addWorldConst();
 	// *****************************************************************************************
 	addPlayerConst();
-	// *****************************************************************************************
-	addEnemies();
 	// *****************************************************************************************
 }
 
@@ -53,12 +53,25 @@ void World::addPlayer()
 	playerAir = new Airplane(worldInfo.playerModel, NULL);
 	playerAir->setName("player");
 
-	// REDUCIR ATRIBUTOS
-	if (Game::getInstance()->gameMode == HARD)
+	// Game mode 
+	int mode = Game::instance->difficulty;
+	switch (mode)
 	{
-		playerAir->life -= (int)(playerAir->life / 4.f) ;
+	case D_BABY:
+		playerAir->life += 25;
+		playerAir->damageM60 += 10.0;
+		break;
+	case D_SKILLED:
+		playerAir->life *= 0.75;
 		playerAir->damageM60 -= 5.0;
+		break;
+	case D_INSANE:
+		playerAir->life *= 0.5;
+		playerAir->damageM60 *= 0.5;
+		break;
 	}
+
+	playerAir->max_life = playerAir->life;
 	
 	playerAir->model = playerAir->model * init_zone->model;
 	playerAir->model.traslate(0, 17.75, -102.5);
@@ -74,6 +87,7 @@ void World::addPlayerConst()
 
 	playerShip = new Ship(false);
 	root->addChild(playerShip);
+	ships.push_back(playerShip);
 
 	// initial zone
 	init_zone = new EntityCollider();
@@ -113,11 +127,22 @@ void World::addEnemies() {
 
 	enemyShip = new Ship(IA);
 	root->addChild(enemyShip);
+	ships.push_back(enemyShip);
 
 	// ***********************************
+	Game* game = Game::instance;
 	std::stringstream ss;
+	int IA_enemies;
 
-	for (int i = 1; i < 8; i++) {
+	if (game->difficulty == D_BABY)
+		IA_enemies = 3;
+	if (game->difficulty == D_SKILLED)
+		IA_enemies = 8;
+	if (game->difficulty == D_INSANE)
+		IA_enemies = 20;
+
+	for (int i = 1; i < IA_enemies; i++) {
+		//int type = rand() % 4;
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
 		enemyAir->uid = 1000 + i;
 		ss.str("");
@@ -147,7 +172,6 @@ void World::removeAirplaneFromMinimap(Entity* plane)
 
 void World::setGameMode()
 {
-
 	Game* game = Game::getInstance();
 
 	// TODO

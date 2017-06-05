@@ -49,9 +49,6 @@ public:
 	Camera cam2D;
 	Mesh quad;
 
-	int s_sample;
-	int s_channel;
-
 	// texture & mesh selection
 	int playerModel;
 	int lastRendered;

@@ -46,13 +46,13 @@ void PlayState::init()
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 6.f, -6.5f);
+	viewpos = Vector3(0.f, 3.f, -5.f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
 	game->free_camera = new Camera(); //our global camera
 	game->fixed_camera = new Camera();
-	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
+	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.01f, 50000.f);
 
 	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
 	game->free_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 1.0, 25000.f);
@@ -210,10 +210,6 @@ void PlayState::update(double seconds_elapsed)
 		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ship"));
 	if (controlIA == 2)
 		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_1"));
-	if (controlIA == 3)
-		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_2"));
-	if (controlIA == 4)
-		game->free_camera->lookAtPlane((Airplane*)Entity::getEntity("ia_3"));
 
 	// borrar pendientes
 	Entity::destroy_entities();
@@ -257,9 +253,11 @@ void PlayState::renderWorld(Camera * camera)
 	//
 }
 
-void PlayState::renderGUI() {
-
-	// RENDER GUI ****************************************************************
+void PlayState::renderGUI()
+{
+	int w = game->window_width;
+	int h = game->window_height;
+	std::stringstream ss;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -269,97 +267,169 @@ void PlayState::renderGUI() {
 
 	cam2D.set();
 	
+	// crosshair
 	Texture::Get(crosshair_tex.c_str())->bind();
 	quad.render(GL_TRIANGLES);
 	Texture::Get(crosshair_tex.c_str())->unbind();
 
-	// M60 overheat HUD
+	glColor4f(1, 1, 1, 1.0);
+	glLineWidth(1.0);
 
-	std::stringstream ss;
+	Mesh energyBar;
+
+	energyBar.createBox(w*0.7 + h * 25 * 0.0075, h*0.9, h * 50 * 0.0075, 25);
+	energyBar.render(GL_LINES);
+
+	float f = (player->life / (float)player->max_life);
+
+	float energyWidth = f * h * 50 * 0.0075;
+	Vector3 ve(0.8, 0.8, 0.1);
+
+	energyBar.createQuad(w*0.7 + energyWidth * 0.5, h*0.9, energyWidth, 25);
+	glColor4f(ve.x, ve.y, ve.z, 1.f);
+	energyBar.render(GL_TRIANGLES);
 
 	// Overheat bar
 	Mesh heatIndicator;
+	glColor4f(1.0, 1.0, 1.0, 1.f);
 
-	float indicatorWidth = !player->shootingtime ? 5 : game->window_height * player->shootingtime * 0.0075;
+	float indicatorWidth = !player->shootingtime ? 5 : h * player->shootingtime * 0.0075;
 	float pRcolor = player->shootingtime / 50.f;
 	Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
 
-	heatIndicator.createBox(game->window_width*0.7 + game->window_height * 25 * 0.0075, game->window_height*0.95, game->window_height * 50 * 0.0075, 25);
+	heatIndicator.createBox(w*0.7 + h * 25 * 0.0075, h*0.93, h * 50 * 0.0075, 10);
 	heatIndicator.render(GL_LINES);
 
-	heatIndicator.createQuad(game->window_width*0.7 + indicatorWidth * 0.5, game->window_height*0.95, indicatorWidth, 25);
+	heatIndicator.createQuad(w*0.7 + indicatorWidth * 0.5, h*0.93, indicatorWidth, 10);
 	glColor4f(v.x, v.y, v.z, 1.f);
 	heatIndicator.render(GL_TRIANGLES);
 
+	// engine
 	ss.str("");
 	ss << (int)min(((float)player->shootingtime / 50) * 100, 100.f ) << "%";
-	drawText(game->window_width * 0.81, game->window_height * 0.94, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0); // % engine !!!
+	drawText(w * 0.81, h * 0.95, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0); // % engine !!!
+
+	// energy
+	ss.str("");
+	ss << player->life;
+	drawText(w * 0.81, h * 0.89, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0);
 
 	if (player->overused)
 	{
-		drawText(game->window_width * 0.22, game->window_height * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
+		drawText(w * 0.22, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
 	}
 
-	// MISSILES
+	// cantidad de players
+
+	Mesh logos;
+	Texture * et = Texture::Get("data/textures/enemies-logo.tga");
+	logos.createQuad(w * 0.03, h * 0.05, h * 0.05, h * 0.05, true);
+
+	et->bind();
+	logos.render(GL_TRIANGLES);
+	et->unbind();
+
+	et = Texture::Get("data/textures/allies-logo.tga");
+	logos.createQuad(w * 0.03, h * 0.1, h * 0.05, h * 0.05, true);
+
+	et->bind();
+	logos.render(GL_TRIANGLES);
+	et->unbind();
 
 	ss.str("");
-	ss << "Torpedos left: " << player->torpedosLeft;
-	drawText(game->window_width*0.75, game->window_height*0.97, ss.str(), Vector3(1, 0, 0), 2.0);
+	ss << "Enemies: " << (1 + World::instance->airplanes.size());
+	drawText(w * 0.1, h * 0.2, ss.str(), Vector3(1, 1, 1), 1.5);
+	drawText(w * 0.1, h * 0.1, "Allies: 1", Vector3(1, 1, 1), 1.5);
 
-	// vidas enemigas
-	int i = 0;
-	
-	if (EntityCollider::dynamic_colliders.size())
+	for (int i = 0; i < World::instance->ships.size(); i++)
 	{
-		for (i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
-		{
-			EntityCollider* c = EntityCollider::dynamic_colliders[i];
-			Airplane* aux;
-
-			/*if (c->uid > 1000)
-			{
-				ss.str("");
-				aux = (Airplane*)c;
-				ss << aux->name << " : " << aux->life << " : " << aux->controller->state;
-				drawText(game->window_width*0.1, 50 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
-				continue;
-			}*/
-
-			ss.str("");
-			ss << c->name << " : " << c->life;
-			Vector3 color = c->name == "player" ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
-			drawText(game->window_width*0.1, 50 + i * 25, ss.str(), color, 1.5);
-		}
+		Ship* c = (Ship*)World::instance->ships[i];
+		ss.str("");
+		ss << c->name << " : " << c->life;
+		drawText(w * 0.05, h * 0.3 + i * 25, ss.str(), Vector3(0, 0, 1), 2);
 	}
+
+	// missiles
+
+	for (int i = 0; i < player->torpedosLeft; i++)
+	{
+		Mesh torpedo;
+		Texture * et = Texture::Get("data/textures/torpedo-icon.tga");
+		torpedo.createQuad(w * 0.48 + i * h * 0.05, h * 0.55, h * 0.04, h * 0.04);
+		et->bind();
+		torpedo.render(GL_TRIANGLES);
+		et->unbind();
+	}
+
+	// vidas
+	if (game->inGame_DEBUG)
+	{
+		if (World::instance->ships.size())
+		{
+			for (int i = 0; i < World::instance->ships.size(); i++)
+			{
+				Ship* c = (Ship*)World::instance->ships[i];
+				ss.str("");
+				ss << c->name << " : " << c->life;
+				Vector3 color = c->uid == Airplane::PLAYER_SHIP ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
+				drawText(w * 0.2, 50 + i * 25, ss.str(), color, 1.5);
+			}
+		}
+
+		if (World::instance->airplanes.size())
+		{
+			for (int i = 0; i < World::instance->airplanes.size(); i++)
+			{
+				Airplane* c = (Airplane*)World::instance->airplanes[i];
+				ss.str("");
+				ss << c->name << " : " << c->life << " : " << c->controller->state;
+				drawText(w * 0.2, 100 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
+			}
+		}
+
+		ss.str("");
+		ss << "Alt(Y): " << (int)player->getPosition().y;
+		drawText(w * 0.4, 50, ss.str(), Vector3(1, 0, 1), 1.5);
+		ss.str("");
+		ss << "Coord(X, Z): (" << (int)player->getPosition().x << "),  (" << (int)player->getPosition().z << ")";
+		drawText(w * 0.4, 75, ss.str(), Vector3(1, 0, 1), 1.5);
+
+		ss.str("");
+		ss << "Damage: " << player->damageM60 << " || Max energy: " << player->max_life;
+		drawText(w * 0.64, 50, ss.str(), Vector3(0.2, 0.2, 0.2), 1.5);
+		ss.str("");
+		ss << "Torpedos: " << 2 << " || Torpedo damage: " << 450;
+		drawText(w * 0.64, 75, ss.str(), Vector3(0.2, 0.2, 0.2), 1.5);
+	}
+	
 
 	// set mark enemy airplanes
 	Texture * t = Texture::Get("data/textures/mark.tga");
-	t->bind();
 
 	Camera* cam3D = Game::instance->current_camera;
 	cam2D.set();
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
-		Entity* current = World::instance->airplanes[i];
+		Airplane* current = (Airplane*)World::instance->airplanes[i];
 
 		if (current == player)
 			continue;
 
 		Vector3 pos3D = current->getPosition();
-		Vector3 pos2D = cam3D->project(pos3D, game->window_width, game->window_height);
+		Vector3 pos2D = cam3D->project(pos3D, w, h);
 
 		if (pos2D.z > 1)
 			continue;
 
 		if (pos2D.x < 0)
 			pos2D.x = 0;
-		if (pos2D.x > game->window_width)
-			pos2D.x = game->window_width;
+		if (pos2D.x > w)
+			pos2D.x = w;
 		if (pos2D.y < 0)
 			pos2D.y = 0;
-		if (pos2D.y > game->window_height)
-			pos2D.y = game->window_height;
+		if (pos2D.y > h)
+			pos2D.y = h;
 
 		float size = cam3D->getProjectScale(pos3D, 50.0);
 		if (size < 25.0)
@@ -368,37 +438,39 @@ void PlayState::renderGUI() {
 			size = 50.0;
 
 		float gradual = (size - 25) / (50 - 25);
-		glColor4f(1.0, 1.0, 1.0, 1-  gradual);
+		glColor4f(1.0, 1.0, 1.0, 1 - gradual);
 		
 		Mesh quads;
-		quads.createQuad(pos2D.x, game->window_height - pos2D.y, size, size);
+		quads.createQuad(pos2D.x, h - pos2D.y, size, size);
+		t->bind();
+		quads.render(GL_TRIANGLES);
+		t->unbind();
+
+		// lifes
+		quads.createQuad(pos2D.x + 1, h - pos2D.y - 20, size * current->life * 0.003, size / 10);
+		float f = current->life / (float)current->max_life;
+		glColor4f(1 - f, f, 0.0, 0.4 + gradual);
 		quads.render(GL_TRIANGLES);
 	}
 
-	t->unbind();
+	
 
 	// minimap
 
 	Camera camUp;
-	camUp.setPerspective(45.f, game->window_width / game->window_height, 0.01, 100000);
+	camUp.setPerspective(45.f, w / (float)h, 0.01, 100000);
 	Vector3 center = player->model * Vector3();
 	Vector3 eye = center + Vector3(0, 7000, 0);
 	Vector3 up = Vector3(0, 0, 1);
 	camUp.lookAt(eye, center, up);
 	camUp.set();
 
-	int sizex = 195;
-	int sizey = 150;
+	int sizex = 225;
+	int sizey = 170;
 
-	if (game->keystate[SDL_SCANCODE_LCTRL])
-	{
-		sizex = 520;
-		sizey = 400;
-	}
-
-	glScissor(15, 15, sizex, sizey);
+	glScissor(w * 0.04, h - h * 0.975, sizex, sizey);
 	glEnable(GL_SCISSOR_TEST);
-	glViewport(15, 15, sizex, sizey);
+	glViewport(w * 0.04, h - h * 0.975, sizex, sizey);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -410,11 +482,9 @@ void PlayState::renderGUI() {
 
 	Mesh objectsInMap;
 
-	Vector3 p1 = center + Vector3(0, 4000, 0);
-	Vector3 p2 = center + Vector3(0, 4100, 0);
-
-	objectsInMap.vertices.push_back(p1);
-	objectsInMap.vertices.push_back(p2);
+	// player
+	objectsInMap.vertices.push_back(center + Vector3(0, 4000, 0));
+	objectsInMap.vertices.push_back(center + Vector3(0, 4100, 0));
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
@@ -429,22 +499,34 @@ void PlayState::renderGUI() {
 	Matrix44 m;
 
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
 	shader->enable();
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", camUp.viewprojection_matrix);
 	shader->setVector3("u_camera_pos", camUp.eye);
-
 	objectsInMap.render(GL_POINTS, shader);
-	
 	shader->disable();
-
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-	// FINISHED RENDER INTERFACE ****************************************************************
 	glDisable(GL_SCISSOR_TEST);
+	glViewport(0, 0, w, h);
+	
+	// minimap border
+
+	cam2D.set();
+
+	Mesh compass;
+	Texture * tc = Texture::Get("data/textures/compass.tga");
+	compass.createQuad(w * 0.15, h * 0.85, 225, 225, true);
+
+	glColor4f(1, 1, 1, 1.0);
+	glLineWidth(1.0);
+	tc->bind();
+	compass.render(GL_TRIANGLES);
+	tc->unbind();
+	
+	// FINISHED RENDER INTERFACE ****************************************************************
+	
 	glDisable(GL_BLEND);
-	glViewport(0, 0, game->window_width, game->window_height);
 }
 
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
@@ -453,7 +535,7 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	{
 	case SDLK_0:
 		game->start = true;
-		player->engineOnOff();
+		game->current_camera->near_plane = 7.5f;
 		SoundManager::getInstance()->playSound("plane", true);
 		break;
 	case SDLK_1: // full plane view or cabine view
@@ -479,6 +561,13 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_p:
 		pause = !pause;
 		break;
+	case SDLK_l:
+		game->inGame_DEBUG = !game->inGame_DEBUG;
+		break;
+	case SDLK_k:
+		player->model.setTranslation(2600, 100, 1650);
+		player->model.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
+		break;
 	}
 }
 
@@ -496,8 +585,8 @@ void PlayState::onKeyUp(SDL_KeyboardEvent event)
 	}
 }
 
-void PlayState::onMouseButton(SDL_MouseButtonEvent event) {
-
+void PlayState::onMouseButton(SDL_MouseButtonEvent event)
+{
 	if (event.button == SDL_BUTTON_RIGHT) //right mouse
 	{
 		inZoom = !inZoom;
@@ -511,9 +600,9 @@ void PlayState::setZoom()
 	// si cv = 1, 4+1 = 5 que es de la cabina
 	if (inZoom)
 	{
-		viewpos.z += vTranslations[world->worldInfo.playerModel * 2 + current_view].qnt;
-		game->current_camera->near_plane = 2.5f;
-		game->current_camera->far_plane = 50000.f;
+		viewpos.z += vTranslations[player->planeModel * 2 + current_view].qnt;
+		game->current_camera->near_plane = 0.01f;
+		game->current_camera->far_plane = 40000;
 	}
 	else
 		setView();
@@ -524,8 +613,8 @@ void PlayState::onLeave(int fut_state)
 	SoundManager::getInstance()->stopSound("music");
 }
 
-void PlayState::setView() {
-
+void PlayState::setView()
+{
 	int plane_model = player->planeModel;
 
 	switch (current_view)
@@ -540,7 +629,7 @@ void PlayState::setView() {
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
 
-		viewpos = Vector3(0.f, 6.f, -6.5f);
+		viewpos = Vector3(0.f, 3.f, -5.f);
 		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
 

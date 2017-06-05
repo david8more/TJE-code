@@ -20,7 +20,7 @@ IAController::IAController()
 		float fz = random() * 500;
 
 		float x = c.x + cos(i) * radius + fx;
-		float y = 400.0 + fy;
+		float y = 300.0 + fy;
 		float z = c.z + sin(i) * radius + fz;
 
 		waypoints.push_back(Vector3(x, y, z));

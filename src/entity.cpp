@@ -32,7 +32,7 @@ Entity::~Entity()
 
 	EntityCollider::remove(this); // quitarse del vector de static y dinamics SI ESTOY
 	if (uid > 1000)
-		World::removeAirplaneFromMinimap(this);
+		World::instance->removeAirplaneFromMinimap(this);
 }
 
 void Entity::setName(std::string name)
@@ -240,6 +240,7 @@ std::vector<EntityCollider*> EntityCollider::dynamic_colliders;
 void EntityCollider::setLife(int life)
 {
 	this->life = life;
+	max_life = life;
 }
 
 void EntityCollider::setStatic()
