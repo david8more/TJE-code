@@ -51,6 +51,7 @@ void World::addPlayer()
 	// PLAYER AIRPLANE ************************************************************************************
 
 	playerAir = new Airplane(worldInfo.playerModel, NULL);
+	playerAir->uid = 0;
 	playerAir->setName("player");
 
 	// Game mode 
@@ -159,6 +160,12 @@ void World::addEnemies() {
 		airplanes.push_back(enemyAir);
 		root->addChild(enemyAir);
 	}
+
+	for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
+	{
+		EntityCollider * current_collider = EntityCollider::dynamic_colliders[i];
+		Mesh::Get(current_collider->mesh.c_str())->setCollisionModel();
+	}
 }
 
 void World::removeAirplaneFromMinimap(Entity* plane)
@@ -172,8 +179,6 @@ void World::removeAirplaneFromMinimap(Entity* plane)
 
 void World::setGameMode()
 {
-	Game* game = Game::getInstance();
-
 	// TODO
 }
 

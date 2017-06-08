@@ -319,6 +319,8 @@ void PlayState::renderGUI()
 		drawText(w * 0.22, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
 	}
 
+	glColor4f(1, 1, 1, 1.0);
+
 	// cantidad de players
 
 	Mesh logos;

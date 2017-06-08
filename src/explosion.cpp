@@ -71,6 +71,8 @@ void Explosion::render(Camera * camera)
 
 	Texture * texture = Texture::Get("data/textures/explosion.tga");
 
+	glColor4f(1, 1, 1, 1.0);
+
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
