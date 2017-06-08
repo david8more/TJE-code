@@ -29,6 +29,10 @@ public:
 	Entity* parent;
 	vector<Entity*> children;
 
+	static std::map<unsigned int, Entity*> s_EntitiesUID;
+	static Entity* getEntity(unsigned int uid);
+	void setUid(unsigned int uid);
+
 	static std::map<std::string, Entity*> s_Entities;
 	static Entity* getEntity(std::string name);
 	void setName(std::string name);

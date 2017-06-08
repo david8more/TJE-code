@@ -51,7 +51,7 @@ void World::addPlayer()
 	// PLAYER AIRPLANE ************************************************************************************
 
 	playerAir = new Airplane(worldInfo.playerModel, NULL);
-	playerAir->uid = 0;
+	playerAir->setUid(0);
 	playerAir->setName("player");
 
 	// Game mode 
@@ -145,7 +145,7 @@ void World::addEnemies() {
 	for (int i = 1; i < IA_enemies; i++) {
 		//int type = rand() % 4;
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
-		enemyAir->uid = 1000 + i;
+		enemyAir->setUid(1000 + i);
 		ss.str("");
 		ss << "ia_" << i;
 		enemyAir->setName(ss.str());
@@ -166,15 +166,6 @@ void World::addEnemies() {
 		EntityCollider * current_collider = EntityCollider::dynamic_colliders[i];
 		Mesh::Get(current_collider->mesh.c_str())->setCollisionModel();
 	}
-}
-
-void World::removeAirplaneFromMinimap(Entity* plane)
-{
-	// minimap
-	auto it = std::find(airplanes.begin(),airplanes.end(), plane);
-
-	if (it != airplanes.end())
-		airplanes.erase(it);
 }
 
 void World::setGameMode()
@@ -202,11 +193,25 @@ bool World::isGameOver()
 	return false;
 }
 
-void World::reset() {
-
-	
-	for (int i = 0; root->children.size(); i++)
+void World::reset()
+{
+	if (Game::instance->end)
 	{
-		root->children[i]->destroy();
+		for (int i = 0; i < airplanes.size(); i++)
+			airplanes[i]->destroy();
+
+		Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
+
+		if (enemyShip != NULL)
+			enemyShip->destroy();
+
+		//playerShip->destroy();
+
+		Entity::destroy_entities();
+
+		/*playerShip = new Ship(false);
+		root->addChild(playerShip);
+		ships.push_back(playerShip);*/
+
 	}
 }

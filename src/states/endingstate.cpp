@@ -23,10 +23,7 @@ EndingState* EndingState::getInstance(StateManager* SManager)
 
 void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	World* world = World::getInstance();
-	world->reset();
-	Entity::destroy_entities();
-	//exit(1);
+	SManager->changeCurrentState(MenuState::getInstance(SManager));
 }
 
 void EndingState::init() {

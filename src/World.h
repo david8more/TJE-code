@@ -49,8 +49,6 @@ public:
 	std::vector<Entity*> airplanes;
 	std::vector<Entity*> ships;
 
-	void removeAirplaneFromMinimap(Entity* plane);
-
 	// fighters
 	Airplane* playerAir;
 	Ship* playerShip;

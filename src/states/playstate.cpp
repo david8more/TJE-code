@@ -46,7 +46,7 @@ void PlayState::init()
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 3.f, -5.f);
+	viewpos = Vector3(0.f, 3.f, -12.5f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
@@ -218,9 +218,8 @@ void PlayState::update(double seconds_elapsed)
 	if (world->isGameOver())
 	{
 		std::cout << "***** Game has finished! *****" << std::endl;
-		system("pause");
-		exit(1);
-		//SManager->changeCurrentState(EndingState::getInstance(SManager));
+		game->end = true;
+		SManager->changeCurrentState(EndingState::getInstance(SManager));
 	}
 
 }

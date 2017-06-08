@@ -136,7 +136,16 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 	}
 }
 
-Airplane::~Airplane() {}
+Airplane::~Airplane()
+{
+	World* world = World::getInstance();
+
+	std::vector<Entity*>::iterator it;
+	it = std::find(world->airplanes.begin(), world->airplanes.end(), this);
+
+	if (it != world->airplanes.end())
+		world->airplanes.erase(it);
+}
 
 void Airplane::engineOnOff()
 {
@@ -330,8 +339,7 @@ void Airplane::onCollision(EntityCollider* collided_with) {
 	if (name == "player")
 	{
 		std::cout << "CRASHED!" << std::endl;
-		//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
-		exit(1);
+		life = 0;
 	}
 
 	else if (name == "ia_1")
@@ -370,13 +378,13 @@ Ship::Ship(bool ia)
 
 	if (ia)
 	{
-		uid = Airplane::ENEMY_SHIP;
+		setUid(Airplane::ENEMY_SHIP);
 		setLife(1000);
 		model.setTranslation(2000, -10, 1700);
 	}
 	else
 	{
-		uid = Airplane::PLAYER_SHIP;
+		setUid(Airplane::PLAYER_SHIP);
 		model.setRotation(180 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 		model.traslate(1600, -10, 1700);
 		setLife(750);
@@ -417,7 +425,13 @@ Ship::Ship(bool ia)
 
 Ship::~Ship()
 {
+	World* world = World::getInstance();
 
+	std::vector<Entity*>::iterator it;
+	it = std::find(world->ships.begin(), world->ships.end(), this);
+
+	if (it != world->ships.end())
+		world->ships.erase(it);
 }
 
 //meshfile sin path, texturefile con path
@@ -491,7 +505,7 @@ void Ship::shoot()
 	SoundManager::getInstance()->playSound("cannonship", false);
 
 	Missile * missile = new Missile(NO_CULLING);
-	missile->uid = uid;
+	missile->setUid(uid);
 
 	if(cannonReady)
 		missile->model.traslate(20.f, 5.25f, 66.f);

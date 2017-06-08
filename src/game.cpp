@@ -37,7 +37,7 @@ Game::Game(SDL_Window* window)
 
 	keystate = NULL;
 	joystick = NULL;
-	start = false;
+	
 	mouse_locked = false;
 	music_enabled = false;
 	effects_enabled = false;
@@ -48,6 +48,8 @@ Game::Game(SDL_Window* window)
 	difficulty = D_BABY;
 	ffire_on = false;
 	BCK_VOL = 0.5;
+
+	start = end = false;
 }
 
 //Here we have already GL working, so we can create meshes and textures

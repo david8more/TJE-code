@@ -18,6 +18,7 @@
 
 std::vector<Entity*> Entity::destroy_pending;
 std::map<std::string, Entity*> Entity::s_Entities;
+std::map<unsigned int, Entity*> Entity::s_EntitiesUID;
 
 Entity::Entity() {
 	parent = NULL;
@@ -31,8 +32,6 @@ Entity::~Entity()
 		s_Entities[name] = NULL;
 
 	EntityCollider::remove(this); // quitarse del vector de static y dinamics SI ESTOY
-	if (uid > 1000)
-		World::instance->removeAirplaneFromMinimap(this);
 }
 
 void Entity::setName(std::string name)
@@ -46,6 +45,21 @@ Entity* Entity::getEntity(std::string name)
 	auto it = s_Entities.find(name);
 	if (it != s_Entities.end())
 		return it->second;
+	else return NULL;
+}
+
+void Entity::setUid(unsigned int uid)
+{
+	this->uid = uid;
+	s_EntitiesUID[uid] = this;
+}
+
+Entity* Entity::getEntity(unsigned int uid)
+{
+	auto it = s_EntitiesUID.find(uid);
+	if (it != s_EntitiesUID.end())
+		return it->second;
+	else return NULL;
 }
 
 Vector3 Entity::getPosition() { 

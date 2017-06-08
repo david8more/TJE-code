@@ -280,12 +280,13 @@ void SelectionState::selectionChosen()
 {
 	World* world = World::getInstance();
 
+	world->reset();
+
 	// tell world the plane selected
 	world->worldInfo.playerModel = playerModel;
 	world->addPlayer();
-	world->setGameMode();
 	world->addEnemies();
-	
+	world->setGameMode();
 
 	SManager->changeCurrentState(PlayState::getInstance(SManager));
 }

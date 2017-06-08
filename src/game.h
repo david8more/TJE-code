@@ -21,6 +21,7 @@ class Game
 public:
 	static Game* instance;
 	bool start;
+	bool end;
 	bool inGame_DEBUG;
 
 	// SINGLETON
