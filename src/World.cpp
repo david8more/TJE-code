@@ -22,7 +22,6 @@ World::World()
 	root = new Entity();
 
 	sky = NULL;
-	sea = NULL;
 	playerAir = NULL;
 	playerShip = NULL;
 }
@@ -195,23 +194,27 @@ bool World::isGameOver()
 
 void World::reset()
 {
-	if (Game::instance->end)
-	{
-		for (int i = 0; i < airplanes.size(); i++)
-			airplanes[i]->destroy();
+	std::cout << "applying reset to world" << std::endl;
 
-		Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
+	// enemies
+	for (int i = 0; i < airplanes.size(); i++)
+		airplanes[i]->destroy();
 
-		if (enemyShip != NULL)
-			enemyShip->destroy();
+	Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
 
-		//playerShip->destroy();
+	if (enemyShip != NULL)
+		enemyShip->destroy();
 
-		Entity::destroy_entities();
+	// player
+	playerAir->destroy();
+	if (playerShip != NULL)
+		playerShip->destroy();
 
-		/*playerShip = new Ship(false);
-		root->addChild(playerShip);
-		ships.push_back(playerShip);*/
+	Entity::destroy_entities();
 
-	}
+	playerShip = new Ship(false);
+	root->addChild(playerShip);
+	ships.push_back(playerShip);
+
+	Game::instance->end = false;
 }

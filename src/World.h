@@ -43,7 +43,6 @@ public:
 
 	//world constants
 	EntityMesh* sky;
-	EntityCollider* sea;
 
 	std::vector<Entity*> map_entities;
 	std::vector<Entity*> airplanes;

@@ -20,13 +20,16 @@ std::vector<Entity*> Entity::destroy_pending;
 std::map<std::string, Entity*> Entity::s_Entities;
 std::map<unsigned int, Entity*> Entity::s_EntitiesUID;
 
-Entity::Entity() {
+Entity::Entity()
+{
 	parent = NULL;
 	destroyed = false;
 }
 
 Entity::~Entity()
 {
+	//std::cout << "deleting entity" << std::endl;
+
 	auto it = s_Entities.find(name);
 	if (it != s_Entities.end())
 		s_Entities[name] = NULL;

@@ -46,7 +46,7 @@ void PlayState::init()
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 3.f, -12.5f);
+	viewpos = Vector3(0.f, 4.f, -12.5f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
@@ -630,7 +630,7 @@ void PlayState::setView()
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
 
-		viewpos = Vector3(0.f, 3.f, -5.f);
+		viewpos = Vector3(0.f, 4.f, -12.5f);
 		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
 

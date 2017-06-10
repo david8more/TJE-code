@@ -280,7 +280,8 @@ void SelectionState::selectionChosen()
 {
 	World* world = World::getInstance();
 
-	world->reset();
+	if (Game::instance->end)
+		world->reset();
 
 	// tell world the plane selected
 	world->worldInfo.playerModel = playerModel;

@@ -21,7 +21,7 @@ class Camera;
 class Entity {
 public:	
 	Entity();
-	~Entity();
+	virtual ~Entity();
 
 	Matrix44 model;
 	unsigned int uid;

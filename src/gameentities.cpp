@@ -138,13 +138,17 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 Airplane::~Airplane()
 {
+	std::cout << "deleting airplane" << std::endl;
+
 	World* world = World::getInstance();
 
-	std::vector<Entity*>::iterator it;
-	it = std::find(world->airplanes.begin(), world->airplanes.end(), this);
+	auto it = std::find(world->airplanes.begin(), world->airplanes.end(), this);
 
 	if (it != world->airplanes.end())
+	{
+		std::cout << "erasing that old airplane..." << std::endl;
 		world->airplanes.erase(it);
+	}
 }
 
 void Airplane::engineOnOff()
@@ -770,6 +774,11 @@ Helix::Helix()
 	depthMask = false;
 	cullFace = false;
 	set("helice.ASE", "data/textures/helice.tga", "plane");
+}
+
+Helix::~Helix()
+{
+
 }
 
 // **************************************************************************************
