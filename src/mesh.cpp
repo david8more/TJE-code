@@ -425,6 +425,8 @@ bool Mesh::loadASE(const char* name) {
 		unique_vertices[i] = v;
 	}
 
+	//int current_multitexture = 0;
+
 	for (int i = 0; i < num_faces; ++i) {
 		t.seek("*MESH_FACE");
 		t.getword();
@@ -439,7 +441,16 @@ bool Mesh::loadASE(const char* name) {
 		vertices.push_back(unique_vertices[B]);
 		vertices.push_back(unique_vertices[C]);
 
+		/*t.seek("*MESH_MTLID");
+		if (t.getint())
+		{
+			current_multitexture = t.getint();
+		}*/
 	}
+
+	//header.vertexMult = current_multitexture;
+
+
 	// --------------------------------------------------------------
 
 	t.seek("*MESH_NUMTVERTEX");

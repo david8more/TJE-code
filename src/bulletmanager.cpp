@@ -116,7 +116,7 @@ void BulletManager::testBulletCollision() {
 
 			Bullet& current = bullet_vector[j];
 
-			if (current_enemy == current.author)
+			if (current_enemy == current.author || (current.author->uid > 1000 && current_enemy->uid > 1000) )
 				continue;
 
 			//testeamos la colision, devuelve false si no ha colisionado, es importante recordar

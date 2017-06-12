@@ -37,7 +37,6 @@ public:
 	Texture* texture;
 
 	// needed instances to render
-	Game* game;
 	Camera cam2D;
 	Mesh quad;
 

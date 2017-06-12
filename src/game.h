@@ -34,6 +34,8 @@ public:
 	int window_width;
 	int window_height;
     
+	int score;
+
     float time;
 	long frame;
 	int fps;

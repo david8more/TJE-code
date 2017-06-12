@@ -46,25 +46,31 @@ void MenuState::onEnter()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	currentSelection = 0;
+	// siempre q vayamos al menú que se reinicie
+	game->end = true;
 
-	if (game->bkg_music_playing || !game->music_enabled) return;
+	if (game->bkg_music_playing || !game->music_enabled)
+		return;
 	
 	SoundManager::getInstance()->playSound("lluvia", true);
 	game->bkg_music_playing = true;
-
 }
 
-void MenuState::render() {
+void MenuState::render()
+{
+
+	int w = game->window_width;
+	int h = game->window_height;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
 	// for screen resizing
-	if (screen.x != game->window_width || screen.y != game->window_height)
+	if (screen.x != w || screen.y != h)
 	{
-		backgroundQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
-		cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-		screen = Vector2(game->window_width, game->window_height);
+		backgroundQuad.createQuad(w * 0.5, h * 0.5, w, h, true);
+		cam2D.setOrthographic(0.0, w, h, 0.0, -1.0, 1.0);
+		screen = Vector2(w, h);
 	}
 
 	cam2D.set();
@@ -75,42 +81,46 @@ void MenuState::render() {
 	backgroundQuad.render(GL_TRIANGLES);
 	texture->unbind();
 
-	PG_QUAD.createQuad(inCurrentSelection(0) ? game->window_width*0.225:game->window_width*0.2,
-		game->window_height*0.4,
-		inCurrentSelection(0) ? 225:180,
-		40.f, true);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	PG_QUAD.createQuad(inCurrentSelection(0) ? w*0.2 + sin(game->time) * 10 : w*0.2,
+		h*0.4,
+		inCurrentSelection(0) ? 245:200,
+		75, true);
 	SELECTION_TEX = Texture::Get(inCurrentSelection(0) ? "data/textures/menu/PG_SELECTION.tga":"data/textures/menu/PG_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	PG_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
 
-	HT_QUAD.createQuad(inCurrentSelection(1) ? game->window_width*0.225 : game->window_width*0.2,
-		game->window_height*0.5,
-		inCurrentSelection(1) ? 225 : 180,
-		40.f, true);
+	HT_QUAD.createQuad(inCurrentSelection(1) ? w*0.2 + sin(game->time) * 10 : w*0.2,
+		h*0.5,
+		inCurrentSelection(1) ? 245 : 200,
+		75, true);
 	SELECTION_TEX = Texture::Get(inCurrentSelection(1) ? "data/textures/menu/HT_SELECTION.tga": "data/textures/menu/HT_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	HT_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
 
-	OPT_QUAD.createQuad(inCurrentSelection(2) ? game->window_width*0.225 : game->window_width*0.2,
-		game->window_height*0.6,
-		inCurrentSelection(2) ? 225 : 180,
-		40.f, true);
+	OPT_QUAD.createQuad(inCurrentSelection(2) ? w*0.2 + sin(game->time) * 10 : w*0.2,
+		h*0.6,
+		inCurrentSelection(2) ? 245 : 200,
+		75, true);
 	SELECTION_TEX = Texture::Get(inCurrentSelection(2) ? "data/textures/menu/OPT_SELECTION.tga": "data/textures/menu/OPT_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	OPT_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
 
-	E_QUAD.createQuad(inCurrentSelection(3) ? game->window_width*0.225 : game->window_width*0.2,
-		game->window_height*0.7,
-		inCurrentSelection(3) ? 225 : 180,
-		40.f, true);
+	E_QUAD.createQuad(inCurrentSelection(3) ? w*0.2 + sin(game->time) * 10 : w*0.2,
+		h*0.7,
+		inCurrentSelection(3) ? 245 : 200,
+		75, true);
 	SELECTION_TEX = Texture::Get(inCurrentSelection(3) ? "data/textures/menu/EX_SELECTION.tga": "data/textures/menu/EX_NON_SELECTION.tga");
 	SELECTION_TEX->bind();
 	E_QUAD.render(GL_TRIANGLES);
 	SELECTION_TEX->unbind();
 
+	glDisable(GL_BLEND);
 }
 
 void MenuState::update(double time_elapsed)
@@ -169,7 +179,10 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 
 void MenuState::onLeave(int fut_state) {
 
-	if (fut_state == 3) // selection state
+	if (fut_state != 3) // selection state
+		return;
+
+	if (Game::instance->music_enabled)
 	{
 		SoundManager::getInstance()->stopSound("lluvia"); 
 		game->bkg_music_playing = false;

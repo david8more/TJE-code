@@ -15,9 +15,9 @@ IAController::IAController()
 
 	for (float i = 0; i < 180 * DEG2RAD * totalWP; i += 10 * DEG2RAD)
 	{
-		float fx = random() * 500;
-		float fy = random() * 200;
-		float fz = random() * 500;
+		float fx = random() * 1000;
+		float fy = random() * 500;
+		float fz = random() * 1000;
 
 		float x = c.x + cos(i) * radius + fx;
 		float y = 300.0 + fy;
@@ -75,7 +75,12 @@ void IAController::update(float seconds_elapsed)
 	// distance to player
 	float distanceToPlayer = targetToPlayer.length();
 
-	if (distanceToPlayer < 500.0 && state != "retiring")
+	if (distanceToPlayer < 50.0)
+	{
+		state = "avoiding collision";
+	}
+
+	else if (distanceToPlayer < 500.0 && state != "retiring")
 	{
 		to_target = targetToPlayer;
 		state = "chasing";

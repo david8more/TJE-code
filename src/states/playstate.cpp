@@ -38,15 +38,14 @@ PlayState::~PlayState() {}
 
 void PlayState::init()
 {
-	std::cout << "init playstate" << std::endl;
-
 	bManager = BulletManager::getInstance();
 	game = Game::getInstance();
+	playTime = 0;
 	world = World::getInstance();
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 4.f, -12.5f);
+	viewpos = Vector3(0.f, 6.f, -10.f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
@@ -167,9 +166,8 @@ void PlayState::render()
 
 void PlayState::update(double seconds_elapsed)
 {
-
-	if(game->keystate[SDL_SCANCODE_7])
-		player->speed = 1;
+	if(game->start)
+		playTime += seconds_elapsed;
 
 	//Vector3 p = player->getPosition();
 	//std::cout << p.x << ".." << p.y << ".." << p.z << std::endl;
@@ -201,7 +199,7 @@ void PlayState::update(double seconds_elapsed)
 	Vector3 eye = player->model * viewpos;
 
 	// evitamos que se mueva en la vista de cabina
-	if(current_view == FULLVIEW)
+	if(current_view == FULLVIEW && game->start)
 		eye = game->current_camera->eye * 0.85 + eye * 0.15;
 	
 	game->fixed_camera->lookAt(eye, player->model * viewtarget, player->model.rotateVector(Vector3(0, 1, 0)));
@@ -227,9 +225,10 @@ void PlayState::update(double seconds_elapsed)
 void PlayState::renderWorld(Camera * camera)
 {
 	glDisable(GL_DEPTH_TEST);
-	world->sky->model.setIdentity();
-	world->sky->model.traslate(camera->eye.x, camera->eye.y, camera->eye.z);
-	world->sky->render(camera);
+	Entity * sky = Entity::getEntity("sky");
+	sky->model.setIdentity();
+	sky->model.traslate(camera->eye.x, camera->eye.y, camera->eye.z);
+	sky->render(camera);
 	
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -337,46 +336,49 @@ void PlayState::renderGUI()
 	logos.render(GL_TRIANGLES);
 	et->unbind();
 
-	ss.str("");
-	ss << "Enemies: " << (1 + World::instance->airplanes.size());
-	drawText(w * 0.1, h * 0.2, ss.str(), Vector3(1, 1, 1), 1.5);
-	drawText(w * 0.1, h * 0.1, "Allies: 1", Vector3(1, 1, 1), 1.5);
-
-	for (int i = 0; i < World::instance->ships.size(); i++)
-	{
-		Ship* c = (Ship*)World::instance->ships[i];
-		ss.str("");
-		ss << c->name << " : " << c->life;
-		drawText(w * 0.05, h * 0.3 + i * 25, ss.str(), Vector3(0, 0, 1), 2);
-	}
-
 	// missiles
+
+	glColor4f(1, 1, 1, 1.0);
+	Texture * etor = Texture::Get("data/textures/torpedo-icon.tga");
 
 	for (int i = 0; i < player->torpedosLeft; i++)
 	{
 		Mesh torpedo;
-		Texture * et = Texture::Get("data/textures/torpedo-icon.tga");
-		torpedo.createQuad(w * 0.48 + i * h * 0.05, h * 0.55, h * 0.04, h * 0.04);
-		et->bind();
+		torpedo.createQuad(w * 0.4 + i * 20, h * 0.425, h * 0.025, h * 0.025);
+		etor->bind();
 		torpedo.render(GL_TRIANGLES);
-		et->unbind();
+		etor->unbind();
 	}
 
-	// vidas
+	ss.str("");
+	ss << "Enemies: " << (1 + World::instance->airplanes.size());
+	drawText(w * 0.1, h * 0.2, ss.str(), Vector3(1, 1, 1), 2);
+	drawText(w * 0.1, h * 0.1, "Allies: 1", Vector3(1, 1, 1), 2);
+
+	if (World::instance->ships.size())
+	{
+		for (int i = 0; i < World::instance->ships.size(); i++)
+		{
+			Ship* c = (Ship*)World::instance->ships[i];
+			ss.str("");
+			Vector3 color;
+			if (c->uid == Airplane::PLAYER_SHIP)
+			{
+				ss << "DEFEND: " << c->life;
+				color = Vector3(0, 0, 1);
+			}
+			else
+			{
+				ss << "ATTACK: " << c->life;
+				color = Vector3(1, 0, 0);
+			}
+			drawText(w * 0.05, h * 0.3 + i * 25, ss.str(), color, 2);
+		}
+	}
+
+	// in game debug info
 	if (game->inGame_DEBUG)
 	{
-		if (World::instance->ships.size())
-		{
-			for (int i = 0; i < World::instance->ships.size(); i++)
-			{
-				Ship* c = (Ship*)World::instance->ships[i];
-				ss.str("");
-				ss << c->name << " : " << c->life;
-				Vector3 color = c->uid == Airplane::PLAYER_SHIP ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
-				drawText(w * 0.2, 50 + i * 25, ss.str(), color, 1.5);
-			}
-		}
-
 		if (World::instance->airplanes.size())
 		{
 			for (int i = 0; i < World::instance->airplanes.size(); i++)
@@ -384,7 +386,7 @@ void PlayState::renderGUI()
 				Airplane* c = (Airplane*)World::instance->airplanes[i];
 				ss.str("");
 				ss << c->name << " : " << c->life << " : " << c->controller->state;
-				drawText(w * 0.2, 100 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
+				drawText(w * 0.2, 50 + i * 25, ss.str(), Vector3(1, 0, 0), 1.5);
 			}
 		}
 
@@ -400,7 +402,7 @@ void PlayState::renderGUI()
 		drawText(w * 0.64, 50, ss.str(), Vector3(0.2, 0.2, 0.2), 1.5);
 		ss.str("");
 		ss << "Torpedos: " << 2 << " || Torpedo damage: " << 450;
-		drawText(w * 0.64, 75, ss.str(), Vector3(0.2, 0.2, 0.2), 1.5);
+		drawText(w * 0.64, 75, ss.str(), Vector3(0.9, 0.9, 0.1), 1.5);
 	}
 	
 
@@ -466,8 +468,8 @@ void PlayState::renderGUI()
 	camUp.lookAt(eye, center, up);
 	camUp.set();
 
-	int sizex = 225;
-	int sizey = 170;
+	int sizex = w * 0.2;
+	int sizey = h * 0.2;
 
 	glScissor(w * 0.04, h - h * 0.975, sizex, sizey);
 	glEnable(GL_SCISSOR_TEST);
@@ -484,15 +486,23 @@ void PlayState::renderGUI()
 	Mesh objectsInMap;
 
 	// player
-	objectsInMap.vertices.push_back(center + Vector3(0, 4000, 0));
-	objectsInMap.vertices.push_back(center + Vector3(0, 4100, 0));
+	objectsInMap.vertices.push_back(center);
+	objectsInMap.colors.push_back(Vector4(0.9, 0.75, 0.0, 0.65));
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
 		Entity* current = World::instance->airplanes[i];
-		Vector3 current_center = current->model * Vector3() + Vector3(0, 1500, 0);
+		Vector3 current_center = current->model * Vector3();
 		objectsInMap.vertices.push_back(current_center);
-		objectsInMap.colors.push_back(Vector4(0.9, 0.0, 0.0, 0.75));
+		objectsInMap.colors.push_back(Vector4(0.9, 0.0, 0.0, 0.65));
+	}
+
+	for (int i = 0; i < World::instance->ships.size(); i++)
+	{
+		Entity* current = World::instance->ships[i];
+		Vector3 current_center = current->model * Vector3();
+		objectsInMap.vertices.push_back(current_center);
+		objectsInMap.colors.push_back(Vector4(0, 0.9, 0.0, 0.65));
 	}
 	
 	Shader* shader = Shader::Load("data/shaders/map.vs", "data/shaders/map.fs");
@@ -504,6 +514,7 @@ void PlayState::renderGUI()
 	shader->setMatrix44("u_model", m);
 	shader->setMatrix44("u_mvp", camUp.viewprojection_matrix);
 	shader->setVector3("u_camera_pos", camUp.eye);
+	glPointSize(8.0);
 	objectsInMap.render(GL_POINTS, shader);
 	shader->disable();
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -517,7 +528,7 @@ void PlayState::renderGUI()
 
 	Mesh compass;
 	Texture * tc = Texture::Get("data/textures/compass.tga");
-	compass.createQuad(w * 0.15, h * 0.85, 225, 225, true);
+	compass.createQuad(w * 0.14, h * 0.875, sizex, sizex, true);
 
 	glColor4f(1, 1, 1, 1.0);
 	glLineWidth(1.0);
@@ -532,6 +543,8 @@ void PlayState::renderGUI()
 
 void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 {
+	std::string cheat;
+
 	switch (event.keysym.sym)
 	{
 	case SDLK_0:
@@ -557,10 +570,27 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		controlIA++;
 		break;
 	case SDLK_7:
-		World::instance->playerShip->shoot();
+		// debug end
+		player->life = 0;
+		break;
+	case SDLK_h:
+		if (game->fullscreen)
+			return;
+		std::cin >> cheat;
+		if (cheat == "god")
+			player->damageM60 = 1000.0;
+		else if (cheat == "machine")
+			player->cadence = 150;
+		else if (cheat == "tank")
+			player->setLife(1000);
+		else if (cheat == "bolt")
+			player->speed = 200.0;
 		break;
 	case SDLK_p:
 		pause = !pause;
+		break;
+	case SDLK_j:
+		Game::instance->score += 500;
 		break;
 	case SDLK_l:
 		game->inGame_DEBUG = !game->inGame_DEBUG;
@@ -611,7 +641,9 @@ void PlayState::setZoom()
 
 void PlayState::onLeave(int fut_state)
 {
-	SoundManager::getInstance()->stopSound("music");
+	if (Game::instance->music_enabled)
+		SoundManager::getInstance()->stopSound("music");
+	SoundManager::getInstance()->stopSound("plane");
 }
 
 void PlayState::setView()

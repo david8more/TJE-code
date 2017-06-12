@@ -25,6 +25,7 @@ public:
 		Vector3 center;
 		Vector3 halfsize;
 		float radius;
+		int vertexMult;
 	} sBinHeader;
 
 	sBinHeader header;

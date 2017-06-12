@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#define DEBUG 0
+#define DEBUG 1
 
 //some globals
 Game* Game::instance = NULL;
@@ -49,7 +49,8 @@ Game::Game(SDL_Window* window)
 	ffire_on = false;
 	BCK_VOL = 0.5;
 
-	start = end = false;
+	start = false;
+	score = 0;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -66,6 +67,7 @@ void Game::init(void)
 		MenuState::getInstance(sManager)->init();
 		SelectionState::getInstance(sManager)->init();
 		PlayState::getInstance(sManager)->init();
+		EndingState::getInstance(sManager)->init();
 		sManager->setInitialState(SelectionState::getInstance(sManager));
 	}
 	else

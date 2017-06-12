@@ -149,7 +149,12 @@ void PlayerController::update(float seconds_elapsed)
 		
 	}
 
-	player->model.traslateLocal(0, 0, speed * seconds_elapsed);
+	float playTime = PlayState::getInstance(Game::instance->sManager)->playTime;
+
+	if (playTime < 1.0)
+		player->model.traslateLocal(0, 0, speed * seconds_elapsed * pow(playTime, 5));
+	else
+		player->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
 	// controlled changed?
 

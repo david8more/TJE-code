@@ -136,19 +136,19 @@ void SelectionState::render() {
 	switch (playerModel) {
 	case SPITFIRE:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(SPITFIRE, NULL);
+		eMesh = new Airplane(SPITFIRE, false);
 		break;
 	case P38:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(P38, NULL);
+		eMesh = new Airplane(P38, false);
 		break;
 	case WILDCAT:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(WILDCAT, NULL);
+		eMesh = new Airplane(WILDCAT, false);
 		break;
 	case BOMBER:
 		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(BOMBER, NULL);
+		eMesh = new Airplane(BOMBER, false);
 		break;
 	default:
 		break;
@@ -262,7 +262,8 @@ void SelectionState::update(double time_elapsed) {
 
 void SelectionState::selectionDown()
 {
-	SoundManager::instance->playSound("move_menu", false);
+	if(Game::instance->effects_enabled)
+		SoundManager::instance->playSound("move_menu", false);
 	playerModel++;
 	if (playerModel == 4)
 		playerModel = 0;
@@ -270,7 +271,8 @@ void SelectionState::selectionDown()
 
 void SelectionState::selectionUp()
 {
-	SoundManager::instance->playSound("move_menu", false);
+	if (Game::instance->effects_enabled)
+		SoundManager::instance->playSound("move_menu", false);
 	playerModel--;
 	if (playerModel == -1)
 		playerModel = 3;

@@ -56,6 +56,7 @@ public:
 	int current_view;
 
 	Game* game;
+	float playTime;
 
 	Airplane* player;
 

@@ -364,9 +364,8 @@ void EntityCollider::testStaticCollisions()
 	Vector3 coll;
 	int maxT = (current_position - ray_origin).length();
 
-	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll)) {
+	if (EntityCollider::testRayWithAll(ray_origin, ray_dir, maxT, coll))
 		onCollision(NULL);
-	}
 }
 
 void EntityCollider::remove(Entity* ent)
@@ -387,12 +386,15 @@ void EntityCollider::remove(Entity* ent)
 
 void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 {
-	this->life -= b.damage;
-	this->life = max(this->life, 0);
+	life -= b.damage;
+	life = max(life, 0);
+
+	if (this != World::instance->playerAir && this != World::instance->playerShip)
+		Game::instance->score += b.damage;
 
 	Explosion::createExplosion(collisionPoint);
 
-	if (!this->life) {
+	if (!life) {
 		SoundManager::getInstance()->playSound("explosion", false);
 		unboundController();
 		destroy();

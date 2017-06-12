@@ -22,13 +22,8 @@ void SoundManager::playSound(const std::string& name, bool loop)
 {
 	std::string sound = "data/sounds/" + name + ".wav";
 
-	/*if (name == "shot")
-	{
-		HSAMPLE hSample = BASS_SampleLoad(false, sound.c_str(), 0L, 0, 1, loop ? BASS_SAMPLE_LOOP : 0);
-		HCHANNEL hSampleChannel = BASS_SampleGetChannel(hSample, false);
-		BASS_ChannelPlay(hSampleChannel, loop);
-		return;
-	}
+	// stop if the sound is being played
+	stopSound(name);
 
 	auto it = samples.find(name);
 	if (it != samples.end())
@@ -45,19 +40,20 @@ void SoundManager::playSound(const std::string& name, bool loop)
 		}
 		BASS_ChannelPlay(hSampleChannel, loop);
 		return;
-	}*/
+	}
 
 	HSAMPLE hSample = BASS_SampleLoad(false, sound.c_str(), 0L, 0, 1, loop ? BASS_SAMPLE_LOOP : 0);
 	HCHANNEL hSampleChannel = BASS_SampleGetChannel(hSample, false);
-	BASS_ChannelPlay(hSampleChannel, loop);
 
 	samples[name] = hSample;
 	channels[name] = hSampleChannel;
+	
+	BASS_ChannelPlay(hSampleChannel, loop);
 }
 
 void SoundManager::stopSound(const std::string& name)
 {
-	std::cout << "stopping sound.. " << name << std::endl;
+	//std::cout << "stopping sound.. " << name << std::endl;
 
 	auto it = samples.find(name);
 	if (it != samples.end())
@@ -73,7 +69,7 @@ void SoundManager::stopSound(const std::string& name)
 
 void SoundManager::setVolume(const std::string& name, float value)
 {
-	std::cout << "changing volume to .. " << name << std::endl;
+	//std::cout << "changing volume to .. " << name << std::endl;
 
 	auto it = samples.find(name);
 	if (it != samples.end())

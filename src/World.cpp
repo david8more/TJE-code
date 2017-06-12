@@ -91,6 +91,7 @@ void World::addPlayerConst()
 
 	// initial zone
 	init_zone = new EntityCollider();
+	init_zone->setName("aircarrier");
 	init_zone->set("aircarrier.ASE", "data/textures/aircarrier_metal.tga", "simple");
 	init_zone->model.setTranslation(2000, -10, -2000);
 	init_zone->setStatic();
@@ -103,6 +104,7 @@ void World::addWorldConst()
 
 	// WORLD
 	sky = new EntityMesh();
+	sky->setName("sky");
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 	
 	EntityCollider* sea = new EntityCollider();
@@ -135,14 +137,14 @@ void World::addEnemies() {
 	int IA_enemies;
 
 	if (game->difficulty == D_BABY)
-		IA_enemies = 3;
-	if (game->difficulty == D_SKILLED)
-		IA_enemies = 8;
-	if (game->difficulty == D_INSANE)
-		IA_enemies = 20;
+		IA_enemies = 6;
+	else if (game->difficulty == D_SKILLED)
+		IA_enemies = 13;
+	else if (game->difficulty == D_INSANE)
+		IA_enemies = 21;
 
-	for (int i = 1; i < IA_enemies; i++) {
-		//int type = rand() % 4;
+	for (int i = 1; i < IA_enemies; i++)
+	{
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
 		enemyAir->setUid(1000 + i);
 		ss.str("");
@@ -181,6 +183,10 @@ bool World::isGameOver()
 	if (playerAir->life <= 0)
 		return true;
 
+	// asimismo, si matan al barco ->>> LOSE
+	if (playerShip->destroyed)
+		return true;
+
 	/* vida de los enemigos: si seguimos vivos y ellos mueren ->>> WIN
 	*  pero solo acaba si el barco muere!!! 
 	*/
@@ -194,6 +200,9 @@ bool World::isGameOver()
 
 void World::reset()
 {
+	if (playerAir == NULL)
+		return;
+	
 	std::cout << "applying reset to world" << std::endl;
 
 	// enemies
@@ -202,11 +211,13 @@ void World::reset()
 
 	Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
 
-	if (enemyShip != NULL)
+	if (!enemyShip->destroyed)
 		enemyShip->destroy();
 
 	// player
-	playerAir->destroy();
+
+	if (playerAir != NULL)
+		playerAir->destroy();
 	if (playerShip != NULL)
 		playerShip->destroy();
 
@@ -217,4 +228,5 @@ void World::reset()
 	ships.push_back(playerShip);
 
 	Game::instance->end = false;
+	Game::instance->start = false;
 }

@@ -52,17 +52,8 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(175);
 		cadence = 75.0;
-		damageM60 = 25.0;
+		damageM60 = 15.0;
 		speed = 100.0;
-		if (0) // god mode
-		{
-			damageM60 = 1000.0;
-		}
-		if (0) // slow mode
-		{
-			speed = 20.0;
-		}
-
 	}
 
 	else if (model == P38)
@@ -78,7 +69,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(200);
 		cadence = 85.0;
-		damageM60 = 15.0;
+		damageM60 = 10.0;
 		speed = 90.0;
 	}
 
@@ -89,7 +80,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(300);
 		cadence = 60.f;
-		damageM60 = 40.0;
+		damageM60 = 25.0;
 		speed = 70.0;
 	}
 
@@ -106,13 +97,18 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(350);
 		cadence = 55.0;
-		damageM60 = 15.0;
+		damageM60 = 20.0;
 		speed = 80.0;
 	}
 	else
 	{
 		exit(0);
 	}
+
+	if (0) // god mode
+		damageM60 = 1000.0;
+	if (0) // slow mode
+		speed = 20.0;
 
 	helix->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 	this->addChild(helix);
@@ -328,34 +324,15 @@ void Airplane::torpedoShoot() {
 	}
 }
 
-void Airplane::onCollision(EntityCollider* collided_with) {
-	//Game* game = Game::getInstance();
-	
-	if (collided_with != NULL)
-	{
-		// IA no colisionan entre ellas
-		if (uid > 1000 && collided_with->uid > 1000)
-		{
-			return;
-		}
-	}
-	
-	if (name == "player")
-	{
-		std::cout << "CRASHED!" << std::endl;
-		life = 0;
-	}
+void Airplane::onCollision(EntityCollider* collided_with)
+{
+	Game* game = Game::getInstance();
 
-	else if (name == "ia_1")
-	{
-		std::cout << "IA 1 CRASHED!" << std::endl;
-	}
-
-	else if (name == "ia_2")
-	{
-		std::cout << "IA 2 CRASHED!" << std::endl;
-	}
-	//game->sManager->changeCurrentState(EndingState::getInstance(game->sManager));
+	if (uid > 1000)
+		return;
+	
+	std::cout << "PLAYER CRASHED!" << std::endl;
+	life = 0;
 }
 
 void Airplane::unboundController()
@@ -499,7 +476,6 @@ void Ship::update(float elapsed_time)
 
 void Ship::shoot()
 {
-
 	//if (uid == Airplane::ENEMY_SHIP)
 	//	return;
 
@@ -597,10 +573,11 @@ void Torpedo::onCollision(EntityCollider* collided_with)
 	SoundManager::getInstance()->playSound("explosion", false);
 
 	collided_with->life -= 450.0;
+	Game::instance->score += 450.0;
 	
 	if (collided_with->life <= 0)
 	{
-		std::cout << collided_with->name << " destroyed by torpedo" << std::endl;
+		//std::cout << collided_with->name << " destroyed by torpedo" << std::endl;
 		collided_with->destroy();
 	}
 
