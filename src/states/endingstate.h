@@ -33,6 +33,9 @@ public:
 
 	static EndingState* getInstance(StateManager* SManager);
 
+	std::vector<int> h_scores;
+	bool NEW_HIGH_SCORE;
+
 	// background texture
 	Texture* texture;
 

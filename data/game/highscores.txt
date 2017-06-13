@@ -1,0 +1,14 @@
+*SCORE
+	1200
+
+*SCORE
+	1100
+
+*SCORE
+	1050
+
+*SCORE
+	985
+
+*SCORE
+	755
