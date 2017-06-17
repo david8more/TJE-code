@@ -211,7 +211,7 @@ void EntityMesh::render(Camera * camera)
 	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
 	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
 	shader->setFloat("u_time", Game::getInstance()->time);
-	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
+	shader->setVector3("u_camera_pos", camera->eye);
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
@@ -232,6 +232,21 @@ void EntityMesh::render(Camera * camera)
 	{
 		this->children[i]->render(camera);
 	}
+}
+
+void EntityMesh::renderDifMaterials(Camera* camera, unsigned int begin, unsigned int end, const char * texture)
+{
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	shader->enable();
+	shader->setMatrix44("u_model", m);
+	shader->setMatrix44("u_mvp", mvp);
+	shader->setTexture("u_texture", Texture::Get(texture));
+	shader->setVector3("u_camera_pos", camera->eye);
+	mesh->render(GL_TRIANGLES, shader, begin, end);
+	shader->disable();
 }
 
 void EntityMesh::update( float elapsed_time )

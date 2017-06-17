@@ -48,7 +48,7 @@ public:
 
 	void clear();
 	void render(int primitive);
-	void render(int primitive, Shader* sh);
+	void render(int primitive, Shader* sh, unsigned int begin = 0, unsigned int end = 0);
 
 	void uploadToVRAM(); //store the mesh info in the GPU RAM so it renders faster
 

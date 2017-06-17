@@ -15,6 +15,7 @@
 #include "world.h"
 #include "mesh.h"
 #include "explosion.h"
+#include "effects.h"
 #include <algorithm>
 #include <cassert>
 
@@ -108,7 +109,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 	if (0) // god mode
 		damageM60 = 1000.0;
 	if (0) // slow mode
-		speed = 20.0;
+		speed = 0.0;
 
 	helix->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 	this->addChild(helix);
@@ -220,7 +221,8 @@ void Airplane::update(float elapsed_time) {
 	}
 }
 
-void Airplane::shoot() {
+void Airplane::shoot()
+{
 	BulletManager* bManager = BulletManager::getInstance();
 	Game*game = Game::getInstance();
 
@@ -231,8 +233,10 @@ void Airplane::shoot() {
 
 		switch (planeModel) {
 		case SPITFIRE:
-			bManager->createBullet(model*Vector3(1.9f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
-			bManager->createBullet(model*Vector3(-2.f, -0.25f, 3.0), vel, 2, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(1.9f, -0.25f, 2.0), vel, 2, damageM60, this, 1);
+			bManager->createBullet(model*Vector3(-2.f, -0.25f, 2.0), vel, 2, damageM60, this, 1);
+			Flash::createFlash(Vector3(1.95f, -0.26f, 1.75), this);
+			Flash::createFlash(Vector3(-2.0f, -0.26f, 1.75), this);
 			break;
 		case P38:
 			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
@@ -509,6 +513,98 @@ void Ship::onCollision(EntityCollider* collided_with)
 }
 
 // *************************************************************************
+// AIRCARRIER
+// *************************************************************************
+
+Aircarrier::Aircarrier()
+{
+	setName("aircarrier");
+	std::string shader = "simple";
+	set("aircarrier.ASE", "data/textures/aircarrier_metal.tga"
+		,"data/textures/aircarrier_wood.tga"
+		, "simple");
+
+	model.setTranslation(2000, -10, -2000);
+	setStatic();
+}
+
+Aircarrier::~Aircarrier()
+{
+	
+}
+
+void Aircarrier::set(const char * meshf, const char * texture1, const char * texture2, const char * shaderf)
+{
+	mesh = meshf;
+	texture = texture1;
+	this->texture2 = texture2;
+	materialTriangle = 15186 * 3;
+
+	std::string shader_string(shaderf);
+	std::string fs = "data/shaders/" + shader_string + ".fs";
+	std::string vs = "data/shaders/" + shader_string + ".vs";
+
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+}
+
+void Aircarrier::render(Camera * camera)
+{
+	Mesh* thismesh = Mesh::Get(this->mesh.c_str());
+	unsigned int size = thismesh->vertices.size();
+
+	//
+	Matrix44 m = this->getGlobalMatrix();
+	Matrix44 mvp = m * camera->viewprojection_matrix;
+	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
+	Vector3 pos = m * center;
+
+	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling)
+		return;
+
+	if (alpha)
+	{
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	}
+
+	if (!depthTest)
+		glDisable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_FALSE);
+	if (!cullFace)
+		glDisable(GL_CULL_FACE);
+
+	// 
+
+	renderDifMaterials(camera, 0, materialTriangle, texture.c_str());
+	renderDifMaterials(camera, materialTriangle, size, texture2.c_str());
+	
+	//
+
+	if (!cullFace)
+		glEnable(GL_CULL_FACE);
+
+	if (!depthTest)
+		glEnable(GL_DEPTH_TEST);
+	if (!depthMask)
+		glDepthMask(GL_TRUE);
+
+	if (alpha)
+	{
+		glDisable(GL_BLEND);
+	}
+
+	for (int i = 0; i < this->children.size(); i++)
+	{
+		this->children[i]->render(camera);
+	}
+}
+
+
+// *************************************************************************
 // TORPEDO
 // *************************************************************************
 
@@ -529,7 +625,10 @@ Torpedo::Torpedo(bool culling) {
 	ttl = max_ttl;
 }
 
-Torpedo::~Torpedo() {}
+Torpedo::~Torpedo()
+{
+
+}
 
 void Torpedo::update(float elapsed_time) {
 
@@ -544,9 +643,11 @@ void Torpedo::update(float elapsed_time) {
 
 	testSphereCollision();
 
+	last_position = getPosition();
+
 	model.traslateLocal(0, 0, (max_ttl - 0.8 * ttl) * elapsed_time * -75);
 	ttl -= elapsed_time;
-	
+	Smoke::createSmoke(model * Vector3(0, 3, 0), this);
 }
 
 void Torpedo::activate() {
@@ -614,52 +715,7 @@ Missile::~Missile()
 
 void Missile::render(Camera* camera)
 {
-	Matrix44 m = this->getGlobalMatrix();
-	Matrix44 mvp = m * camera->viewprojection_matrix;
-	Mesh* mesh = Mesh::Get(this->mesh.c_str());
-
-	if (alpha)
-	{
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-	}
-
-	if (!depthTest)
-		glDisable(GL_DEPTH_TEST);
-	if (!depthMask)
-		glDepthMask(GL_FALSE);
-	if (!cullFace)
-		glDisable(GL_CULL_FACE);
-
-	shader->enable();
-	shader->setMatrix44("u_model", m);
-	shader->setMatrix44("u_mvp", mvp);
-	shader->setTexture("u_normal_texture", Texture::Get("data/textures/normal_water.tga"));
-	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
-	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
-	shader->setFloat("u_time", Game::getInstance()->time);
-	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
-	mesh->render(GL_TRIANGLES, shader);
-	shader->disable();
-
-	if (!cullFace)
-		glEnable(GL_CULL_FACE);
-
-	if (!depthTest)
-		glEnable(GL_DEPTH_TEST);
-	if (!depthMask)
-		glDepthMask(GL_TRUE);
-
-	if (alpha)
-	{
-		glDisable(GL_BLEND);
-	}
-
-	for (int i = 0; i < this->children.size(); i++)
-	{
-		this->children[i]->render(camera);
-	}
+	EntityMesh::render(camera);
 
 	rastro.vertices.push_back(getPosition());
 	rastro.vertices.push_back(last_position);

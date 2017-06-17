@@ -4,6 +4,7 @@
 #include "entity.h"
 #include "mesh.h"
 
+class Aircarrier;
 class IAController;
 class Missile;
 
@@ -72,6 +73,21 @@ public:
 
 	std::vector<Missile*> missiles;
 
+};
+
+// *******************************************************************
+
+class Aircarrier : public EntityCollider {
+public:
+
+	std::string texture2;
+	int materialTriangle;
+
+	Aircarrier();
+	~Aircarrier();
+
+	void set(const char * mesh, const char * texture1, const char* texture2, const char * shader);
+	void render(Camera * camera);
 };
 
 // *******************************************************************

@@ -11,6 +11,7 @@ class Entity;
 class EntityMesh;
 class EntityCollider;
 class Airplane;
+class Aircarrier;
 class EntityEnemy;
 class Torpedo;
 

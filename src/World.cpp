@@ -14,7 +14,7 @@
 World* World::instance = NULL;
 
 Ship* enemyShip = NULL;
-EntityCollider* init_zone = NULL;
+Aircarrier* aircarrier = NULL;
 
 World::World()
 {
@@ -73,7 +73,7 @@ void World::addPlayer()
 
 	playerAir->max_life = playerAir->life;
 	
-	playerAir->model = playerAir->model * init_zone->model;
+	playerAir->model = playerAir->model * aircarrier->model;
 	playerAir->model.traslate(0, 17.75, -102.5);
 	root->addChild(playerAir);
 
@@ -90,12 +90,8 @@ void World::addPlayerConst()
 	ships.push_back(playerShip);
 
 	// initial zone
-	init_zone = new EntityCollider();
-	init_zone->setName("aircarrier");
-	init_zone->set("aircarrier.ASE", "data/textures/aircarrier_metal.tga", "simple");
-	init_zone->model.setTranslation(2000, -10, -2000);
-	init_zone->setStatic();
-	root->addChild(init_zone);
+	aircarrier = new Aircarrier();
+	root->addChild(aircarrier);
 }
 
 void World::addWorldConst()
@@ -211,8 +207,11 @@ void World::reset()
 
 	Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
 
-	if (!enemyShip->destroyed)
+	if (enemyShip != NULL)
 		enemyShip->destroy();
+
+	airplanes.clear();
+	ships.clear();
 
 	// player
 
@@ -229,4 +228,5 @@ void World::reset()
 
 	Game::instance->end = false;
 	Game::instance->start = false;
+	Game::instance->score = 0;
 }

@@ -27,7 +27,10 @@ EndingState* EndingState::getInstance(StateManager* SManager)
 
 void EndingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	SManager->changeCurrentState(MenuState::getInstance(SManager));
+	if(event.keysym.sym == SDLK_RETURN)
+	{	
+		SManager->changeCurrentState(MenuState::getInstance(SManager));
+	}
 }
 
 void EndingState::init()
@@ -146,10 +149,10 @@ void EndingState::render()
 
 	std::stringstream ss;
 
-	if(!NEW_HIGH_SCORE)
-		ss << "SCORE: " << game->score;
+	if(NEW_HIGH_SCORE)
+		ss << "NEW H ";
 	else
-		ss << "NEW H SCORE: " << game->score;
+		ss << "SCORE: " << game->score;
 
 	drawText(w * 0.5, h * 0.3, ss.str(), Vector3(1.0, 1.0, 1.0), 4.0);
 

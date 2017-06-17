@@ -11,6 +11,7 @@
 #include "../world.h"
 #include "../bulletmanager.h"
 #include "../explosion.h"
+#include "../effects.h"
 #include "../playercontroller.h"
 #include "../rendertotexture.h"
 #include "../soundmanager.h"
@@ -45,7 +46,7 @@ void PlayState::init()
 	world->create();
 
 	// posicion y direccion de la vista seleccionada
-	viewpos = Vector3(0.f, 6.f, -10.f);
+	viewpos = Vector3(0.f, 7.f, -11.f);
 	viewtarget = Vector3(0.f, 0.f, 100.f);
 
 	//create our camera
@@ -193,7 +194,11 @@ void PlayState::update(double seconds_elapsed)
 	// update all scene
 	world->root->update(seconds_elapsed);
 	BulletManager::getInstance()->update(seconds_elapsed);
+
+	// update effects
 	Explosion::update(seconds_elapsed);
+	Flash::update(seconds_elapsed);
+	Smoke::update(seconds_elapsed);
 
 	// interpolate current and previous camera
 	Vector3 eye = player->model * viewpos;
@@ -241,7 +246,10 @@ void PlayState::renderWorld(Camera * camera)
 	world->root->render(camera);
 	bManager->render();
 
+	// render effects
 	Explosion::render(camera);
+	Flash::render(camera);
+	Smoke::render(camera);
 
 	//
 	if (debug_mesh.vertices.size())
@@ -314,7 +322,7 @@ void PlayState::renderGUI()
 
 	if (player->overused)
 	{
-		drawText(w * 0.22, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2);
+		drawText(w * 0.22, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2.f);
 	}
 
 	glColor4f(1, 1, 1, 1.0);
@@ -463,7 +471,7 @@ void PlayState::renderGUI()
 	Camera camUp;
 	camUp.setPerspective(45.f, w / (float)h, 0.01, 100000);
 	Vector3 center = player->model * Vector3();
-	Vector3 eye = center + Vector3(0, 7000, 0);
+	Vector3 eye = center + Vector3(0, 2000, 0);
 	Vector3 up = Vector3(0, 0, 1);
 	camUp.lookAt(eye, center, up);
 	camUp.set();
@@ -484,10 +492,20 @@ void PlayState::renderGUI()
 	}
 
 	Mesh objectsInMap;
+	Mesh visionField;
 
 	// player
 	objectsInMap.vertices.push_back(center);
 	objectsInMap.colors.push_back(Vector4(0.9, 0.75, 0.0, 0.65));
+
+	Vector3 camera = Game::instance->current_camera->center;
+
+	visionField.vertices.push_back(camera);
+	visionField.vertices.push_back(camera + player->model.rotateVector(Vector3(125, 0, 200)));
+	visionField.vertices.push_back(camera + player->model.rotateVector(Vector3(-125, 0, 200)));
+	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 0.5));
+	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
+	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
@@ -517,6 +535,9 @@ void PlayState::renderGUI()
 	glPointSize(8.0);
 	objectsInMap.render(GL_POINTS, shader);
 	shader->disable();
+	glLineWidth(8.0);
+	visionField.render(GL_TRIANGLES);
+	glLineWidth(1.0);
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
 	glDisable(GL_SCISSOR_TEST);
@@ -552,10 +573,6 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		game->current_camera->near_plane = 7.5f;
 		SoundManager::getInstance()->playSound("plane", true);
 		break;
-	case SDLK_1: // full plane view or cabine view
-		current_view = current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
-		setView();
-		break;
 	case SDLK_3:
 		game->current_camera = game->current_camera == game->fixed_camera ? game->free_camera : game->fixed_camera;
 		break;
@@ -586,15 +603,23 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		else if (cheat == "bolt")
 			player->speed = 200.0;
 		break;
+		// full plane view or cabine view
+	case SDLK_v: 
+		current_view = current_view == FULLVIEW ? CABINEVIEW : FULLVIEW;
+		setView();
+		break;
+		// pause playstate
 	case SDLK_p:
 		pause = !pause;
 		break;
 	case SDLK_j:
 		Game::instance->score += 500;
 		break;
-	case SDLK_l:
+		// debug info
+	case SDLK_i:
 		game->inGame_DEBUG = !game->inGame_DEBUG;
 		break;
+		// debug set position near ships
 	case SDLK_k:
 		player->model.setTranslation(2600, 100, 1650);
 		player->model.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
@@ -662,7 +687,7 @@ void PlayState::setView()
 			player->set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
 		}
 
-		viewpos = Vector3(0.f, 4.f, -12.5f);
+		viewpos = Vector3(0.f, 7.f, -11.f);
 		viewtarget = Vector3(0.f, 5.f, 10.f);
 		break;
 

@@ -72,6 +72,7 @@ public:
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
+	void renderDifMaterials(Camera* camera, unsigned int begin, unsigned int end, const char * texture);
 	void update(float elapsed_time);
 
 };

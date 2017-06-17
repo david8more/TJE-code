@@ -108,7 +108,7 @@ void Mesh::render(int primitive)
 	glBindBufferARB( GL_ARRAY_BUFFER_ARB, 0 );
 }
 
-void Mesh::render( int primitive, Shader* sh )
+void Mesh::render( int primitive, Shader* sh,  unsigned int begin, unsigned int end)
 {
 	if(!sh || !sh->compiled)
         return render(primitive);
@@ -181,7 +181,10 @@ void Mesh::render( int primitive, Shader* sh )
         }
     }
     
-	glDrawArrays(primitive, 0, (GLsizei)vertices.size() );
+	if(!begin && !end)
+		glDrawArrays(primitive, 0, (GLsizei)vertices.size() );
+	else 
+		glDrawArrays(primitive, (GLsizei)begin, (GLsizei)end);
 
 	glDisableVertexAttribArray( vertex_location );
 	if(normal_location != -1) glDisableVertexAttribArray( normal_location );

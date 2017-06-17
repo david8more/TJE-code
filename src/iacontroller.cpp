@@ -75,12 +75,12 @@ void IAController::update(float seconds_elapsed)
 	// distance to player
 	float distanceToPlayer = targetToPlayer.length();
 
-	if (distanceToPlayer < 50.0)
+	if (distanceToPlayer < 80.0)
 	{
 		state = "avoiding collision";
 	}
 
-	else if (distanceToPlayer < 500.0 && state != "retiring")
+	else if (distanceToPlayer < 650.0 && state != "retiring")
 	{
 		to_target = targetToPlayer;
 		state = "chasing";
