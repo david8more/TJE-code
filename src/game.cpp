@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#define DEBUG 0
+#define DEBUG 1
 
 //some globals
 Game* Game::instance = NULL;

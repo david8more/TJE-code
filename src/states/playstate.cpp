@@ -286,8 +286,15 @@ void PlayState::renderGUI()
 	energyBar.createBox(w*0.7 + h * 25 * 0.0075, h*0.9, h * 50 * 0.0075, 25);
 	energyBar.render(GL_LINES);
 
-	float f = (player->life / (float)player->max_life);
 
+	// fondo barra
+	float full = h * 50 * 0.0075;
+
+	energyBar.createQuad(w*0.7 + full * 0.5, h*0.9, full, 25);
+	glColor4f(0.f, 0.f, 0.f, 1.f);
+	energyBar.render(GL_TRIANGLES);
+
+	float f = (player->life / (float)player->max_life);
 	float energyWidth = f * h * 50 * 0.0075;
 	Vector3 ve(0.8, 0.8, 0.1);
 
@@ -357,6 +364,7 @@ void PlayState::renderGUI()
 		torpedo.render(GL_TRIANGLES);
 		etor->unbind();
 	}
+	// players
 
 	ss.str("");
 	ss << "Enemies: " << (1 + World::instance->airplanes.size());
@@ -501,8 +509,10 @@ void PlayState::renderGUI()
 	Vector3 camera = Game::instance->current_camera->center;
 
 	visionField.vertices.push_back(camera);
-	visionField.vertices.push_back(camera + player->model.rotateVector(Vector3(125, 0, 200)));
-	visionField.vertices.push_back(camera + player->model.rotateVector(Vector3(-125, 0, 200)));
+	Vector3 p1 = camera + player->model.rotateVector(Vector3(125, 0, 200));
+	Vector3 p2 = camera + player->model.rotateVector(Vector3(-125, 0, 200));
+	visionField.vertices.push_back(p1);
+	visionField.vertices.push_back(p2);
 	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 0.5));
 	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
 	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
@@ -547,15 +557,75 @@ void PlayState::renderGUI()
 
 	cam2D.set();
 
-	Mesh compass;
+	Mesh border;
 	Texture * tc = Texture::Get("data/textures/compass.tga");
-	compass.createQuad(w * 0.14, h * 0.875, sizex, sizex, true);
+	border.createQuad(w * 0.14, h * 0.875, sizex, sizex, true);
 
 	glColor4f(1, 1, 1, 1.0);
 	glLineWidth(1.0);
 	tc->bind();
-	compass.render(GL_TRIANGLES);
+	border.render(GL_TRIANGLES);
 	tc->unbind();
+
+	// compass
+
+	glColor4f(1, 1, 1, 1.0);
+	Texture * bru = Texture::Get("data/textures/brujula.tga");
+
+	cam2D.set();
+
+	Mesh compass;
+	int tam = 200;
+	compass.createQuad(w * 0.9, h * 0.15, tam, tam, true);
+	bru->bind();
+	compass.render(GL_TRIANGLES);
+	bru->unbind();
+
+	// compass indicators
+
+	camUp.setPerspective(45.f, w / (float)h, 0.01, 100000);
+	center = player->model * Vector3();
+	eye = center + Vector3(0, 2000, 0);
+	up = Vector3(0, 0, 1);
+	camUp.lookAt(eye, center, up);
+	camUp.set();
+
+	
+
+	glScissor(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
+	glEnable(GL_SCISSOR_TEST);
+	glViewport(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	Mesh agu;
+	Mesh m_agu;
+
+	Vector3 pos1 = player->getPosition();
+	Vector3 pos2 = player->model * Vector3(0, 0, 400);
+	Vector3 pos3 = player->model * Vector3(0, 0, -400);
+
+	agu.vertices.push_back(pos1);
+	agu.vertices.push_back(pos2);
+
+	m_agu.vertices.push_back(pos1);
+	m_agu.vertices.push_back(pos3);
+
+
+	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.75));
+	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.75));
+	
+	m_agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.75));
+	m_agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.75));
+
+	glLineWidth(4.0);
+	agu.render(GL_LINES);
+	m_agu.render(GL_LINES);
+	glLineWidth(1.0);
+
+	glDisable(GL_SCISSOR_TEST);
+	glViewport(0, 0, w, h);
+
 	
 	// FINISHED RENDER INTERFACE ****************************************************************
 	
