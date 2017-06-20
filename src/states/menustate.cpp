@@ -29,10 +29,13 @@ void MenuState::init()
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
 
+	int w = game->window_width;
+	int h = game->window_height;
+
 	// configuración inicial
-	backgroundQuad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
-	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	screen = Vector2(game->window_width, game->window_height);
+	backgroundQuad.createQuad(w * 0.5, h * 0.5, w, h, true);
+	cam2D.setOrthographic(0.0, w, h, 0.0, -1.0, 1.0);
+	screen = Vector2(w, h);
 }
 
 void MenuState::onEnter()
@@ -49,16 +52,15 @@ void MenuState::onEnter()
 	// siempre q vayamos al menú que se reinicie
 	game->end = true;
 
-	if (game->bkg_music_playing || !game->music_enabled)
-		return;
-	
-	SoundManager::getInstance()->playSound("lluvia", true);
-	game->bkg_music_playing = true;
+	if (!game->bkg_music_playing && game->music_enabled)
+	{
+		SoundManager::getInstance()->playSound("music", true);
+		game->bkg_music_playing = true;
+	}
 }
 
 void MenuState::render()
 {
-
 	int w = game->window_width;
 	int h = game->window_height;
 

@@ -2,6 +2,7 @@
 #include "World.h"
 #include "game.h"
 #include "framework.h"
+#include <algorithm>
 
 IAController::IAController()
 {
@@ -11,13 +12,15 @@ IAController::IAController()
 
 	Vector3 c(2000, -10, 1700);
 
-	float radius = 670.0;
+	float radius = 500.0;
 
-	for (float i = 0; i < 180 * DEG2RAD * totalWP; i += 10 * DEG2RAD)
+	float order = (random() * 50)  * 10 * DEG2RAD;
+
+	for (float i = order; i < 180 * DEG2RAD * (totalWP + order); i += 10 * DEG2RAD)
 	{
-		float fx = random() * 1000;
-		float fy = random() * 500;
-		float fz = random() * 1000;
+		float fx = random() * 500;
+		float fy = random() * 200;
+		float fz = random() * 500;
 
 		float x = c.x + cos(i) * radius + fx;
 		float y = 300.0 + fy;
@@ -25,6 +28,8 @@ IAController::IAController()
 
 		waypoints.push_back(Vector3(x, y, z));
 	}
+
+	//std::random_shuffle(waypoints.begin(), waypoints.end());
 }
 
 IAController::~IAController()
@@ -80,10 +85,18 @@ void IAController::update(float seconds_elapsed)
 		state = "avoiding collision";
 	}
 
-	else if (distanceToPlayer < 650.0 && state != "retiring")
+	else if (distanceToPlayer < 750.0 && state != "retiring")
 	{
-		to_target = targetToPlayer;
-		state = "chasing";
+		if (distance_wp < 1000)
+		{
+			to_target = targetToPlayer;
+			state = "chasing";
+
+		}
+		else
+		{
+			state = "waypoints";
+		}
 	}
 
 	// rotaciones

@@ -599,7 +599,6 @@ void PlayState::renderGUI()
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	Mesh agu;
-	Mesh m_agu;
 
 	Vector3 pos1 = player->getPosition();
 	Vector3 pos2 = player->model * Vector3(0, 0, 400);
@@ -608,19 +607,18 @@ void PlayState::renderGUI()
 	agu.vertices.push_back(pos1);
 	agu.vertices.push_back(pos2);
 
-	m_agu.vertices.push_back(pos1);
-	m_agu.vertices.push_back(pos3);
+	agu.vertices.push_back(pos1);
+	agu.vertices.push_back(pos3);
 
 
-	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.75));
-	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.75));
+	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.95));
+	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.15));
 	
-	m_agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.75));
-	m_agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.75));
+	agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.95));
+	agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.15));
 
-	glLineWidth(4.0);
+	glLineWidth(5);
 	agu.render(GL_LINES);
-	m_agu.render(GL_LINES);
 	glLineWidth(1.0);
 
 	glDisable(GL_SCISSOR_TEST);

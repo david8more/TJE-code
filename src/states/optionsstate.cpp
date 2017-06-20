@@ -75,7 +75,7 @@ void OptionsState::render() {
 		{
 		case MUSIC: 
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->music_enabled ? "OF COURSE":"NAH", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->music_enabled ? "ENABLED":"DISABLED", c, 3.0);
 			break;
 		case MUSIC_VOL:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -86,11 +86,11 @@ void OptionsState::render() {
 			break;
 		case EFFECTS: 
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->effects_enabled ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->effects_enabled ? "ENABLED" : "DISABLED", c, 3.0);
 			break;
 		case FULLSCREEN:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->fullscreen ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->fullscreen ? "ENABLED" : "DISABLED", c, 3.0);
 			break;
 		case GAMEMODE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -101,7 +101,7 @@ void OptionsState::render() {
 			break; 
 		case FRIENDLYFIRE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->ffire_on ? "OF COURSE" : "NAH", c, 3.0);
+			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->ffire_on ? "ENABLED" : "DISABLED", c, 3.0);
 			break;
 		default:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
@@ -233,14 +233,14 @@ void OptionsState::upVol()
 {
 	if(game->BCK_VOL < 1.0)
 		game->BCK_VOL += 0.1;
-	SoundManager::getInstance()->setVolume("lluvia", game->BCK_VOL);
+	SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
 }
 
 void OptionsState::downVol()
 {
 	if (game->BCK_VOL > 0.0)
 		game->BCK_VOL -= 0.1;
-	SoundManager::getInstance()->setVolume("lluvia", game->BCK_VOL);
+	SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
 }
 
 void OptionsState::selectionUp()
@@ -276,12 +276,12 @@ void OptionsState::selectionChosen()
 		game->music_enabled = !game->music_enabled;
 		if(!game->music_enabled)
 		{
-			SoundManager::getInstance()->stopSound("lluvia");
+			SoundManager::getInstance()->stopSound("music");
 			game->bkg_music_playing = false;
 		}
 		else 
 		{
-			SoundManager::getInstance()->playSound("lluvia", true);
+			SoundManager::getInstance()->playSound("music", true);
 			game->bkg_music_playing = true;
 		}
 		break;

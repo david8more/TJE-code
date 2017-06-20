@@ -41,14 +41,16 @@ public:
 
 	void Load();
 
-	// needed instances to render
-
 	// background texture
 	Texture* texture;
 	Mesh backgroundQuad;
 
 	Game* game;
 	Camera cam2D;
+	
+	float current_ttl;
+	int iterator;
+	std::vector<std::string> slider;
 
 };
 

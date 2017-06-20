@@ -401,13 +401,30 @@ void EntityCollider::remove(Entity* ent)
 
 void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 {
-	life -= b.damage;
+	if (uid > 1000 && b.author->uid > 1000)
+		return;
+	
+	if (uid == Airplane::ENEMY_SHIP)
+	{
+		life -= b.damage * 0.1;
+	}
+	else if (uid == Airplane::PLAYER_SHIP)
+	{
+		if (!Game::instance->ffire_on)
+			return;
+		life -= b.damage * 0.1;
+	}
+	else
+	{
+		life -= b.damage;
+	}
+	
 	life = max(life, 0);
 
-	if (this != World::instance->playerAir && this != World::instance->playerShip)
+	if (b.author == World::instance->playerAir)
 		Game::instance->score += b.damage;
 
-	Explosion::createExplosion(collisionPoint);
+	Explosion::createExplosion(collisionPoint, 7.5);
 
 	if (!life) {
 		SoundManager::getInstance()->playSound("explosion", false);

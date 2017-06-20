@@ -22,12 +22,12 @@ void SoundManager::playSound(const std::string& name, bool loop)
 {
 	std::string sound = "data/sounds/" + name + ".wav";
 
-	// stop if the sound is being played
-	stopSound(name);
-
 	auto it = samples.find(name);
 	if (it != samples.end())
 	{
+		// stop if the sound is being played
+		stopSound(name);
+
 		HCHANNEL hSampleChannel;
 		if (channels[name] == -1)
 		{

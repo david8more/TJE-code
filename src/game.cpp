@@ -11,10 +11,11 @@
 #include "states/endingstate.h"
 #include "states/loadingstate.h"
 #include "bass.h"
+#include "soundmanager.h"
 
 #include <cmath>
 
-#define DEBUG 1
+#define DEBUG 0
 
 //some globals
 Game* Game::instance = NULL;
@@ -39,8 +40,8 @@ Game::Game(SDL_Window* window)
 	joystick = NULL;
 	
 	mouse_locked = false;
-	music_enabled = false;
-	effects_enabled = false;
+	music_enabled = true;
+	effects_enabled = true;
 	bkg_music_playing = false;
 	inGame_DEBUG = false;
 	
@@ -62,6 +63,12 @@ void Game::init(void)
 
 	sManager = new StateManager();
 
+	if (!bkg_music_playing && music_enabled)
+	{
+		SoundManager::getInstance()->playSound("music", true);
+		bkg_music_playing = true;
+	}
+
 	if (DEBUG)
 	{
 		MenuState::getInstance(sManager)->init();
@@ -74,7 +81,6 @@ void Game::init(void)
 	{
 		sManager->setInitialState(LoadingState::getInstance(sManager));
 	}
-
 }
 
 //what to do when the image has to be draw

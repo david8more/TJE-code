@@ -26,13 +26,23 @@ void LoadingState::onEnter()
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	texture = Texture::Get("data/textures/blur.tga");
-	
 	game = Game::getInstance();
 	backgroundQuad.createQuad(game->window_width*0.5, game->window_height*0.5, game->window_width, game->window_height, true);
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 
 	game->joystick = openJoystick(0);
+
+	current_ttl = 1.5;
+	iterator = 0;
+
+	std::stringstream ss;
+	for (int i = 1; i <= 54; i++)
+	{
+		ss << "data/textures/cinematic/";
+		ss << "scene (" << i << ").tga";
+		slider.push_back(ss.str());
+		ss.str("");
+	}
 }
 
 void LoadingState::onLeave(int fut_state)
@@ -47,18 +57,30 @@ void LoadingState::render()
 
 	cam2D.set();
 
+	texture = Texture::Get(slider[iterator].c_str());
+
 	texture->bind();
 	backgroundQuad.render(GL_TRIANGLES);
 	texture->unbind();
 
 	glColor4f(1.f, 1.f, 1.f, 1.f);
-	std::string text = "[Press any key to continue]";
+	std::string text = "[Press any key to skip intro]";
 	drawText(game->window_width*0.5 - game->window_height*text.size()*0.008, game->window_height*0.75, text, Vector3(1.f, 1.f, 1.f), game->window_height*0.003);
 }
 
 void LoadingState::update(double time_elapsed)
 {
 	Game* game = Game::getInstance();
+
+	current_ttl -= time_elapsed;
+
+	if (current_ttl < 0)
+	{
+		iterator++;
+		current_ttl = 1.5;
+		if (iterator == slider.size())
+			Load();
+	}
 
 	if (game->joystick == NULL)
 		return;

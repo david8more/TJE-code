@@ -15,6 +15,7 @@
 #include <algorithm>
 
 #define DEBUG 0
+#define DEBUG_SELECTION 0
 
 Airplane* eMesh = NULL; // plane mesh
 EntityMesh* bMesh = NULL; // background mesh
@@ -116,7 +117,7 @@ void SelectionState::onEnter()
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
 
-	if (1)
+	if (DEBUG_SELECTION)
 	{
 		selectionChosen();
 	}
@@ -168,16 +169,18 @@ void SelectionState::render() {
 	texture->unbind();
 
 	// PLANE INFO
+	int w = game->window_width;
+	int h = game->window_height;
 
 	for (int i = 0; i < 5; i++) {
-		drawText(game->window_width*0.75, game->window_height*0.1*(float)(i+1)/2, selectionHelp[playerModel][i], Vector3(1.f, 1.f, 1.f), 2.0);
+		drawText(w * 0.75, h * 0.1 * (float)(i+1)/2, selectionHelp[playerModel][i], Vector3(1.f, 1.f, 1.f), 2.0);
 	}
 
 	// ************************************************
 
-	drawText(game->window_width*0.1, game->window_height*0.935, "W/S - Change", Vector3(1.f, 1.f, 1.f), 2.0);
-	drawText(game->window_width*0.4, game->window_height*0.935, "A/D - Move", Vector3(1.f, 1.f, 1.f), 2.0);
-	drawText(game->window_width*0.7, game->window_height*0.935, "ENTER - Select", Vector3(1.f, 1.f, 1.f), 2.0);
+	drawText(w * 0.1, h * 0.935, "W/S - Change", Vector3(1.f, 1.f, 1.f), 2.0);
+	drawText(w * 0.4, h * 0.935, "A/D - Move", Vector3(1.f, 1.f, 1.f), 2.0);
+	drawText(w * 0.7, h * 0.935, "ENTER - Select", Vector3(1.f, 1.f, 1.f), 2.0);
 	
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);

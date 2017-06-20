@@ -88,7 +88,7 @@ Texture* Texture::Get(const char* filename)
 
 	Texture* t = new Texture();
 	if (!t->load(filename)) {
-		std::cout << "No texture" << std::endl;
+		std::cout << "No texture called "<< filename << std::endl;
 		exit(1);
 	}
 	s_Textures[name] = t;

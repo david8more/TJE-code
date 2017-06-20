@@ -315,7 +315,7 @@ void Airplane::torpedoShoot() {
 
 	torpedosLeft--;
 
-	SoundManager::getInstance()->playSound("missil2", false);
+	SoundManager::getInstance()->playSound("missil", false);
 
 	for (int i = 0; i < 2; i++)
 	{

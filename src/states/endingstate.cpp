@@ -68,7 +68,7 @@ void EndingState::init()
 
 void EndingState::onEnter()
 {
-	cout << "$ Entering 'ending' state --" << endl;
+	cout << "$ Entering 'ending' state --" << Game::instance->score << endl;
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -151,8 +151,8 @@ void EndingState::render()
 
 	if(NEW_HIGH_SCORE)
 		ss << "NEW H ";
-	else
-		ss << "SCORE: " << game->score;
+	
+	ss << "SCORE: " << game->score;
 
 	drawText(w * 0.5, h * 0.3, ss.str(), Vector3(1.0, 1.0, 1.0), 4.0);
 
