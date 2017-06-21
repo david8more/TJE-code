@@ -22,6 +22,7 @@ public:
 	static Game* instance;
 	bool start;
 	bool end;
+	bool loseWin; // 0 lose 1 win
 	bool inGame_DEBUG;
 
 	// SINGLETON

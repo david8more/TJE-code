@@ -1,0 +1,14 @@
+*SCORE
+	1500
+
+*SCORE
+	1400
+
+*SCORE
+	1300
+
+*SCORE
+	1200
+
+*SCORE
+	1100

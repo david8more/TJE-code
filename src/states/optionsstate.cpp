@@ -67,10 +67,12 @@ void OptionsState::render() {
 
 	Vector3 c;
 	stringstream ss;
-	for(int i = 0; i < N; i++) {
+	for(int i = 0; i <= N+1; i++) {
 		// highlight current selection
-		if(i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
-		else c = Vector3(0.25, 0.25, 0.25);
+		if(i == currentSelection)
+			c = Vector3(1.f, 1.f, 1.f);
+		else
+			c = Vector3(0.25, 0.25, 0.25);
 		switch (i)
 		{
 		case MUSIC: 
@@ -103,7 +105,7 @@ void OptionsState::render() {
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
 			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->ffire_on ? "ENABLED" : "DISABLED", c, 3.0);
 			break;
-		default:
+		case BACK:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
 			break;
 		}
@@ -246,7 +248,7 @@ void OptionsState::downVol()
 void OptionsState::selectionUp()
 {
 	currentSelection--;
-	if (currentSelection==-1)
+	if (currentSelection == -1)
 		currentSelection = 6;
 
 	if (game->effects_enabled)
@@ -256,7 +258,7 @@ void OptionsState::selectionUp()
 void OptionsState::selectionDown()
 {
 	currentSelection++;
-	if (currentSelection==7)
+	if (currentSelection == 7)
 		currentSelection = 0;
 
 	if (game->effects_enabled)

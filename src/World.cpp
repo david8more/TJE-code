@@ -188,7 +188,10 @@ bool World::isGameOver()
 	*/
 
 	if (enemyShip->destroyed)
+	{
+		Game::instance->loseWin = true;
 		return true;
+	}
 
 	// si todo sigue igual:
 	return false;

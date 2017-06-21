@@ -10,6 +10,7 @@
 #include "endingstate.h"
 #include "menustate.h"
 #include "../world.h"
+#include "../soundmanager.h"
 #include "../extra/textparser.h"
 
 #include <cmath>
@@ -46,14 +47,17 @@ void EndingState::init()
 	quad.createQuad(w * 0.5, h * 0.5, w, h, true);
 
 	// highscores
+	h_scores.clear();
 
 	TextParser t;
 
-	std::string filename = "data/game/highscores.txt";
-	FILE* file = fopen(filename.c_str(), "rb");
+	int diff = game->difficulty;
+	std::stringstream filename;
+	filename << "data/game/highscores" << diff << ".txt";
+	FILE* file = fopen(filename.str().c_str(), "rb");
 
-	if (!t.create(filename.c_str())) {
-		std::cout << "File not found " << filename << std::endl;
+	if (!t.create(filename.str().c_str())) {
+		std::cout << "File not found " << filename.str() << std::endl;
 		exit(1);
 	}
 
@@ -68,7 +72,18 @@ void EndingState::init()
 
 void EndingState::onEnter()
 {
+	// !!!!
+	init();
+	// !!!!
+
 	cout << "$ Entering 'ending' state --" << Game::instance->score << endl;
+
+	SoundManager::instance->stopSound("music");
+
+	if (Game::instance->loseWin == LOSE)
+		SoundManager::instance->playSound("lluvia", true);
+	else
+		SoundManager::instance->playSound("music", true);
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -81,13 +96,16 @@ void EndingState::onEnter()
 	std::stringstream ss;
 	int w = game->window_width;
 	int h = game->window_height;
+	int diff = game->difficulty;
 
 	// update highscores with the last score
 
 	if (h_scores[4] > score)
 		return;
 
-	std::ofstream myfile("data/game/highscores.txt");
+	std::stringstream filename;
+	filename << "data/game/highscores" << diff << ".txt";
+	std::ofstream myfile(filename.str());
 	if (!myfile.is_open())
 	{
 		std::cout << "no file to write highscores" << endl;
@@ -119,7 +137,8 @@ void EndingState::onEnter()
 
 void EndingState::onLeave(int fut_state)
 {
-	
+	SoundManager::instance->stopSound("lluvia");
+	SoundManager::instance->stopSound("music");
 }
 
 void EndingState::render()
@@ -165,34 +184,36 @@ void EndingState::render()
 		drawText(w * 0.525, h * 0.5 + i * h * 0.075, ss.str(), Vector3(1.0, 1.0, 1.0), 3.0);
 	}
 	
+	if (Game::instance->loseWin == LOSE)
+		return;
 
 	// 
 
 	ss.str("");
 	int diff = game->difficulty;
 	std::string rank;
-	Texture* insignia_t = Texture::Get("data/textures/insignias/lieutenant.tga");
+	Texture* insignia_t;
 
 	switch (diff)
 	{
 	case D_BABY:
 
-		if (score >= 500) {
+		if (score >= 1700) {
 			rank = "YOU ARE NOW FIRST LIEUTENANT";
 			insignia_t = Texture::Get("data/textures/insignias/lieutenant.tga");
 		}
 
-		if (score > 1000) {
+		if (score > 2300) {
 			rank = "YOU ARE NOW CAPTAIN";
 			insignia_t = Texture::Get("data/textures/insignias/captain.tga");
 		}
 			
-		if (score > 1250) {
+		if (score > 3050) {
 			rank = "YOU ARE NOW MAJOR";
 			insignia_t = Texture::Get("data/textures/insignias/major.tga");
 		}
 
-		if(score > 1500) {
+		if(score > 3500) {
 			rank = "YOU ARE NOW COLONEL";
 			insignia_t = Texture::Get("data/textures/insignias/colonel.tga");
 		}
@@ -200,26 +221,46 @@ void EndingState::render()
 		break;
 	case D_SKILLED:
 
-		if (score > 1625)
+		if (score > 2500) {
 			rank = "YOU ARE NOW FIRST LIEUTENANT";
-		if (score > 2150)
+			insignia_t = Texture::Get("data/textures/insignias/lieutenant.tga");
+		}
+		if (score > 3200) {
 			rank = "YOU ARE NOW CAPTAIN";
-		if (score > 2750)
+			insignia_t = Texture::Get("data/textures/insignias/captain.tga");
+		}
+
+		if (score > 3875) {
 			rank = "YOU ARE NOW MAJOR";
-		if (score > 3250)
+			insignia_t = Texture::Get("data/textures/insignias/major.tga");
+		}
+
+		if (score > 4250) {
 			rank = "YOU ARE NOW COLONEL";
+			insignia_t = Texture::Get("data/textures/insignias/colonel.tga");
+		}
 
 		break;
 	case D_INSANE:
 
-		if (score > 2600)
+		if (score > 5500) {
 			rank = "YOU ARE NOW FIRST LIEUTENANT";
-		if (score > 3500)
+			insignia_t = Texture::Get("data/textures/insignias/lieutenant.tga");
+		}
+		if (score > 6800) {
 			rank = "YOU ARE NOW CAPTAIN";
-		if (score > 4350)
+			insignia_t = Texture::Get("data/textures/insignias/captain.tga");
+		}
+
+		if (score > 7500) {
 			rank = "YOU ARE NOW MAJOR";
-		if (score > 5250)
+			insignia_t = Texture::Get("data/textures/insignias/major.tga");
+		}
+
+		if (score > 9250) {
 			rank = "YOU ARE NOW COLONEL";
+			insignia_t = Texture::Get("data/textures/insignias/colonel.tga");
+		}
 
 		break;
 	default:

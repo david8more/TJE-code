@@ -8,6 +8,9 @@
 #include "../camera.h"
 #include <iostream>
 
+#define WIN 1
+#define LOSE 0
+
 using namespace std;
 
 class StateManager;

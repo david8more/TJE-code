@@ -112,12 +112,8 @@ void PlayState::onEnter()
 	glEnable(GL_DEPTH_TEST); //check the occlusi  ons using the Z buffer
 
 	// Sounds
-	if (game->music_enabled)
-	{
-		SoundManager::getInstance()->playSound("music", true);
-		SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
+	SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
 
-	}
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -734,8 +730,7 @@ void PlayState::setZoom()
 
 void PlayState::onLeave(int fut_state)
 {
-	if (Game::instance->music_enabled)
-		SoundManager::getInstance()->stopSound("music");
+	SoundManager::getInstance()->stopSound("music");
 	SoundManager::getInstance()->stopSound("plane");
 }
 

@@ -40,7 +40,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 	if (model == SPITFIRE)
 	{
-		set("spitfire.ASE", "data/textures/spitfire.tga", "plane");
+		set("spitfire.ASE", "data/textures/spitfire.tga", "spitfire");
 		helix->model.setTranslation(0.f, 0.f, 2.1f);
 
 		wh_right->model.setTranslation(-0.82, -0.58, 0.16);
@@ -59,7 +59,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 	else if (model == P38)
 	{
-		set("p38.ASE", "data/textures/p38.tga", "plane");
+		set("p38.ASE", "data/textures/p38.tga", "p38");
 		helix->model.setTranslation(2.44f, 0.f, 2.85f);
 
 		Helix* helix2 = new Helix();
@@ -76,7 +76,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 	else if (model == WILDCAT)
 	{
-		set("wildcat.ASE", "data/textures/wildcat.tga", "plane");
+		set("wildcat.ASE", "data/textures/wildcat.tga", "wildcat");
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
 
 		setLife(300);

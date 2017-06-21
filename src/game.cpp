@@ -51,6 +51,7 @@ Game::Game(SDL_Window* window)
 	BCK_VOL = 0.5;
 
 	start = false;
+	loseWin = false;
 	score = 0;
 }
 
@@ -63,11 +64,7 @@ void Game::init(void)
 
 	sManager = new StateManager();
 
-	if (!bkg_music_playing && music_enabled)
-	{
-		SoundManager::getInstance()->playSound("music", true);
-		bkg_music_playing = true;
-	}
+	SoundManager::getInstance()->playSound("cinematic", false);
 
 	if (DEBUG)
 	{
@@ -144,18 +141,7 @@ void Game::onMouseButton( SDL_MouseButtonEvent event )
 void Game::setWindowSize(int width, int height)
 {
     std::cout << "window resized: " << width << "," << height << std::endl;
-    
-	/*
-    Uint32 flags = SDL_GetWindowFlags(window);
-    if(flags & SDL_WINDOW_ALLOW_HIGHDPI)
-    {
-        width *= 2;
-        height *= 2;
-    }
-	*/
-
 	glViewport( 0,0, width, height );
-	//camera->aspect =  width / (float)height;
 	window_width = width;
 	window_height = height;
 }

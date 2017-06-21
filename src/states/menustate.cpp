@@ -18,24 +18,14 @@
 MenuState::MenuState(StateManager* SManager) : State(SManager) {}
 MenuState::~MenuState() {}
 
-Vector2 screen;
 float optimer = 0;
 
 void MenuState::init()
 {
 	// Cargamos texturas de menú
 	texture = Texture::Get("data/textures/main.tga");
-
 	// Cogemos la instancia de game para no hacerlo en cada método
 	game = Game::getInstance();
-
-	int w = game->window_width;
-	int h = game->window_height;
-
-	// configuración inicial
-	backgroundQuad.createQuad(w * 0.5, h * 0.5, w, h, true);
-	cam2D.setOrthographic(0.0, w, h, 0.0, -1.0, 1.0);
-	screen = Vector2(w, h);
 }
 
 void MenuState::onEnter()
@@ -67,14 +57,8 @@ void MenuState::render()
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
-	// for screen resizing
-	if (screen.x != w || screen.y != h)
-	{
-		backgroundQuad.createQuad(w * 0.5, h * 0.5, w, h, true);
-		cam2D.setOrthographic(0.0, w, h, 0.0, -1.0, 1.0);
-		screen = Vector2(w, h);
-	}
-
+	backgroundQuad.createQuad(w * 0.5, h * 0.5, w, h, true);
+	cam2D.setOrthographic(0.0, w, h, 0.0, -1.0, 1.0);
 	cam2D.set();
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 	
@@ -136,7 +120,6 @@ void MenuState::update(double time_elapsed)
 
 	JoystickState state = getJoystickState(game->joystick);
 
-
 	if (state.button[HAT_UP])
 	{
 		selectionUp();
@@ -179,16 +162,9 @@ void MenuState::onKeyPressed(SDL_KeyboardEvent event)
 	}
 }
 
-void MenuState::onLeave(int fut_state) {
+void MenuState::onLeave(int fut_state)
+{
 
-	if (fut_state != 3) // selection state
-		return;
-
-	if (Game::instance->music_enabled)
-	{
-		SoundManager::getInstance()->stopSound("lluvia"); 
-		game->bkg_music_playing = false;
-	}
 }
 
 void MenuState::selectionUp()

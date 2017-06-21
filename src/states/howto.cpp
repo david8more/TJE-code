@@ -19,9 +19,8 @@
 #define XBOX 2
 #define BACK 3
 
-Camera cam;
-Mesh quead;
 float httimer = 0;
+int obj_part = 1;
 
 Howto::Howto(StateManager* SManager) : State(SManager) {}
 Howto::~Howto() {}
@@ -52,15 +51,10 @@ void Howto::onKeyPressed(SDL_KeyboardEvent event)
 
 void Howto::init() {
 
-	texture = Texture::Get("data/textures/blur.tga");
-
 	game = Game::getInstance();
 
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
-
-	cam.setOrthographic(0.0, 600, 600, 0.0, -1.0, 1.0);
-	
 }
 
 void Howto::onEnter()
@@ -93,7 +87,10 @@ void Howto::render() {
 
 	switch (currentSelection) {
 	case OBJECTIVE:
-		current_howto = "data/textures/howto-obj1.tga";
+		if(obj_part == 1)
+			current_howto = "data/textures/howto-obj1.tga";
+		else 
+			current_howto = "data/textures/howto-obj2.tga";
 		break;
 	case KEYBOARD:
 		current_howto = "data/textures/howto-keyboard.tga";
@@ -121,6 +118,7 @@ void Howto::render() {
 	glColor4f(1.0, 1.0, 1.0, 1.0);
 
 	Vector3 c;
+	std::stringstream ss;
 	for (int i = 0; i < 4; i++) {
 		// highlight current selection
 		if (i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
@@ -129,6 +127,9 @@ void Howto::render() {
 		{
 		case OBJECTIVE:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
+			ss.str("");
+			ss << "PART " << obj_part;
+			drawText(game->window_width*0.3, game->window_height*0.35 + p, ss.str(), c, 2.75);
 			break;
 		case KEYBOARD:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
@@ -210,5 +211,9 @@ void Howto::selectionChosen()
 	if(currentSelection == BACK)
 		SManager->changeCurrentState(MenuState::getInstance(SManager));
 
+	if (currentSelection == OBJECTIVE)
+	{
+		obj_part = obj_part == 1 ? 2 : 1;
+	}
 }
 

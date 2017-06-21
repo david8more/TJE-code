@@ -1,0 +1,14 @@
+*SCORE
+	2500
+
+*SCORE
+	2400
+
+*SCORE
+	2300
+
+*SCORE
+	2200
+
+*SCORE
+	2100

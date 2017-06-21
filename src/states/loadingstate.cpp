@@ -5,6 +5,7 @@
 #include "../texture.h"
 #include "../shader.h"
 #include "../bass.h"
+#include "../soundmanager.h"
 #include "menustate.h"
 #include "playstate.h"
 #include "optionsstate.h"
@@ -17,6 +18,8 @@
 
 LoadingState::LoadingState(StateManager* SManager) : State(SManager) {}
 LoadingState::~LoadingState() {}
+
+float frame_ttl = 0.125;
 
 void LoadingState::onEnter()
 {
@@ -32,11 +35,11 @@ void LoadingState::onEnter()
 
 	game->joystick = openJoystick(0);
 
-	current_ttl = 1.5;
+	current_ttl = frame_ttl;
 	iterator = 0;
 
 	std::stringstream ss;
-	for (int i = 1; i <= 54; i++)
+	for (int i = 1; i < 571; i++)
 	{
 		ss << "data/textures/cinematic/";
 		ss << "scene (" << i << ").tga";
@@ -72,37 +75,38 @@ void LoadingState::update(double time_elapsed)
 {
 	Game* game = Game::getInstance();
 
+	if (game->joystick != NULL)
+	{
+		JoystickState state = getJoystickState(game->joystick);
+
+		for (int i = 0; i < 14; i++)
+		{
+			if (state.button[i])
+			{
+				Load();
+				return;
+			}
+
+		}
+	}
+
 	current_ttl -= time_elapsed;
 
 	if (current_ttl < 0)
 	{
 		iterator++;
-		current_ttl = 1.5;
+		current_ttl = frame_ttl;
 		if (iterator == slider.size())
 			Load();
-	}
-
-	if (game->joystick == NULL)
-		return;
-
-
-	JoystickState state = getJoystickState(game->joystick);
-
-	for (int i = 0; i < 14; i++)
-	{
-		if (state.button[i])
-		{
-			Load();
-			return;
-		}
-
 	}
 }
 
 void LoadingState::onKeyPressed(SDL_KeyboardEvent event)
 {
-	if (event.keysym.sym == SDLK_ESCAPE) return;
+	if (event.keysym.sym == SDLK_ESCAPE)
+		return;
 
+	SoundManager::getInstance()->stopSound("cinematic");
 	Load();
 }
 
@@ -111,7 +115,6 @@ void LoadingState::Load()
 	MenuState::getInstance(this->SManager)->init();
 	OptionsState::getInstance(this->SManager)->init();
 	Howto::getInstance(this->SManager)->init();
-	EndingState::getInstance(this->SManager)->init();
 	SelectionState::getInstance(this->SManager)->init();
 	PlayState::getInstance(this->SManager)->init();
 

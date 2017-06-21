@@ -1,0 +1,15 @@
+*SCORE
+	1880
+
+*SCORE
+	500
+
+*SCORE
+	400
+
+*SCORE
+	300
+
+*SCORE
+	200
+

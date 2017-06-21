@@ -24,7 +24,7 @@ void main()
 
 	// cambiar Y por Z
 
-	vec4 normal_z_map = vec4(normal_map.x, normal_map.z, normal_map.y, normal_map.a);
+	vec4 normal_z_map = vec4(normal_map.x, normal_map.z, normal_map.y, 1.0);
 
 	vec3 N_M = normal_z_map.xyz;
 
@@ -44,6 +44,9 @@ void main()
 	vec4 fog_color = vec4(156.0/256.0, 178.0/256.0, 186.0/256.0, 1.0);
 	float distance = length(v_world_position - u_camera_pos);
 	float factor = clamp(pow(distance / 10000.0, 0.5), 0.0, 1.0);
+
+	color *= vec4(0.7, 0.7, 0.9, 1.0);
+
 	color = mix(color, fog_color, factor);
 
 	color = mix(color, sky_color, fresnel);

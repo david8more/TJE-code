@@ -14,10 +14,11 @@
 #include "../soundmanager.h"
 #include <algorithm>
 
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_SELECTION 0
 
 Airplane* eMesh = NULL; // plane mesh
+Ship* sMesh = NULL; // background ship mesh
 EntityMesh* bMesh = NULL; // background mesh
 EntityMesh* gMesh = NULL; // ground mesh
 Camera* cam3D = NULL;
@@ -54,12 +55,16 @@ void SelectionState::init() {
 	// sky
 	bMesh = new EntityMesh();
 	bMesh->set("cielo.ASE", "data/textures/cielo.tga", "simple");
-	bMesh->model.setTranslation(0.f, -100.f, 0.f);
+	bMesh->model.setTranslation(0.f, 0.f, 0.f);
 
 	// ground
 	gMesh = new EntityMesh();
 	gMesh->set("agua.ASE", "data/textures/agua.tga", "water");
-	gMesh->model.setTranslation(0.f, -500.f, 0.f);
+	gMesh->model.setTranslation(0.f, -20.f, 0.f);
+
+	sMesh = new Ship(false);
+	sMesh->model.setTranslation(-200.f, -10.f, -50.f);
+	sMesh->model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
 
 	// rendering properties
 
@@ -73,16 +78,15 @@ void SelectionState::init() {
 	std::string filename = "data/game/settings.txt";
 	FILE* file = fopen(filename.c_str(), "rb");
 
-	selectionHelp.resize(4);
+	selectionHelp.resize(3);
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < selectionHelp.size(); ++i) {
 		selectionHelp[i].resize(5);
 	}
 
 	selectionHelp[0][0] = "SPITFIRE";
 	selectionHelp[1][0] = "P38";
 	selectionHelp[2][0] = "WILDCAT";
-	selectionHelp[3][0] = "BOMBER";
 
 	TextParser t;
 	
@@ -91,7 +95,7 @@ void SelectionState::init() {
 		exit(1);
 	}
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < selectionHelp.size(); i++) {
 		t.seek(selectionHelp[i][0].c_str());
 		for (int j = 1; j < 5; j++) {
 			std::string a(t.getword());
@@ -123,11 +127,8 @@ void SelectionState::onEnter()
 	}
 }
 
-void SelectionState::render() {
-
-	//set the clear color (the background color)
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-
+void SelectionState::render()
+{
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -147,10 +148,6 @@ void SelectionState::render() {
 		if (lastRendered == playerModel) break;
 		eMesh = new Airplane(WILDCAT, false);
 		break;
-	case BOMBER:
-		if (lastRendered == playerModel) break;
-		eMesh = new Airplane(BOMBER, false);
-		break;
 	default:
 		break;
 	}
@@ -158,6 +155,7 @@ void SelectionState::render() {
 	lastRendered = playerModel;
 	bMesh->render(cam3D);
 	gMesh->render(cam3D);
+	sMesh->render(cam3D);
 	eMesh->render(cam3D);
 
 	glDisable(GL_CULL_FACE);
@@ -187,11 +185,21 @@ void SelectionState::render() {
 
 }
 
-void SelectionState::update(double time_elapsed) {
+void SelectionState::update(double time_elapsed)
+{
 
 	float speed = time_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
-	eMesh->model.rotate(-time_elapsed * 0.2, Vector3(0, 1, 0));
+	eMesh->model.rotate(-time_elapsed * 0.15, Vector3(0, 1, 0));
+	sMesh->model.traslateLocal(0, 0, 22 * speed * -time_elapsed);
+
+	if ((sMesh->model * Vector3()).x > 320.0)
+	{
+		sMesh->model.setTranslation(-200.f, -10.f, 350.f);
+		sMesh->model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+	}
+
+	std::cout << (sMesh->model * Vector3()).x << std::endl;
 
 	if (DEBUG)
 	{
@@ -268,7 +276,7 @@ void SelectionState::selectionDown()
 	if(Game::instance->effects_enabled)
 		SoundManager::instance->playSound("move_menu", false);
 	playerModel++;
-	if (playerModel == 4)
+	if (playerModel == 3)
 		playerModel = 0;
 }
 
@@ -278,7 +286,7 @@ void SelectionState::selectionUp()
 		SoundManager::instance->playSound("move_menu", false);
 	playerModel--;
 	if (playerModel == -1)
-		playerModel = 3;
+		playerModel = 2;
 }
 
 void SelectionState::selectionChosen()
@@ -306,6 +314,9 @@ void SelectionState::onKeyPressed(SDL_KeyboardEvent event)
 	{
 	case SDLK_RETURN:
 		selectionChosen();
+		break;
+	case SDLK_1:
+		Shader::ReloadAll();
 		break;
 	case SDLK_UP:
 	case SDLK_w:
