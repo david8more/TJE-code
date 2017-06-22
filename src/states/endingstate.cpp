@@ -72,6 +72,7 @@ void EndingState::init()
 
 void EndingState::onEnter()
 {
+	Game * game = Game::instance;
 	// !!!!
 	init();
 	// !!!!
@@ -79,11 +80,12 @@ void EndingState::onEnter()
 	cout << "$ Entering 'ending' state --" << Game::instance->score << endl;
 
 	SoundManager::instance->stopSound("music");
+	game->bkg_music_playing  = !game->bkg_music_playing;
 
 	if (Game::instance->loseWin == LOSE)
 		SoundManager::instance->playSound("lluvia", true);
 	else
-		SoundManager::instance->playSound("music", true);
+		SoundManager::instance->playSound("victory", true);
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -91,7 +93,6 @@ void EndingState::onEnter()
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Game * game = Game::instance;
 	int score = game->score;
 	std::stringstream ss;
 	int w = game->window_width;
@@ -138,7 +139,7 @@ void EndingState::onEnter()
 void EndingState::onLeave(int fut_state)
 {
 	SoundManager::instance->stopSound("lluvia");
-	SoundManager::instance->stopSound("music");
+	SoundManager::instance->stopSound("victory");
 }
 
 void EndingState::render()

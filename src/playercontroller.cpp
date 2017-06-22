@@ -3,6 +3,7 @@
 #include "game.h"
 #include "world.h"
 #include "states\playstate.h"
+#include "soundmanager.h"
 
 PlayerController * PlayerController::instance = NULL;
 float controller_timer = 0;
@@ -20,6 +21,27 @@ PlayerController::~PlayerController()
 void PlayerController::update(float seconds_elapsed)
 {
 	Game* game = Game::getInstance();
+
+	// controlled changed?
+
+	if (game->joystick == NULL)
+		return;
+
+	if (getJoystickState(game->joystick).button[BACK_BUTTON])
+	{
+		current_controller = CONTROLLER_MODE_GAMEPAD;
+		return;
+	}
+
+	if (getJoystickState(game->joystick).button[START_BUTTON])
+	{
+		current_controller = CONTROLLER_MODE_GAMEPAD;
+		game->start = true;
+		game->current_camera->near_plane = 7.5f;
+		SoundManager::getInstance()->playSound("plane", true);
+	}
+
+	// GAME STARTED?
 	
 	if (!game->start)
 		return;
@@ -88,16 +110,15 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (state.axis[LEFT_ANALOG_Y] > 0.2 || state.axis[LEFT_ANALOG_Y] < -0.2)
 		{
-			if(player->getPosition().z > -2000.f)
 				moveY(state.axis[LEFT_ANALOG_Y], seconds_elapsed, speed);
 		}
 
 		if (state.axis[RIGHT_ANALOG_X] > 0.2 || state.axis[RIGHT_ANALOG_X] < -0.2)
 		{
 			// Q, E on keyboard
-			// moveXY(-state.axis[RIGHT_ANALOG_X], state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
+			 moveXY(-state.axis[RIGHT_ANALOG_X], state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
 			//
-			moveX(-state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
+			//moveX(-state.axis[RIGHT_ANALOG_X], seconds_elapsed, speed);
 		}
 
 		if (state.button[HAT_LEFT])
@@ -108,13 +129,6 @@ void PlayerController::update(float seconds_elapsed)
 		if (state.button[HAT_RIGHT])
 		{
 			moveX(-1.f, seconds_elapsed, speed);
-		}
-
-		if (state.button[START_BUTTON] && controller_timer > 0.25)
-		{
-			game->start = true;
-			player->engineOnOff();
-			controller_timer = 0;
 		}
 
 		if (state.button[Y_BUTTON] && controller_timer > 0.25)
@@ -146,6 +160,9 @@ void PlayerController::update(float seconds_elapsed)
 		{
 			player->shoot();
 		}
+		else {
+			player->shootingtime = 0;
+		}
 		
 	}
 
@@ -156,16 +173,7 @@ void PlayerController::update(float seconds_elapsed)
 	else
 		player->model.traslateLocal(0, 0, speed * seconds_elapsed);
 
-	// controlled changed?
-
-	if (game->joystick == NULL)
-		return;
-
-	if (getJoystickState(game->joystick).button[BACK_BUTTON])
-	{
-		current_controller = CONTROLLER_MODE_GAMEPAD;
-		return;
-	}
+	
 }
 
 void PlayerController::moveY(float axis, float seconds_elapsed, float speed)
@@ -181,7 +189,7 @@ void PlayerController::moveX(float axis, float seconds_elapsed, float speed)
 void PlayerController::moveXY(float Zaxis, float Yaxis, float seconds_elapsed, float speed)
 {
 	player->model.rotateLocal(seconds_elapsed, Vector3(0, 0, Zaxis) * speed);
-	player->model.rotateLocal(seconds_elapsed, Vector3(0, Yaxis, 0) * speed);
+	player->model.rotateLocal(seconds_elapsed * 0.3, Vector3(0, Yaxis, 0) * speed);
 }
 
 void PlayerController::updateCamera(Camera * camera, float seconds_elapsed)

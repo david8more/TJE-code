@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 	//prepare SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	bool fullscreen = false; //change this to go fullscreen
+	bool fullscreen = true; //change this to go fullscreen
 	Vector2 size(1080,720);
 
 	if(fullscreen)
@@ -167,6 +167,7 @@ int main(int argc, char **argv)
 	//launch the game (game is a global variable)
 	game = new Game(window);
 
+	game->fullscreen = fullscreen;
 	game->init();
 
 	//main loop, application gets inside here till user closes it

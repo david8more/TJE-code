@@ -14,8 +14,8 @@
 #include "../soundmanager.h"
 #include <algorithm>
 
-#define DEBUG 1
-#define DEBUG_SELECTION 0
+#define DEBUG 0
+#define DEBUG_SELECTION 1
 
 Airplane* eMesh = NULL; // plane mesh
 Ship* sMesh = NULL; // background ship mesh
@@ -103,6 +103,8 @@ void SelectionState::init() {
 			selectionHelp[i][j] = a;
 		}
 	}
+
+	lastRendered = 0;
 }
 
 void SelectionState::onEnter()
@@ -116,7 +118,6 @@ void SelectionState::onEnter()
 	cout << "$ Entering loading state" << endl;
 
 	playerModel = 0;
-	lastRendered = 0;
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -198,8 +199,6 @@ void SelectionState::update(double time_elapsed)
 		sMesh->model.setTranslation(-200.f, -10.f, 350.f);
 		sMesh->model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
 	}
-
-	std::cout << (sMesh->model * Vector3()).x << std::endl;
 
 	if (DEBUG)
 	{

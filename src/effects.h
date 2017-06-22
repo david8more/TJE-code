@@ -40,7 +40,7 @@ public:
 
 	static void render(Camera* camera);
 	static void update(float elapsed_time);
-	static void createSmoke(Vector3 position, Entity* author, float size = 1.5, float ttl = 0.2);
+	static void createSmoke(Vector3 position, Entity* author, float size = 1.5, float ttl = 2);
 
 };
 

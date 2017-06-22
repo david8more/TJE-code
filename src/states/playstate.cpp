@@ -84,7 +84,7 @@ void PlayState::init()
 
 	// HUD
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, 50, 50, true);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.475, 50, 50, true);
 
 	crosshair_tex = "data/textures/crosshair.tga";
 
@@ -149,6 +149,7 @@ void PlayState::render()
 	Shader* shader = Shader::Load("data/shaders/fx.vs", "data/shaders/fx.fs");
 	glColor4f(1, 1, 1, 1);
 
+	// render to texture
 	rt->bind();
 	shader->enable();
 	shader->setMatrix44("u_mvp", cam2D.viewprojection_matrix);
@@ -325,23 +326,25 @@ void PlayState::renderGUI()
 
 	if (player->overused)
 	{
-		drawText(w * 0.22, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2.f);
+		drawText(w * 0.25, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2.f);
 	}
 
 	glColor4f(1, 1, 1, 1.0);
 
 	// cantidad de players
 
+	cam2D.set();
+
 	Mesh logos;
-	Texture * et = Texture::Get("data/textures/enemies-logo.tga");
-	logos.createQuad(w * 0.03, h * 0.05, h * 0.05, h * 0.05, true);
+	Texture * et = Texture::Get("data/textures/allies-logo.tga");
+	logos.createQuad(w * 0.05, h * 0.1, h * 0.1, h * 0.1, true);
 
 	et->bind();
 	logos.render(GL_TRIANGLES);
 	et->unbind();
 
-	et = Texture::Get("data/textures/allies-logo.tga");
-	logos.createQuad(w * 0.03, h * 0.1, h * 0.05, h * 0.05, true);
+	et = Texture::Get("data/textures/enemies-logo.tga");
+	logos.createQuad(w * 0.05, h * 0.2, h * 0.1, h * 0.1, true);
 
 	et->bind();
 	logos.render(GL_TRIANGLES);
@@ -355,7 +358,7 @@ void PlayState::renderGUI()
 	for (int i = 0; i < player->torpedosLeft; i++)
 	{
 		Mesh torpedo;
-		torpedo.createQuad(w * 0.4 + i * 20, h * 0.425, h * 0.025, h * 0.025);
+		torpedo.createQuad(w * 0.91, h * 0.83 + i * 20, h * 0.075, h * 0.075);
 		etor->bind();
 		torpedo.render(GL_TRIANGLES);
 		etor->unbind();
@@ -384,7 +387,7 @@ void PlayState::renderGUI()
 				ss << "ATTACK: " << c->life;
 				color = Vector3(1, 0, 0);
 			}
-			drawText(w * 0.05, h * 0.3 + i * 25, ss.str(), color, 2);
+			drawText(w * 0.04, h * 0.3 + i * h * 0.05, ss.str(), color, 3.0);
 		}
 	}
 
@@ -411,7 +414,7 @@ void PlayState::renderGUI()
 
 		ss.str("");
 		ss << "Damage: " << player->damageM60 << " || Max energy: " << player->max_life;
-		drawText(w * 0.64, 50, ss.str(), Vector3(0.2, 0.2, 0.2), 1.5);
+		drawText(w * 0.64, 50, ss.str(), Vector3(0.9, 0.9, 0.1), 1.5);
 		ss.str("");
 		ss << "Torpedos: " << 2 << " || Torpedo damage: " << 450;
 		drawText(w * 0.64, 75, ss.str(), Vector3(0.9, 0.9, 0.1), 1.5);
@@ -481,11 +484,11 @@ void PlayState::renderGUI()
 	camUp.set();
 
 	int sizex = w * 0.2;
-	int sizey = h * 0.2;
+	int sizey = h * 0.23;
 
-	glScissor(w * 0.04, h - h * 0.975, sizex, sizey);
+	glScissor(w * 0.04, h - h * 0.99, sizex, sizey);
 	glEnable(GL_SCISSOR_TEST);
-	glViewport(w * 0.04, h - h * 0.975, sizex, sizey);
+	glViewport(w * 0.04, h - h * 0.99, sizex, sizey);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -730,8 +733,15 @@ void PlayState::setZoom()
 
 void PlayState::onLeave(int fut_state)
 {
-	SoundManager::getInstance()->stopSound("music");
+	if (fut_state == 0)
+	{
+		SoundManager::getInstance()->stopSound("plane");
+		return;
+	}
+	
 	SoundManager::getInstance()->stopSound("plane");
+	SoundManager::getInstance()->stopSound("music");
+	game->bkg_music_playing = !game->bkg_music_playing;
 }
 
 void PlayState::setView()

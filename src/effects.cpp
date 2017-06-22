@@ -157,14 +157,13 @@ void Smoke::render(Camera * camera)
 		m.vertices.push_back(c - right * size * 0.5 - up * size * 0.5);
 
 		// coordenadas textura 0..1
-		// de un flash a otro van 1/2
-		float step = 1 / 2.f;
+		float step = 1 / 4.f;
 
 		float f = current->time / current->ttl;
-		unsigned frame = f * 4.0;
+		unsigned frame = f * 16.0;
 
-		int x = frame % 2;
-		int y = frame / 2.0;
+		int x = frame % 4;
+		int y = frame / 4.0;
 
 		m.uvs.push_back(Vector2(x * step, y * step + step));
 		m.uvs.push_back(Vector2(x * step + step, y * step + step));
@@ -175,7 +174,7 @@ void Smoke::render(Camera * camera)
 		m.uvs.push_back(Vector2(x * step, y * step));
 	}
 
-	Texture * texture = Texture::Get("data/textures/flash.tga");
+	Texture * texture = Texture::Get("data/textures/smoke.tga");
 
 	glColor4f(1, 1, 1, 1.0);
 

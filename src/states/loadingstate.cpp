@@ -83,6 +83,7 @@ void LoadingState::update(double time_elapsed)
 		{
 			if (state.button[i])
 			{
+				SoundManager::getInstance()->stopSound("cinematic");
 				Load();
 				return;
 			}

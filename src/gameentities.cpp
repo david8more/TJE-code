@@ -52,7 +52,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		this->addChild(wh_left);
 
 		setLife(175);
-		cadence = 75.0;
+		cadence = 70.0 + random() * 10;;
 		damageM60 = 15.0;
 		speed = 100.0;
 	}
@@ -69,7 +69,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		this->addChild(helix2);
 
 		setLife(200);
-		cadence = 85.0;
+		cadence = 80.0 + random() * 10;
 		damageM60 = 10.0;
 		speed = 90.0;
 	}
@@ -80,7 +80,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
 
 		setLife(300);
-		cadence = 60.f;
+		cadence = 60.f + random() * 10;;
 		damageM60 = 25.0;
 		speed = 70.0;
 	}
@@ -97,7 +97,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		this->addChild(helix2);
 
 		setLife(350);
-		cadence = 55.0;
+		cadence = 50.0 + random() * 10;;
 		damageM60 = 20.0;
 		speed = 80.0;
 	}
@@ -242,14 +242,21 @@ void Airplane::shoot()
 			bManager->createBullet(model*Vector3(0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 10.f), vel, 1, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(0.f, -0.1f, 10.f), vel, 1, damageM60, this, 1);
+			Flash::createFlash(Vector3(0.5f, -0.35f, 6.f), this);
+			Flash::createFlash(Vector3(-0.5f, -0.35f, 6.f), this);
+			Flash::createFlash(Vector3(0.f, -0.25f, 6.f), this);
 			break;
 		case WILDCAT:
 			bManager->createBullet(model*Vector3(-2.25f, -0.50f, 3.f), vel, 2, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(2.25f, -0.50f, 3.f), vel, 2, damageM60, this, 1);
+			Flash::createFlash(Vector3(-2.25f, -0.50f, 2.75f), this);
+			Flash::createFlash(Vector3(2.25f, -0.50f, 2.75f), this);
 			break;
 		case BOMBER:
 			bManager->createBullet(model*Vector3(2.40f, -0.25f, 5.f), vel, 2, damageM60, this, 1);
 			bManager->createBullet(model*Vector3(-2.55f, -0.25f, 5.f), vel, 2, damageM60, this, 1);
+			Flash::createFlash(Vector3(2.40f, -0.25f, 5.f), this);
+			Flash::createFlash(Vector3(-2.55f, -0.25f, 5.f), this);
 			break;
 		}
 
@@ -647,7 +654,7 @@ void Torpedo::update(float elapsed_time) {
 
 	model.traslateLocal(0, 0, (max_ttl - 0.8 * ttl) * elapsed_time * -75);
 	ttl -= elapsed_time;
-	Smoke::createSmoke(model * Vector3(0, 3, 0), this);
+	Smoke::createSmoke(model * Vector3(0, 0, -2.5), this);
 }
 
 void Torpedo::activate() {

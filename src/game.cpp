@@ -45,7 +45,6 @@ Game::Game(SDL_Window* window)
 	bkg_music_playing = false;
 	inGame_DEBUG = false;
 	
-	fullscreen = false;
 	difficulty = D_BABY;
 	ffire_on = false;
 	BCK_VOL = 0.5;
