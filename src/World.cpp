@@ -1,11 +1,14 @@
-
+	
 #include "World.h"
 #include "mesh.h"
 #include "texture.h"
 #include "entity.h"
 #include "gameentities.h"
+#include "explosion.h"
 #include "game.h"
 #include "shader.h"
+#include "soundmanager.h"
+
 #include "states/playstate.h"
 
 #define DEBUG 0
@@ -24,6 +27,9 @@ World::World()
 	sky = NULL;
 	playerAir = NULL;
 	playerShip = NULL;
+
+	atomic_enabled = false;
+	time_to_explode = 15;
 }
 
 World::~World()
@@ -57,17 +63,11 @@ void World::addPlayer()
 	int mode = Game::instance->difficulty;
 	switch (mode)
 	{
-	case D_BABY:
-		playerAir->life += 25;
-		playerAir->damageM60 += 10.0;
-		break;
 	case D_SKILLED:
 		playerAir->life *= 0.75;
-		playerAir->damageM60 -= 5.0;
 		break;
 	case D_INSANE:
 		playerAir->life *= 0.5;
-		playerAir->damageM60 *= 0.5;
 		break;
 	}
 
@@ -79,6 +79,20 @@ void World::addPlayer()
 
 	playerAir->setDynamic();
 	playerAir->createTorpedos();
+
+
+	// player powerups
+	PowerUp * damage = new PowerUp("damage");
+	root->addChild(damage);
+	powerups.push_back(damage);
+
+	PowerUp * ninja = new PowerUp("ninja");
+	root->addChild(ninja);
+	powerups.push_back(ninja);
+
+	PowerUp * bomb = new PowerUp("bomb");
+	root->addChild(bomb);
+	powerups.push_back(bomb);
 }
 
 void World::addPlayerConst()
@@ -189,6 +203,17 @@ void World::addEnemies() {
 	}
 }
 
+void World::atomic()
+{
+	for (int i = 0; i < airplanes.size(); i++)
+	{
+		Airplane * current = (Airplane*)airplanes[i];
+		Explosion::createExplosion(current->getPosition(), 150);
+		SoundManager::instance->playSound("explosion", false);
+		current->destroy();
+	}
+}
+
 void World::setGameMode()
 {
 	// TODO
@@ -232,6 +257,9 @@ void World::reset()
 	for (int i = 0; i < airplanes.size(); i++)
 		airplanes[i]->destroy();
 
+	for (int i = 0; i < powerups.size(); i++)
+		powerups[i]->destroy();
+
 	Entity* enemyShip = Entity::getEntity(Airplane::ENEMY_SHIP);
 
 	if (enemyShip != NULL)
@@ -253,7 +281,9 @@ void World::reset()
 	root->addChild(playerShip);
 	ships.push_back(playerShip);
 
+	atomic_enabled = false;
 	Game::instance->end = false;
 	Game::instance->start = false;
+	Game::instance->loseWin = LOSE;
 	Game::instance->score = 0;
 }

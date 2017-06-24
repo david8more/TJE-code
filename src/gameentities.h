@@ -17,6 +17,7 @@ public:
 	IAController* controller;
 
 	int planeModel;
+	int visibility;
 
 	bool engine;
 	void engineOnOff();
@@ -154,6 +155,25 @@ public:
 	std::vector<sCloudInfo> clouds;
 };
 
+class PowerUp : public EntityCollider {
+
+public:
+	PowerUp(const std::string&  type);
+	~PowerUp();
+
+	std::string state;
+
+	void set(const char * mesh, const char * texture, const char * shader);
+	void update(float elapsed_time);
+	void onCollision(EntityCollider* collided_with);
+
+	enum {
+		DAMAGE = 500,
+		NINJA = 501,
+		BOMB = 502
+	};
+
+};
 // *******************************************************************
 
 #endif

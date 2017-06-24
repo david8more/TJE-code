@@ -28,7 +28,7 @@ void LoadingState::onEnter()
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (0)
+	if (DEBUG_TOGAME)
 	{
 		SoundManager::getInstance()->stopSound("cinematic");
 		Load();
@@ -101,11 +101,6 @@ void LoadingState::update(double time_elapsed)
 	if (current_ttl < 0)
 	{
 		iterator++;
-		if (iterator == 440)
-		{
-			SoundManager::getInstance()->setVolume("cinematic", 0.3);
-			SoundManager::getInstance()->playSound("speech2", false);
-		}
 		current_ttl = frame_ttl;
 		if (iterator == slider.size())
 			Load();

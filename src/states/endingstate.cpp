@@ -193,7 +193,7 @@ void EndingState::render()
 	ss.str("");
 	int diff = game->difficulty;
 	std::string rank;
-	Texture* insignia_t;
+	Texture* insignia_t = Texture::Get("data/textures/insignias/lieutenant.tga");
 
 	switch (diff)
 	{
@@ -263,8 +263,6 @@ void EndingState::render()
 			insignia_t = Texture::Get("data/textures/insignias/colonel.tga");
 		}
 
-		break;
-	default:
 		break;
 	}
 

@@ -51,7 +51,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		wh_left->model.rotateLocal(90.0 * DEG2RAD, Vector3(0, 0, 1));
 		this->addChild(wh_left);
 
-		setLife(175);
+		setLife(100);
 		cadence = 70.0 + random() * 10;;
 		damageM60 = 15.0;
 		speed = 100.0;
@@ -68,7 +68,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		this->addChild(helix2);
 
-		setLife(200);
+		setLife(125);
 		cadence = 80.0 + random() * 10;
 		damageM60 = 10.0;
 		speed = 90.0;
@@ -79,7 +79,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		set("wildcat.ASE", "data/textures/wildcat.tga", "wildcat");
 		helix->model.setTranslation(0.f, 0.f, 3.1f);
 
-		setLife(300);
+		setLife(150);
 		cadence = 60.f + random() * 10;;
 		damageM60 = 25.0;
 		speed = 70.0;
@@ -96,7 +96,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		this->addChild(helix2);
 
-		setLife(350);
+		setLife(175);
 		cadence = 50.0 + random() * 10;;
 		damageM60 = 20.0;
 		speed = 80.0;
@@ -106,11 +106,6 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		exit(0);
 	}
 
-	if (0) // god mode
-		damageM60 = 1000.0;
-	if (0) // slow mode
-		speed = 0.0;
-
 	helix->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 	this->addChild(helix);
 
@@ -118,6 +113,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 	engine = false;
 	wheels_rotation = 0;
 	last_shoot = 0;
+	visibility = 1000;
 	//m60 init
 	timer = shootingtime = 0;
 	overused = false;
@@ -342,11 +338,36 @@ void Airplane::onCollision(EntityCollider* collided_with)
 	if (uid > 1000)
 		return;
 
-	if(collided_with == NULL)
-		std::cout << "CRASCHING WITH SHIPS!" << std::endl;
-	
-	std::cout << "PLAYER CRASHED!" << std::endl;
-	life = 0;
+	if (collided_with == NULL)
+	{
+		std::cout << "CRASCHING WITH SHIPS OR NATURE!" << std::endl;
+		life = 0;
+		return;
+	}
+
+	// collided with not NULL
+	if (collided_with->uid == PowerUp::DAMAGE)
+	{
+		std::cout << "DAMAGE x2" << std::endl;
+		damageM60 *= 2; 
+		collided_with->destroy();
+		return;
+	}
+
+	else if (collided_with->uid == PowerUp::NINJA)
+	{
+		std::cout << "NINJA" << std::endl;
+		visibility = 75;
+		collided_with->destroy();
+		return;
+	}
+	else if (collided_with->uid == PowerUp::BOMB)
+	{
+		std::cout << "BOMB" << std::endl;
+		collided_with->destroy();
+		World::instance->atomic_enabled = true;
+		return;
+	}
 }
 
 void Airplane::unboundController()
@@ -374,7 +395,7 @@ Ship::Ship(bool ia)
 	if (ia)
 	{
 		setUid(Airplane::ENEMY_SHIP);
-		setLife(1000);
+		setLife(1250);
 		model.setTranslation(2000, -10, 1700);
 	}
 	else
@@ -382,7 +403,7 @@ Ship::Ship(bool ia)
 		setUid(Airplane::PLAYER_SHIP);
 		model.setRotation(180 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 		model.traslate(1600, -10, 1700);
-		setLife(750);
+		setLife(500);
 	}
 
 
@@ -932,4 +953,65 @@ void Clouds::render(Camera* camera)
 	{
 		glDisable(GL_BLEND);
 	}
+}
+
+PowerUp::PowerUp(const std::string&  type)
+{
+	setName(type);
+
+	std::string shader = "simple";
+
+	set("box.ASE", "data/textures/bomb.tga", shader.c_str());
+	setDynamic();
+
+	if (type == "damage")
+	{
+		setUid(DAMAGE);
+		model.setTranslation(-450, 100, 1500);
+	}
+	else if (type == "ninja")
+	{
+		setUid(NINJA);
+		model.setTranslation(-2250, 120, -1000);
+	}
+	else if (type == "bomb")
+	{
+		setUid(BOMB);
+		model.setTranslation(-3600, 120, -3000);
+	}
+
+}
+
+PowerUp::~PowerUp()
+{
+	World* world = World::getInstance();
+
+	std::vector<Entity*>::iterator it;
+	it = std::find(world->powerups.begin(), world->powerups.end(), this);
+
+	if (it != world->powerups.end())
+		world->powerups.erase(it);
+}
+
+//meshfile sin path, texturefile con path
+void PowerUp::set(const char * meshf, const char * texturef, const char * shaderf) {
+
+	mesh = meshf;
+	texture = texturef;
+
+	std::string shader_string(shaderf);
+	std::string fs = "data/shaders/" + shader_string + ".fs";
+	std::string vs = "data/shaders/" + shader_string + ".vs";
+
+	shader = Shader::Load(vs.c_str(), fs.c_str());
+}
+
+void PowerUp::update(float elapsed_time)
+{
+	
+}
+
+void PowerUp::onCollision(EntityCollider* collided_with)
+{
+	std::cout << "si sale esto, algo no va bien" << std::endl;
 }

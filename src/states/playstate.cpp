@@ -113,6 +113,8 @@ void PlayState::onEnter()
 
 	// Sounds
 	SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
+	SoundManager::getInstance()->playSound("kick", false);
+	SoundManager::getInstance()->setVolume("kick", 0.5);
 
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
@@ -173,6 +175,17 @@ void PlayState::update(double seconds_elapsed)
 		{
 			World::instance->createReinforcements();
 			refs_timer = 100;
+		}
+	}
+
+	if (world->atomic_enabled)
+	{
+		world->time_to_explode -= seconds_elapsed;
+
+		if (world->time_to_explode < 0)
+		{
+			world->atomic_enabled = false;
+			world->atomic();
 		}
 	}
 
@@ -351,6 +364,21 @@ void PlayState::renderGUI()
 	drawText(w * 0.05, h * 0.65, "Reinforcements coming in", Vector3(1.f, 0.f, 1.f), 2.f);
 	drawText(w * 0.125, h * 0.7, ss.str(), Vector3(1.f, 0.f, 1.f), 3.5f);
 
+	// TIMER BOMBA
+
+	if (World::instance->atomic_enabled)
+	{
+		mins = World::instance->time_to_explode / 60.f;
+		seconds = World::instance->time_to_explode - 60 * mins;
+		ss.str("");
+		ss << mins << ":";
+		if (seconds < 10)
+			ss << "0" << seconds;
+		else
+			ss << seconds;
+		drawText(w * 0.5, h * 0.5, ss.str(), Vector3(1.f, 0.f, 0.f), 5.f);
+	}
+
 	//
 
 	glColor4f(1, 1, 1, 1.0);
@@ -502,7 +530,7 @@ void PlayState::renderGUI()
 	Camera camUp;
 	camUp.setPerspective(45.f, w / (float)h, 0.01, 100000);
 	Vector3 center = player->model * Vector3();
-	Vector3 eye = center + Vector3(0, 2000, 0);
+	Vector3 eye = center + Vector3(0, 3500, 0);
 	Vector3 up = Vector3(0, 0, 1);
 	camUp.lookAt(eye, center, up);
 	camUp.set();
@@ -546,6 +574,14 @@ void PlayState::renderGUI()
 		Vector3 current_center = current->model * Vector3();
 		objectsInMap.vertices.push_back(current_center);
 		objectsInMap.colors.push_back(Vector4(0.9, 0.0, 0.0, 0.65));
+	}
+
+	for (int i = 0; i < World::instance->powerups.size(); i++)
+	{
+		Entity* current = World::instance->powerups[i];
+		Vector3 current_center = current->model * Vector3();
+		objectsInMap.vertices.push_back(current_center);
+		objectsInMap.colors.push_back(Vector4(0.9, 0.0, 0.9, 0.5));
 	}
 
 	for (int i = 0; i < World::instance->ships.size(); i++)
@@ -658,22 +694,15 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 		game->current_camera->near_plane = 7.5f;
 		SoundManager::getInstance()->playSound("plane", true);
 		break;
-	case SDLK_3:
+	case SDLK_1:
+		game->free_camera->lookAt(player->getPosition() + Vector3(0, 0, -100), Vector3(0, 0, 1000), Vector3(0, 1, 0));
 		game->current_camera = game->current_camera == game->fixed_camera ? game->free_camera : game->fixed_camera;
 		break;
-	case SDLK_4:
-		Shader::ReloadAll();
-		break;
-	case SDLK_5:
+	case SDLK_2:
 		PlayerController::getInstance()->current_controller = CONTROLLER_MODE_KEYBOARD;
 		break;
-	case SDLK_6:
-		game->current_camera = game->free_camera;
-		controlIA++;
-		break;
-	case SDLK_7:
-		// debug end
-		player->life = 0;
+	case SDLK_3:
+		Shader::ReloadAll();
 		break;
 	case SDLK_h:
 		if (game->fullscreen)
@@ -697,17 +726,9 @@ void PlayState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_p:
 		pause = !pause;
 		break;
-	case SDLK_j:
-		Game::instance->score += 500;
-		break;
 		// debug info
 	case SDLK_i:
 		game->inGame_DEBUG = !game->inGame_DEBUG;
-		break;
-		// debug set position near ships
-	case SDLK_k:
-		player->model.setTranslation(2600, 100, 1650);
-		player->model.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
 		break;
 	}
 }
@@ -742,8 +763,12 @@ void PlayState::setZoom()
 	if (inZoom)
 	{
 		viewpos.z += vTranslations[player->planeModel * 2 + current_view].qnt;
-		game->current_camera->near_plane = 0.01f;
-		game->current_camera->far_plane = 40000;
+		if (current_view == CABINEVIEW)
+		{
+			game->current_camera->near_plane = 0.01f;
+			game->current_camera->far_plane = 40000;
+		}
+
 	}
 	else
 		setView();
@@ -785,7 +810,7 @@ void PlayState::setView()
 	case CABINEVIEW:
 
 		game->current_camera->near_plane = 0.1f;
-		game->current_camera->far_plane = 50000.f;
+		game->current_camera->far_plane = 20000.f;
 		
 		if (plane_model == SPITFIRE)
 		{

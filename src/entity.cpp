@@ -398,22 +398,17 @@ void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 	if (uid > 1000 && b.author->uid > 1000)
 		return;
 	
-	if (uid == Airplane::ENEMY_SHIP)
-	{
-		life -= b.damage * 0.1;
-	}
-	else if (uid == Airplane::PLAYER_SHIP)
+	if (uid == Airplane::PLAYER_SHIP)
 	{
 		if (!Game::instance->ffire_on)
 			return;
-		life -= b.damage * 0.1;
 	}
-	else
-	{
-		life -= b.damage;
-	}
-	
+
+	life -= b.damage;
 	life = max(life, 0);
+	
+	if (life < 10 && name == "player")
+		SoundManager::getInstance()->playSound("mayday", false);
 
 	if (b.author == World::instance->playerAir)
 		Game::instance->score += b.damage;

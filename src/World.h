@@ -7,6 +7,9 @@
 #include "gameentities.h"
 #include "iacontroller.h"
 
+#define WIN 1
+#define LOSE 0
+
 class Entity;
 class EntityMesh;
 class EntityCollider;
@@ -14,6 +17,7 @@ class Airplane;
 class Aircarrier;
 class EntityEnemy;
 class Torpedo;
+class PowerUp;
 
 class World
 {
@@ -40,12 +44,16 @@ public:
 
 	sWorldInfo worldInfo;
 
+	bool atomic_enabled;
+	float time_to_explode;
+
 	Entity* root;
 
 	//world constants
 	EntityMesh* sky;
 
 	std::vector<Entity*> map_entities;
+	std::vector<Entity*> powerups;
 	std::vector<Entity*> airplanes;
 	std::vector<Entity*> ships;
 
@@ -57,6 +65,7 @@ public:
 	void addPlayer();
 	void addPlayerConst();
 	void addEnemies();
+	void atomic();
 	void setGameMode();
 	void addWorldConst();
 

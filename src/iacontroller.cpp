@@ -87,7 +87,7 @@ void IAController::update(float seconds_elapsed)
 
 	else if (distanceToPlayer < 750.0 && state != "retiring")
 	{
-		if (distance_wp < 1000)
+		if (distance_wp < playerAir->visibility)
 		{
 			to_target = targetToPlayer;
 			state = "chasing";
