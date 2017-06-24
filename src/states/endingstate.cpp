@@ -282,6 +282,20 @@ void EndingState::render()
 	glDisable(GL_BLEND);
 }
 
-void EndingState::update(double time_elapsed) {
+void EndingState::update(double time_elapsed)
+{
+	if (Game::instance->joystick != NULL)
+	{
+		JoystickState state = getJoystickState(Game::instance->joystick);
 
+		for (int i = 0; i < 14; i++)
+		{
+			if (state.button[i])
+			{
+				SManager->changeCurrentState(MenuState::getInstance(SManager));
+				return;
+			}
+
+		}
+	}
 }

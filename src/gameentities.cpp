@@ -341,6 +341,9 @@ void Airplane::onCollision(EntityCollider* collided_with)
 
 	if (uid > 1000)
 		return;
+
+	if(collided_with == NULL)
+		std::cout << "CRASCHING WITH SHIPS!" << std::endl;
 	
 	std::cout << "PLAYER CRASHED!" << std::endl;
 	life = 0;
@@ -700,6 +703,7 @@ void Torpedo::onCollision(EntityCollider* collided_with)
 Missile::Missile(bool culling)
 {
 	parent = NULL;
+	setName("missile");
 	model.setRotation(90 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 
 	mesh = "bomb.ASE";
@@ -764,12 +768,10 @@ void Missile::update(float elapsed_time)
 	}
 
 	testSphereCollision();
-
 	last_position = getPosition();
 
 	model.traslateLocal(0, 0, elapsed_time * 150.0);
 	ttl -= elapsed_time;
-	//Explosion::createExplosion(getPosition(), 2.5, 1.0);
 }
 
 void Missile::activate()

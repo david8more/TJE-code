@@ -114,10 +114,10 @@ void PlayState::onEnter()
 	// Sounds
 	SoundManager::getInstance()->setVolume("music", game->BCK_VOL);
 
-
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
 
+	refs_timer = 120;
 }
 
 void PlayState::render()
@@ -164,8 +164,17 @@ void PlayState::render()
 
 void PlayState::update(double seconds_elapsed)
 {
-	if(game->start)
+	if (game->start)
+	{
 		playTime += seconds_elapsed;
+		refs_timer -= seconds_elapsed;
+
+		if (refs_timer < 0)
+		{
+			World::instance->createReinforcements();
+			refs_timer = 100;
+		}
+	}
 
 	//Vector3 p = player->getPosition();
 	//std::cout << p.x << ".." << p.y << ".." << p.z << std::endl;
@@ -328,6 +337,21 @@ void PlayState::renderGUI()
 	{
 		drawText(w * 0.25, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2.f);
 	}
+
+	// TIMER REFUERZOS
+
+	int mins = refs_timer / 60.f;
+	int seconds = refs_timer - 60 * mins;
+	ss.str("");
+	ss << mins << ":";
+	if(seconds < 10)
+		ss << "0" << seconds;
+	else
+		ss << seconds;
+	drawText(w * 0.05, h * 0.65, "Reinforcements coming in", Vector3(1.f, 0.f, 1.f), 2.f);
+	drawText(w * 0.125, h * 0.7, ss.str(), Vector3(1.f, 0.f, 1.f), 3.5f);
+
+	//
 
 	glColor4f(1, 1, 1, 1.0);
 
@@ -512,9 +536,9 @@ void PlayState::renderGUI()
 	Vector3 p2 = camera + player->model.rotateVector(Vector3(-125, 0, 200));
 	visionField.vertices.push_back(p1);
 	visionField.vertices.push_back(p2);
-	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 0.5));
-	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
-	visionField.colors.push_back(Vector4(0.9, 0.0, 0.7, 0.5));
+	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 0.0));
+	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 1.0));
+	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 1.0));
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
@@ -529,7 +553,7 @@ void PlayState::renderGUI()
 		Entity* current = World::instance->ships[i];
 		Vector3 current_center = current->model * Vector3();
 		objectsInMap.vertices.push_back(current_center);
-		objectsInMap.colors.push_back(Vector4(0, 0.9, 0.0, 0.65));
+		objectsInMap.colors.push_back(Vector4(0, 0.0, 0.9, 0.65));
 	}
 	
 	Shader* shader = Shader::Load("data/shaders/map.vs", "data/shaders/map.fs");
@@ -589,8 +613,6 @@ void PlayState::renderGUI()
 	camUp.lookAt(eye, center, up);
 	camUp.set();
 
-	
-
 	glScissor(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
 	glEnable(GL_SCISSOR_TEST);
 	glViewport(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
@@ -605,21 +627,17 @@ void PlayState::renderGUI()
 
 	agu.vertices.push_back(pos1);
 	agu.vertices.push_back(pos2);
-
 	agu.vertices.push_back(pos1);
 	agu.vertices.push_back(pos3);
 
-
 	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.95));
 	agu.colors.push_back(Vector4(1, 0.0, 0.0, 0.15));
-	
 	agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.95));
 	agu.colors.push_back(Vector4(0, 0.2, 0.9, 0.15));
 
 	glLineWidth(5);
 	agu.render(GL_LINES);
 	glLineWidth(1.0);
-
 	glDisable(GL_SCISSOR_TEST);
 	glViewport(0, 0, w, h);
 

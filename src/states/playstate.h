@@ -57,6 +57,7 @@ public:
 
 	Game* game;
 	float playTime;
+	float refs_timer;
 
 	Airplane* player;
 

@@ -9,6 +9,8 @@
 #define D_SKILLED 2
 #define D_INSANE 3
 
+#define DEBUG_TOGAME 1
+
 #include "includes.h"
 #include "utils.h"
 #include "camera.h"

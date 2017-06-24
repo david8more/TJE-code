@@ -19,15 +19,20 @@
 LoadingState::LoadingState(StateManager* SManager) : State(SManager) {}
 LoadingState::~LoadingState() {}
 
-float frame_ttl = 0.125;
+float frame_ttl = 0.13;
 
 void LoadingState::onEnter()
 {
 	//set the clear color (the background color)
 	glClearColor(1.0, 0.0, 0.0, 1.0);
-
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (0)
+	{
+		SoundManager::getInstance()->stopSound("cinematic");
+		Load();
+	}
 
 	game = Game::getInstance();
 	backgroundQuad.createQuad(game->window_width*0.5, game->window_height*0.5, game->window_width, game->window_height, true);
@@ -96,6 +101,11 @@ void LoadingState::update(double time_elapsed)
 	if (current_ttl < 0)
 	{
 		iterator++;
+		if (iterator == 440)
+		{
+			SoundManager::getInstance()->setVolume("cinematic", 0.3);
+			SoundManager::getInstance()->playSound("speech2", false);
+		}
 		current_ttl = frame_ttl;
 		if (iterator == slider.size())
 			Load();

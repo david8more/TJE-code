@@ -316,22 +316,17 @@ bool EntityCollider::testRayWithAll(Vector3 origin, Vector3 dir, float max_dist,
 
 void EntityCollider::testSphereCollision()
 {
-	// concatenate two vectors
-	/*std::vector<EntityCollider*> all;
-	all.reserve(EntityCollider::static_colliders.size() + EntityCollider::dynamic_colliders.size()); // preallocate memory
-	all.insert(all.end(), EntityCollider::static_colliders.begin(), EntityCollider::static_colliders.end());
-	all.insert(all.end(), EntityCollider::dynamic_colliders.begin(), EntityCollider::dynamic_colliders.end());
-	*/
 	for (int i = 0; i < EntityCollider::dynamic_colliders.size(); i++)
 	{
 		EntityCollider* current = EntityCollider::dynamic_colliders[i];
 
-		// no queremos hacer las colisiones jugador/barcos, se hará con el rayo
-		// -> tiene más precision
+		// barco no debe colisionar con su propio missil
 		if (current == this || current->uid == this->uid)
 			continue;
-
-		//std::cout << this->name << ": " << current->name << endl;
+		// no queremos hacer las colisiones jugador/barcos, se hará con el rayo
+		// -> tiene más precision
+		if (current->name == "ship" && this->name == "player")
+			continue;
 
 		Mesh * my_mesh = Mesh::Get(mesh.c_str());
 		Mesh * enemy_mesh = Mesh::Get(current->mesh.c_str());
@@ -339,13 +334,12 @@ void EntityCollider::testSphereCollision()
 		Vector3 my_position = model * my_mesh->header.center;
 		Vector3 enemy_position = current->model * enemy_mesh->header.center;
 
-		float margin = current->name == "ship" ? 15.0 : 3.0;
-		float dist = my_position.distance(enemy_position) + margin;
+		float dist = my_position.distance(enemy_position);
 
 		if (dist < (my_mesh->header.radius + enemy_mesh->header.radius))
 		{
 			//std::cout << "Collided with:" << current->name << std::endl;
-			this->onCollision(current);
+			onCollision(current);
 		}
 	}
 

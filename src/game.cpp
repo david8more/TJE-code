@@ -62,21 +62,9 @@ void Game::init(void)
 	nbFrames = 0;
 
 	sManager = new StateManager();
-
 	SoundManager::getInstance()->playSound("cinematic", false);
+	sManager->setInitialState(LoadingState::getInstance(sManager));
 
-	if (DEBUG)
-	{
-		MenuState::getInstance(sManager)->init();
-		SelectionState::getInstance(sManager)->init();
-		PlayState::getInstance(sManager)->init();
-		EndingState::getInstance(sManager)->init();
-		sManager->setInitialState(SelectionState::getInstance(sManager));
-	}
-	else
-	{
-		sManager->setInitialState(LoadingState::getInstance(sManager));
-	}
 }
 
 //what to do when the image has to be draw

@@ -15,7 +15,6 @@
 #include <algorithm>
 
 #define DEBUG 0
-#define DEBUG_SELECTION 1
 
 Airplane* eMesh = NULL; // plane mesh
 Ship* sMesh = NULL; // background ship mesh
@@ -122,7 +121,7 @@ void SelectionState::onEnter()
 	//hide the cursor
 	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
 
-	if (DEBUG_SELECTION)
+	if (DEBUG_TOGAME)
 	{
 		selectionChosen();
 	}

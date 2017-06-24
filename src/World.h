@@ -60,6 +60,8 @@ public:
 	void setGameMode();
 	void addWorldConst();
 
+	void createReinforcements();
+
 	void reset();
 	bool isGameOver();
 };

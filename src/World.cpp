@@ -119,6 +119,30 @@ void World::addWorldConst()
 	map_entities.push_back(ground);
 }
 
+void World::createReinforcements()
+{
+	// MORE ENEMIES
+	std::stringstream ss;
+	for (int i = 100; i < 105; i++)
+	{
+		Airplane* enemyAir = new Airplane(BOMBER, IA);
+		enemyAir->setUid(1000 + i);
+		ss.str("");
+		ss << "ia_" << i;
+		enemyAir->setName(ss.str());
+		float x = 200 + rand() % 2000;
+		float y = 500 + rand() % 500;
+		float z = 200 + rand() % 2000;
+
+		enemyAir->model.setTranslation(x, y, z);
+		enemyAir->last_position = enemyAir->getPosition();
+
+		enemyAir->setDynamic();
+		airplanes.push_back(enemyAir);
+		root->addChild(enemyAir);
+	}
+}
+
 void World::addEnemies() {
 	
 	// ENEMIES
