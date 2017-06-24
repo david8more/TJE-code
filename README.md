@@ -30,26 +30,26 @@ lo único que tienes que hacer es explorar, pero vigila, el tiempo es oro.
 Puedes utilizar tu teclado o un mando XBOX para pilotar tu avión. Además de las funciones ya
 descritas en el juego, podrás:
 
+	_ Mover el avión con el ratón pulsando la rueda	
 	_ Información de entidades IA: Pulsando la tecla (i)
 	_ Pausar el juego: Pulsando la tecla (p)
 	_ Introducir códigos secretos en windowed screen: Pulsando la tecla (h)
 		"god"	
 		Daño máximo
-		"machine"			
+		"machine"
 		Cadencia imposible
-		
-		"tank"		
+
+		"tank"
 		Vida casi ilimitada
 		"bolt"
-			
+
 		Hiper velocidad
+
+Resto de controles descritos en el juego.
 
 	o AUTORES
 
 Alejandro Rodríguez Corrales
 David Moreno Esteban
 
-# Jocs Electrònics 
-# 2017
-
-
+# Jocs Electrònics 2017
