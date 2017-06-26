@@ -57,8 +57,6 @@ void PlayState::init()
 	game->shooter_camera = new Camera();
 	game->shooter_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
-	game->current_camera = DEBUG ? game->free_camera : game->fixed_camera;
-
 	// fill views struct
 	// METER ZOOM DEPENDIENDO DEL AVION!!
 	// sTransZoomCreator(view, planeModel, quantityToTranslate);
@@ -87,6 +85,7 @@ void PlayState::init()
 void PlayState::onEnter()
 {
 	cout << "$ Entering play state -- ..." << endl;
+	game->current_camera = game->fixed_camera;
 	
 	rt->create(game->window_width, game->window_height, false);
 	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
@@ -96,12 +95,9 @@ void PlayState::onEnter()
 	// views things
 	current_view = 0;
 
-	//set the clear color (the background color)
 	glClearColor(0.5, 0.7, 0.8, 1.0);
-	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//OpenGL flags
 	glEnable(GL_CULL_FACE); //render both sides of every triangle
 	glEnable(GL_DEPTH_TEST); //check the occlusi  ons using the Z buffer
 
@@ -125,9 +121,7 @@ void PlayState::render()
 	// render to texture
 	rt->enable();
 
-	//set the clear color (the background color)
 	glClearColor(0.5, 0.7, 0.8, 1.0);
-	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	//
@@ -390,8 +384,8 @@ void PlayState::renderGUI()
 		ss << "0" << seconds;
 	else
 		ss << seconds;
-	drawText(w * 0.05, h * 0.65, "Reinforcements coming in", Vector3(1.f, 0.f, 1.f), 2.f);
-	drawText(w * 0.125, h * 0.7, ss.str(), Vector3(1.f, 0.f, 1.f), 3.5f);
+	drawText(w * 0.03, h * 0.82, "Reinforcements coming in", Vector3(0.3, 0.9, 0.3), 2.f);
+	drawText(w * 0.03, h * 0.85, ss.str(), Vector3(0.3, 0.9, 0.3), 3.5f);
 
 	// TIMER BOMBA
 
@@ -405,7 +399,7 @@ void PlayState::renderGUI()
 			ss << "0" << seconds;
 		else
 			ss << seconds;
-		drawText(w * 0.5, h * 0.5, ss.str(), Vector3(1.f, 0.f, 0.f), 5.f);
+		drawText(w * 0.45, h * 0.5, ss.str(), Vector3(1.f, 0.f, 0.f), 5.f);
 	}
 
 	//
@@ -418,14 +412,14 @@ void PlayState::renderGUI()
 
 	Mesh logos;
 	Texture * et = Texture::Get("data/textures/allies-logo.tga");
-	logos.createQuad(w * 0.05, h * 0.1, h * 0.1, h * 0.1, true);
+	logos.createQuad(w * 0.15, h * 0.95, h * 0.05, h * 0.05, true);
 
 	et->bind();
 	logos.render(GL_TRIANGLES);
 	et->unbind();
 
 	et = Texture::Get("data/textures/enemies-logo.tga");
-	logos.createQuad(w * 0.05, h * 0.2, h * 0.1, h * 0.1, true);
+	logos.createQuad(w * 0.05, h * 0.95, h * 0.05, h * 0.05, true);
 
 	et->bind();
 	logos.render(GL_TRIANGLES);
@@ -444,12 +438,26 @@ void PlayState::renderGUI()
 		torpedo.render(GL_TRIANGLES);
 		etor->unbind();
 	}
-	// players
 
+	Mesh lifes_box;
+	lifes_box.createQuad(w * 0.12, h * 0.4, w * 0.17, h * 0.05);
+	Texture * lb_text = Texture::Get("data/textures/border.tga");
+	lb_text->bind();
+	lifes_box.render(GL_TRIANGLES);
+	lb_text->unbind();
+
+	lifes_box.createQuad(w * 0.12, h * 0.3, w * 0.17, h * 0.05);
+	lb_text = Texture::Get("data/textures/border2.tga");
+	lb_text->bind();
+	lifes_box.render(GL_TRIANGLES);
+	lb_text->unbind();
+
+
+	// players
 	ss.str("");
-	ss << "Enemies: " << (1 + World::instance->airplanes.size());
-	drawText(w * 0.1, h * 0.2, ss.str(), Vector3(1, 1, 1), 2);
-	drawText(w * 0.1, h * 0.1, "Allies: 1", Vector3(1, 1, 1), 2);
+	ss << " " << (1 + World::instance->airplanes.size());
+	drawText(w * 0.07, h * 0.94, ss.str(), Vector3(1, 1, 1), 2);
+	drawText(w * 0.175, h * 0.94, "1", Vector3(1, 1, 1), 2);
 
 	if (World::instance->ships.size())
 	{
@@ -457,18 +465,12 @@ void PlayState::renderGUI()
 		{
 			Ship* c = (Ship*)World::instance->ships[i];
 			ss.str("");
-			Vector3 color;
+			Vector3 color(1.0, 1.0, 1.0);
 			if (c->uid == Airplane::PLAYER_SHIP)
-			{
 				ss << "DEFEND: " << c->life;
-				color = Vector3(0, 0, 1);
-			}
 			else
-			{
 				ss << "ATTACK: " << c->life;
-				color = Vector3(1, 0, 0);
-			}
-			drawText(w * 0.04, h * 0.3 + i * h * 0.05, ss.str(), color, 3.0);
+			drawText(w * 0.07, h * 0.29 + i * h * 0.1, ss.str(), color, 2.25);
 		}
 	}
 
@@ -552,6 +554,21 @@ void PlayState::renderGUI()
 		quads.render(GL_TRIANGLES);
 	}
 
+
+	// minimap border
+	int sizex = w * 0.2;
+	int sizey = h * 0.23;
+	cam2D.set();
+
+	Mesh border;
+	Texture * tc = Texture::Get("data/textures/test2.tga");
+	border.createQuad(w * 0.9, h * 0.15, sizex * 0.5, sizex * 0.5, true);
+
+	glColor4f(0, 0, 0, 0.5);
+	glLineWidth(1.0);
+	tc->bind();
+	border.render(GL_TRIANGLES);
+	tc->unbind();
 	
 
 	// minimap
@@ -564,12 +581,9 @@ void PlayState::renderGUI()
 	camUp.lookAt(eye, center, up);
 	camUp.set();
 
-	int sizex = w * 0.2;
-	int sizey = h * 0.23;
-
-	glScissor(w * 0.04, h - h * 0.99, sizex, sizey);
+	glScissor(w * 0.825, h - h * 0.233, sizex*0.75, sizey*0.75);
 	glEnable(GL_SCISSOR_TEST);
-	glViewport(w * 0.04, h - h * 0.99, sizex, sizey);
+	glViewport(w * 0.825, h - h * 0.233, sizex*0.75, sizey*0.75);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -584,18 +598,18 @@ void PlayState::renderGUI()
 
 	// player
 	objectsInMap.vertices.push_back(center);
-	objectsInMap.colors.push_back(Vector4(0.9, 0.75, 0.0, 0.65));
+	objectsInMap.colors.push_back(Vector4(0.1, 0.75, 0.0, 0.65));
 
 	Vector3 camera = Game::instance->current_camera->center;
 
 	visionField.vertices.push_back(camera);
-	Vector3 p1 = camera + player->model.rotateVector(Vector3(200, 0, 300));
-	Vector3 p2 = camera + player->model.rotateVector(Vector3(-200, 0, 300));
+	Vector3 p1 = camera + player->model.rotateVector(Vector3(350, 0, 500));
+	Vector3 p2 = camera + player->model.rotateVector(Vector3(-350, 0, 500));
 	visionField.vertices.push_back(p1);
 	visionField.vertices.push_back(p2);
-	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 0.0));
-	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 1.0));
-	visionField.colors.push_back(Vector4(0.0, 0.9, 0.0, 1.0));
+	visionField.colors.push_back(Vector4(1.0, 1.0, 1.0, 0.75));
+	visionField.colors.push_back(Vector4(1.0, 1.0, 1.0, 0.0));
+	visionField.colors.push_back(Vector4(1.0, 1.0, 1.0, 0.0));
 
 	for (int i = 0; i < World::instance->airplanes.size(); i++)
 	{
@@ -641,20 +655,6 @@ void PlayState::renderGUI()
 	glDisable(GL_SCISSOR_TEST);
 	glViewport(0, 0, w, h);
 	
-	// minimap border
-
-	cam2D.set();
-
-	Mesh border;
-	Texture * tc = Texture::Get("data/textures/compass.tga");
-	border.createQuad(w * 0.14, h * 0.875, sizex, sizex, true);
-
-	glColor4f(1, 1, 1, 1.0);
-	glLineWidth(1.0);
-	tc->bind();
-	border.render(GL_TRIANGLES);
-	tc->unbind();
-
 	// compass
 
 	glColor4f(1, 1, 1, 1.0);
@@ -664,7 +664,7 @@ void PlayState::renderGUI()
 
 	Mesh compass;
 	int tam = 200;
-	compass.createQuad(w * 0.9, h * 0.15, tam, tam, true);
+	compass.createQuad(w * 0.1, h * 0.15, tam, tam, true);
 	bru->bind();
 	compass.render(GL_TRIANGLES);
 	bru->unbind();
@@ -678,9 +678,9 @@ void PlayState::renderGUI()
 	camUp.lookAt(eye, center, up);
 	camUp.set();
 
-	glScissor(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
+	glScissor(w * 0.1 - tam * 0.505, h - h * 0.15 - tam * 0.5, tam, tam);
 	glEnable(GL_SCISSOR_TEST);
-	glViewport(w * 0.9 - tam * 0.5, h - h * 0.15 - tam * 0.5, tam, tam);
+	glViewport(w * 0.1 - tam * 0.505, h - h * 0.15 - tam * 0.5, tam, tam);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 

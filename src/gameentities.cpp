@@ -66,7 +66,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
-		this->addChild(helix2);
+		addChild(helix2);
 
 		setLife(125);
 		cadence = 80.0 + random() * 10;
@@ -94,7 +94,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.65f, -0.88f, 4.65f);
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
-		this->addChild(helix2);
+		addChild(helix2);
 
 		setLife(175);
 		cadence = 50.0 + random() * 10;;
@@ -107,7 +107,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 	}
 
 	helix->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
-	this->addChild(helix);
+	addChild(helix);
 
 	// plane properties
 	engine = false;
@@ -120,11 +120,11 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 	// controller
 
-	this->controller = NULL;
+	controller = NULL;
 
 	if (ia)
 	{
-		this->controller = new IAController();
+		controller = new IAController();
 		controller->setPlayer(this);
 	}
 }
@@ -292,16 +292,18 @@ void Airplane::rear_shoot()
 		case SPITFIRE:
 			bManager->createBullet(model*Vector3(1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
 			bManager->createBullet(model*Vector3(-1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
-			Flash::createFlash(Vector3(-1.3f, -2.f, -8.f), this, 5.0);
+			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
 			break;
 		case P38:
 			bManager->createBullet(model*Vector3(0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
 			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
 			bManager->createBullet(model*Vector3(0.f, -0.1f, 0.f), vel, 1, 5, this, 1);
+			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
 			break;
 		case WILDCAT:
 			bManager->createBullet(model*Vector3(-1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
 			bManager->createBullet(model*Vector3(1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
+			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
 			break;
 		}
 		

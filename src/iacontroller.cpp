@@ -70,23 +70,23 @@ void IAController::update(float seconds_elapsed)
 		current_Wp = (current_Wp + 1) % waypoints.size();
 	}
 
-	if (controlled->life < 50.0)
+	/*if (controlled->life < 50.0)
 	{
 		state = "retiring";
 		speed *= 1.5;
-	}
+	}*/
 
 	// distance to player
 	float distanceToPlayer = targetToPlayer.length();
 
-	if (distanceToPlayer < 25.0)
+	if (distanceToPlayer < 40.0)
 	{
 		state = "avoiding collision";
 	}
 
-	else if (distanceToPlayer < 750.0 && state != "retiring")
+	else if (distanceToPlayer < playerAir->visibility && state != "retiring")
 	{
-		if (distance_wp < playerAir->visibility)
+		if (distance_wp < 1000.0)
 		{
 			to_target = targetToPlayer;
 			state = "chasing";

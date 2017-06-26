@@ -15,7 +15,7 @@
 #define IA true
 
 World* World::instance = NULL;
-
+int enemycounter = 0;
 Ship* enemyShip = NULL;
 Aircarrier* aircarrier = NULL;
 
@@ -130,14 +130,14 @@ void World::addWorldConst()
 	root->addChild(ground);
 	ground->setStatic();
 
-	map_entities.push_back(ground);
+	//map_entities.push_back(ground);
 }
 
 void World::createReinforcements()
 {
 	// MORE ENEMIES
 	std::stringstream ss;
-	for (int i = 100; i < 105; i++)
+	for (int i = enemycounter + 1; i < enemycounter + 4; i++)
 	{
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
 		enemyAir->setUid(1000 + i);
@@ -179,6 +179,8 @@ void World::addEnemies() {
 
 	for (int i = 1; i < IA_enemies; i++)
 	{
+		enemycounter++;
+		
 		Airplane* enemyAir = new Airplane(BOMBER, IA);
 		enemyAir->setUid(1000 + i);
 		ss.str("");
