@@ -61,8 +61,8 @@ void PlayerController::update(float seconds_elapsed)
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 50; //move faster with left shift
-		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 100; //move mega faster with right shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 5; //move faster with left shift
+		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
 
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
 			moveY(-1.f, seconds_elapsed, speed);
@@ -84,6 +84,8 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (game->keystate[SDL_SCANCODE_SPACE])
 			player->shoot();
+		if (game->keystate[SDL_SCANCODE_R])
+			player->rear_shoot();
 
 		// to navigate with the mouse fixed in the middle
 		if (game->mouse_locked)

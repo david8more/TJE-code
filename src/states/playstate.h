@@ -7,6 +7,7 @@
 #define BOMBER 3
 #define FULLVIEW 0
 #define CABINEVIEW 1
+#define SHOOTERVIEW 2
 
 #include "../framework.h"
 #include "../texture.h"

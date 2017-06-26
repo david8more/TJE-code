@@ -27,19 +27,18 @@ void OptionsState::init(){
 	texture = Texture::Get("data/textures/blur.tga");
 
 	game = Game::getInstance();
-	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 }
 
 void OptionsState::onEnter()
 {
 	cout << "$ Entering options state -- ..." << endl;
 	
-	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glColor3f(1.f, 1.f, 1.f);
-	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 
 	currentSelection = 0;
 }

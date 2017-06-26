@@ -92,6 +92,7 @@ void Entity::addChild(Entity * entity)
 
 void Entity::removeChild(Entity* entity)
 {
+
 	if (!children.size())
 		return;
 
@@ -320,7 +321,7 @@ void EntityCollider::testSphereCollision()
 	{
 		EntityCollider* current = EntityCollider::dynamic_colliders[i];
 
-		// barco no debe colisionar con su propio missil
+		// barco no debe colisionar con su propio misil
 		if (current == this || current->uid == this->uid)
 			continue;
 		// no queremos hacer las colisiones jugador/barcos, se hará con el rayo
@@ -350,7 +351,7 @@ void EntityCollider::testStaticCollisions()
 	if (!Game::getInstance()->start)
 		return;
 
-	if (this->getPosition().y < -7.5)
+	if (getPosition().y < -7.5)
 	{
 		std::cout << "Water collision" << std::endl;
 		onCollision(NULL);

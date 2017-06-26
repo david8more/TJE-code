@@ -79,9 +79,6 @@ void EndingState::onEnter()
 
 	cout << "$ Entering 'ending' state --" << Game::instance->score << endl;
 
-	SoundManager::instance->stopSound("music");
-	game->bkg_music_playing  = !game->bkg_music_playing;
-
 	if (Game::instance->loseWin == LOSE)
 		SoundManager::instance->playSound("lluvia", true);
 	else

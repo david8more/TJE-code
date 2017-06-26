@@ -54,7 +54,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		setLife(100);
 		cadence = 70.0 + random() * 10;;
 		damageM60 = 15.0;
-		speed = 100.0;
+		speed = 120.0;
 	}
 
 	else if (model == P38)
@@ -71,7 +71,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		setLife(125);
 		cadence = 80.0 + random() * 10;
 		damageM60 = 10.0;
-		speed = 90.0;
+		speed = 110.0;
 	}
 
 	else if (model == WILDCAT)
@@ -82,7 +82,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		setLife(150);
 		cadence = 60.f + random() * 10;;
 		damageM60 = 25.0;
-		speed = 70.0;
+		speed = 90.0;
 	}
 
 	else if (model == BOMBER)
@@ -99,7 +99,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 		setLife(175);
 		cadence = 50.0 + random() * 10;;
 		damageM60 = 20.0;
-		speed = 80.0;
+		speed = 100.0;
 	}
 	else
 	{
@@ -224,9 +224,10 @@ void Airplane::shoot()
 
 	if (getTime() > last_shoot && !overused)
 	{
-		//std::cout << "shooting" << std::endl;
 		Vector3 vel = model.rotateVector(Vector3(0.f, 0.f, 1500));
 
+		//std::cout << "shooting" << std::endl;
+		
 		switch (planeModel) {
 		case SPITFIRE:
 			bManager->createBullet(model*Vector3(1.9f, -0.25f, 2.0), vel, 2, damageM60, this, 1);
@@ -273,6 +274,41 @@ void Airplane::shoot()
 
 		//std::string s = overused ? "ON" : "OFF";
 		//std::cout << "s_time: " << shootingtime << " - overused " << s << std::endl;
+	}
+}
+
+void Airplane::rear_shoot()
+{
+	BulletManager* bManager = BulletManager::getInstance();
+	Game*game = Game::getInstance();
+
+	if (getTime() > last_shoot)
+	{
+		Camera* camtest = game->shooter_camera; 
+		Vector3 vel = camtest->getRayDirection(game->mouse_position.x, game->mouse_position.y, game->window_width, game->window_height);
+		vel *= 1500;
+
+		switch (planeModel) {
+		case SPITFIRE:
+			bManager->createBullet(model*Vector3(1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
+			bManager->createBullet(model*Vector3(-1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
+			Flash::createFlash(Vector3(-1.3f, -2.f, -8.f), this, 5.0);
+			break;
+		case P38:
+			bManager->createBullet(model*Vector3(0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
+			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
+			bManager->createBullet(model*Vector3(0.f, -0.1f, 0.f), vel, 1, 5, this, 1);
+			break;
+		case WILDCAT:
+			bManager->createBullet(model*Vector3(-1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
+			bManager->createBullet(model*Vector3(1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
+			break;
+		}
+		
+		SoundManager::getInstance()->playSound("shot", false);
+
+		// end shoot
+		last_shoot = getTime() + 100;
 	}
 }
 
@@ -335,6 +371,8 @@ void Airplane::onCollision(EntityCollider* collided_with)
 {
 	Game* game = Game::getInstance();
 
+	//std::cout << "colliding" << std::endl;
+
 	if (uid > 1000)
 		return;
 
@@ -346,28 +384,17 @@ void Airplane::onCollision(EntityCollider* collided_with)
 	}
 
 	// collided with not NULL
-	if (collided_with->uid == PowerUp::DAMAGE)
-	{
-		std::cout << "DAMAGE x2" << std::endl;
-		damageM60 *= 2; 
-		collided_with->destroy();
-		return;
-	}
 
-	else if (collided_with->uid == PowerUp::NINJA)
+	if (collided_with->uid > 500 && collided_with->uid < 505)
 	{
-		std::cout << "NINJA" << std::endl;
-		visibility = 75;
-		collided_with->destroy();
+		// collided with powerup
+		PowerUp * pup = (PowerUp*)collided_with;
+		pup->execute();
 		return;
 	}
-	else if (collided_with->uid == PowerUp::BOMB)
-	{
-		std::cout << "BOMB" << std::endl;
-		collided_with->destroy();
-		World::instance->atomic_enabled = true;
-		return;
-	}
+	
+	std::cout << "CRASCHING WITH AIRPLANES!" << std::endl;
+	life = 0;
 }
 
 void Airplane::unboundController()
@@ -1004,6 +1031,32 @@ void PowerUp::set(const char * meshf, const char * texturef, const char * shader
 	std::string vs = "data/shaders/" + shader_string + ".vs";
 
 	shader = Shader::Load(vs.c_str(), fs.c_str());
+}
+
+void PowerUp::execute()
+{
+	if (uid == PowerUp::DAMAGE)
+	{
+		std::cout << "DAMAGE x2" << std::endl;
+		World::instance->playerAir->damageM60 *= 2;
+		destroy();
+		return;
+	}
+
+	else if (uid == PowerUp::NINJA)
+	{
+		std::cout << "NINJA" << std::endl;
+		World::instance->playerAir->visibility = 125;
+		destroy();
+		return;
+	}
+	else if (uid == PowerUp::BOMB)
+	{
+		std::cout << "BOMB" << std::endl;
+		destroy();
+		World::instance->atomic_enabled = true;
+		return;
+	}
 }
 
 void PowerUp::update(float elapsed_time)

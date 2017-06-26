@@ -44,7 +44,6 @@ void SelectionState::init() {
 	//create our camera
 	cam3D = new Camera();
 	cam3D->lookAt(Vector3(0.f, 5.f, 15.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	cam3D->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
 
 	// create semi-WORLD
 
@@ -65,10 +64,6 @@ void SelectionState::init() {
 	sMesh->model.setTranslation(-200.f, -10.f, -50.f);
 	sMesh->model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
 
-	// rendering properties
-
-	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.95, game->window_width, game->window_height * 0.1);
 
 	texture = Texture::Get("data/textures/indications.tga");
 
@@ -108,18 +103,17 @@ void SelectionState::init() {
 
 void SelectionState::onEnter()
 {
-	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
-	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cout << "$ Entering loading state" << endl;
-
 	playerModel = 0;
+	SDL_ShowCursor(!game->mouse_locked);
 
-	//hide the cursor
-	SDL_ShowCursor(!game->mouse_locked); //hide or show the mouse
+	cam3D->setPerspective(70.f, game->window_width / (float)game->window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
+
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.95, game->window_width, game->window_height * 0.1);
 
 	if (DEBUG_TOGAME)
 	{
@@ -129,10 +123,7 @@ void SelectionState::onEnter()
 
 void SelectionState::render()
 {
-	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	cam3D->set();
 
 	switch (playerModel) {

@@ -7,20 +7,19 @@
 IAController::IAController()
 {
 	current_Wp = 0;
-	state = "";
+	state = "waiting";
 	totalWP = 50;
 
 	Vector3 c(2000, -10, 1700);
 
-	float radius = 500.0;
-
+	float radius = 1250.0;
 	float order = (random() * 50)  * 10 * DEG2RAD;
 
 	for (float i = order; i < 180 * DEG2RAD * (totalWP + order); i += 10 * DEG2RAD)
 	{
-		float fx = random() * 500;
-		float fy = random() * 200;
-		float fz = random() * 500;
+		float fx = random() * 750;
+		float fy = random() * 150;
+		float fz = random() * 750;
 
 		float x = c.x + cos(i) * radius + fx;
 		float y = 300.0 + fy;
@@ -34,7 +33,7 @@ IAController::IAController()
 
 IAController::~IAController()
 {
-
+	waypoints.clear();
 }
 
 void IAController::setTarget(Vector3 target)
@@ -80,7 +79,7 @@ void IAController::update(float seconds_elapsed)
 	// distance to player
 	float distanceToPlayer = targetToPlayer.length();
 
-	if (distanceToPlayer < 80.0)
+	if (distanceToPlayer < 25.0)
 	{
 		state = "avoiding collision";
 	}

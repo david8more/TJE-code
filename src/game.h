@@ -71,6 +71,7 @@ public:
 	
 	Camera* free_camera; //our global camera
 	Camera* fixed_camera;
+	Camera* shooter_camera;
 	Camera* current_camera;
 
 	bool fullscreen;

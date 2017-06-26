@@ -41,6 +41,7 @@ public:
 	void render(Camera * camera);
 	void update(float elapsed_time);
 	void shoot();
+	void rear_shoot();
 	void createTorpedos();
 	void torpedoShoot();
 	void onCollision(EntityCollider* collided_with);
@@ -165,12 +166,13 @@ public:
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void update(float elapsed_time);
+	void execute();
 	void onCollision(EntityCollider* collided_with);
 
 	enum {
-		DAMAGE = 500,
-		NINJA = 501,
-		BOMB = 502
+		DAMAGE = 501,
+		NINJA = 502,
+		BOMB = 503
 	};
 
 };

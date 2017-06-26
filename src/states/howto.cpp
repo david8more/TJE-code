@@ -49,12 +49,9 @@ void Howto::onKeyPressed(SDL_KeyboardEvent event)
 	}
 }
 
-void Howto::init() {
-
+void Howto::init()
+{
 	game = Game::getInstance();
-
-	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
-	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 }
 
 void Howto::onEnter()
@@ -69,6 +66,8 @@ void Howto::onEnter()
 
 	currentSelection = 0;
 
+	cam2D.setOrthographic(0.0, game->window_width, game->window_height, 0.0, -1.0, 1.0);
+	quad.createQuad(game->window_width * 0.5, game->window_height * 0.5, game->window_width, game->window_height, true);
 }
 
 void Howto::onLeave(int fut_state)
