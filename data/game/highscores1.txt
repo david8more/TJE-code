@@ -5,11 +5,11 @@
 	6650
 
 *SCORE
+	6270
+
+*SCORE
 	6050
 
 *SCORE
 	5700
-
-*SCORE
-	4850
 

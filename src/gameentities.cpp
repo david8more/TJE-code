@@ -23,10 +23,9 @@
 // AIRPLANE 
 // *************************************************************************
 
-Airplane::Airplane(int model, bool ia, bool culling) {
-
-	planeModel = model;
-
+Airplane::Airplane(int model, bool ia, bool culling, int decoration)
+	: decoration(decoration), planeModel(model)
+{
 	EntityCollider* wh_right = new EntityCollider();
 	wh_right->setName("right wheel");
 	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "plane");
@@ -53,7 +52,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(100);
 		cadence = 70.0 + random() * 10;;
-		damageM60 = 15.0;
+		damageM60 = 17.5;
 		speed = 120.0;
 	}
 
@@ -70,7 +69,7 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 		setLife(125);
 		cadence = 80.0 + random() * 10;
-		damageM60 = 10.0;
+		damageM60 = 12.5;
 		speed = 110.0;
 	}
 
@@ -131,12 +130,10 @@ Airplane::Airplane(int model, bool ia, bool culling) {
 
 Airplane::~Airplane()
 {
-	std::cout << "deleting airplane" << std::endl;
-
+	//std::cout << "deleting airplane" << std::endl;
 	World* world = World::getInstance();
 
 	auto it = std::find(world->airplanes.begin(), world->airplanes.end(), this);
-
 	if (it != world->airplanes.end())
 	{
 		std::cout << "erasing that old airplane..." << std::endl;
@@ -150,8 +147,8 @@ void Airplane::engineOnOff()
 }
 
 //meshfile sin path, texturefile con path
-void Airplane::set(const char * meshf, const char * texturef, const char * shaderf) {
-
+void Airplane::set(const char * meshf, const char * texturef, const char * shaderf)
+{
 	mesh = meshf;
 	texture = texturef;
 
@@ -162,8 +159,8 @@ void Airplane::set(const char * meshf, const char * texturef, const char * shade
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 }
 
-void Airplane::render(Camera * camera) {
-
+void Airplane::render(Camera * camera)
+{
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
 	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
@@ -185,17 +182,22 @@ void Airplane::render(Camera * camera) {
 	}
 }
 
-void Airplane::update(float elapsed_time) {
+void Airplane::update(float elapsed_time)
+{
+	if (decoration == 1)
+		return;
 
-	//Entity::update(elapsed_time);
-
-	testSphereCollision();
-	testStaticCollisions();
-
+	// IA
 	if (controller != NULL)
 	{
 		controller->setTarget(World::getInstance()->playerAir->getPosition());
 		controller->update(elapsed_time);
+	}
+	// NOT IA
+	else
+	{
+		testSphereCollision();
+		testStaticCollisions();
 	}
 
 	if (getPosition().y > 10.f && wheels_rotation < 7.5)
@@ -210,7 +212,9 @@ void Airplane::update(float elapsed_time) {
 	if (overused)
 		timer += elapsed_time;
 
-	if (timer > 5.0)
+	float time_cooling = 5.0;
+
+	if (timer > time_cooling)
 	{
 		timer = shootingtime = 0;
 		overused = false;
@@ -290,20 +294,16 @@ void Airplane::rear_shoot()
 
 		switch (planeModel) {
 		case SPITFIRE:
-			bManager->createBullet(model*Vector3(1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
-			bManager->createBullet(model*Vector3(-1.f, -0.25f, 0.0), vel, 2, 5, this, 1);
-			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
+			bManager->createBullet(model*Vector3(1.f, -0.25f, 0.0), vel, 2, 10, this, 2);
+			Flash::createFlash(Vector3(0.f, 0.f, -8.f), this, 5.0);
 			break;
 		case P38:
-			bManager->createBullet(model*Vector3(0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
-			bManager->createBullet(model*Vector3(-0.5f, -0.25f, 0.f), vel, 1, 5, this, 1);
-			bManager->createBullet(model*Vector3(0.f, -0.1f, 0.f), vel, 1, 5, this, 1);
-			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
+			bManager->createBullet(model*Vector3(0.5f, -0.25f, 0.f), vel, 1, 10, this, 2);
+			Flash::createFlash(Vector3(0.f, 0.f, -8.f), this, 5.0);
 			break;
 		case WILDCAT:
-			bManager->createBullet(model*Vector3(-1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
-			bManager->createBullet(model*Vector3(1.25f, -0.50f, 0.f), vel, 2, 5, this, 1);
-			Flash::createFlash(Vector3(0.f, -2.f, -8.f), this, 5.0);
+			bManager->createBullet(model*Vector3(1.25f, -0.50f, 0.f), vel, 2, 10, this, 2);
+			Flash::createFlash(Vector3(0.f, 0.f, -8.f), this, 5.0);
 			break;
 		}
 		
@@ -345,8 +345,8 @@ void Airplane::createTorpedos()
 
 	torpedosLeft = 2;
 
-	this->addChild(t1);
-	this->addChild(t2);
+	addChild(t1);
+	addChild(t2);
 }
 
 void Airplane::torpedoShoot() {
@@ -424,7 +424,7 @@ Ship::Ship(bool ia)
 	if (ia)
 	{
 		setUid(Airplane::ENEMY_SHIP);
-		setLife(1250);
+		setLife(2000);
 		model.setTranslation(2000, -10, 1700);
 	}
 	else
@@ -434,7 +434,6 @@ Ship::Ship(bool ia)
 		model.traslate(1600, -10, 1700);
 		setLife(500);
 	}
-
 
 	EntityMesh* turretOne = new EntityMesh();
 
@@ -480,8 +479,8 @@ Ship::~Ship()
 }
 
 //meshfile sin path, texturefile con path
-void Ship::set(const char * meshf, const char * texturef, const char * shaderf) {
-
+void Ship::set(const char * meshf, const char * texturef, const char * shaderf)
+{
 	mesh = meshf;
 	texture = texturef;
 
@@ -492,8 +491,8 @@ void Ship::set(const char * meshf, const char * texturef, const char * shaderf) 
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 }
 
-void Ship::render(Camera * camera) {
-
+void Ship::render(Camera * camera)
+{
 	Matrix44 m = this->getGlobalMatrix();
 	Matrix44 mvp = m * camera->viewprojection_matrix;
 	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
@@ -501,7 +500,8 @@ void Ship::render(Camera * camera) {
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling)
+		return;
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -510,7 +510,8 @@ void Ship::render(Camera * camera) {
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
-	for (int i = 0; i < this->children.size(); i++) {
+	for (int i = 0; i < this->children.size(); i++)
+	{
 		this->children[i]->render(camera);
 	}
 }
@@ -576,7 +577,7 @@ void Ship::onCollision(EntityCollider* collided_with)
 // AIRCARRIER
 // *************************************************************************
 
-Aircarrier::Aircarrier()
+Aircarrier::Aircarrier(int i, int j)
 {
 	setName("aircarrier");
 	std::string shader = "simple";
@@ -584,7 +585,7 @@ Aircarrier::Aircarrier()
 		,"data/textures/aircarrier_wood.tga"
 		, "simple");
 
-	model.setTranslation(2000, -10, -2000);
+	model.setTranslation(2000 + i, -10, -2000 + j);
 	setStatic();
 }
 
@@ -637,7 +638,7 @@ void Aircarrier::render(Camera * camera)
 	if (!cullFace)
 		glDisable(GL_CULL_FACE);
 
-	// 
+	// MULTIMATERIAL
 
 	renderDifMaterials(camera, 0, materialTriangle, texture.c_str());
 	renderDifMaterials(camera, materialTriangle, size, texture2.c_str());
@@ -668,7 +669,8 @@ void Aircarrier::render(Camera * camera)
 // TORPEDO
 // *************************************************************************
 
-Torpedo::Torpedo(bool culling) {
+Torpedo::Torpedo(bool culling)
+{
 	parent = NULL;
 	model.setRotation(180 * DEG2RAD, Vector3(0.f, 1.f, 0.f));
 
@@ -680,7 +682,6 @@ Torpedo::Torpedo(bool culling) {
 	shader = Shader::Load(vs.c_str(), fs.c_str());
 
 	ready = false;
-
 	max_ttl = 4.0;
 	ttl = max_ttl;
 }
@@ -690,8 +691,8 @@ Torpedo::~Torpedo()
 
 }
 
-void Torpedo::update(float elapsed_time) {
-
+void Torpedo::update(float elapsed_time)
+{
 	if (!ready)
 		return;
 
@@ -708,10 +709,12 @@ void Torpedo::update(float elapsed_time) {
 	model.traslateLocal(0, 0, (max_ttl - 0.8 * ttl) * elapsed_time * -75);
 	ttl -= elapsed_time;
 	Smoke::createSmoke(model * Vector3(0, 0, -2.5), this);
+	Smoke::createSmoke(model * Vector3(0, 0, -2.25), this);
+	Smoke::createSmoke(model * Vector3(0, 0, -2.0), this);
 }
 
-void Torpedo::activate() {
-
+void Torpedo::activate()
+{
 	Entity* root = World::getInstance()->root;
 	Matrix44 mod = this->getGlobalMatrix();
 
@@ -724,19 +727,26 @@ void Torpedo::activate() {
 
 void Torpedo::onCollision(EntityCollider* collided_with)
 {
-	if (collided_with == PlayerController::getInstance()->player)
+	if (collided_with == World::getInstance()->playerAir)
 		return;
 
 	//std::cout << "torpedo ha colisionado" << std::endl;
 	
-	Explosion::createExplosion(collided_with->model * Vector3());
-	Explosion::createExplosion(collided_with->model * Vector3());
+	Explosion::createExplosion(collided_with->getPosition());
+	Explosion::createExplosion(collided_with->getPosition());
 	SoundManager::getInstance()->playSound("explosion", false);
 
 	collided_with->life -= 450.0;
-	Game::instance->score += 450.0;
+
+	collided_with->life = max(collided_with->life, 0);
+
+	Game::instance->score += 500.0;
+
+	// shot a plane with a torpedo, yeah!!
+	if(collided_with->uid > 1000)
+		Game::instance->score += 500.0;
 	
-	if (collided_with->life <= 0)
+	if (!collided_with->life)
 	{
 		//std::cout << collided_with->name << " destroyed by torpedo" << std::endl;
 		collided_with->destroy();
@@ -873,7 +883,9 @@ Helix::~Helix()
 
 }
 
-// **************************************************************************************
+// *************************************************************************
+// CLOUDS
+// *************************************************************************
 
 Clouds::Clouds()
 {
@@ -889,9 +901,10 @@ Clouds::Clouds()
 	for (int i = 0; i < clouds.size(); i++)
 	{
 		Vector3 pos;
-		pos.random(Vector3(10000, 8000 + random() * 1000, 10000));
+		pos.random(Vector3(5500, 2000, 5500));
+		pos.y += 2500;
 		clouds[i].pos = pos;
-		clouds[i].size = 3500 + random()*1500;
+		clouds[i].size = 3000 + random()*1000;
 	}
 }
 
@@ -939,8 +952,6 @@ void Clouds::render(Camera* camera)
 		m.uvs.push_back(Vector2(0, 0));
 	}
 
-	model.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
-
 	if (alpha)
 	{
 		glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -960,9 +971,7 @@ void Clouds::render(Camera* camera)
 	shader->enable();
 	shader->setMatrix44("u_model", model);
 	shader->setMatrix44("u_mvp", camera->viewprojection_matrix);
-	shader->setTexture("u_normal_texture", Texture::Get("data/textures/normal_water.tga"));
 	shader->setTexture("u_texture", Texture::Get(this->texture.c_str()));
-	shader->setTexture("u_sky_texture", Texture::Get("data/textures/cielo.tga"));
 	shader->setFloat("u_time", Game::getInstance()->time);
 	shader->setVector3("u_camera_pos", Game::getInstance()->current_camera->eye);
 
@@ -983,6 +992,10 @@ void Clouds::render(Camera* camera)
 		glDisable(GL_BLEND);
 	}
 }
+
+// *************************************************************************
+// POWER UPS
+// *************************************************************************
 
 PowerUp::PowerUp(const std::string&  type)
 {

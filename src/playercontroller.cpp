@@ -24,22 +24,24 @@ void PlayerController::update(float seconds_elapsed)
 
 	// controlled changed?
 
-	if (game->joystick == NULL)
-		return;
-
-	if (getJoystickState(game->joystick).button[BACK_BUTTON])
+	if (game->joystick != NULL)
 	{
-		current_controller = CONTROLLER_MODE_GAMEPAD;
-		return;
+		if (getJoystickState(game->joystick).button[BACK_BUTTON])
+		{
+			current_controller = CONTROLLER_MODE_GAMEPAD;
+			return;
+		}
+
+		if (getJoystickState(game->joystick).button[START_BUTTON])
+		{
+			current_controller = CONTROLLER_MODE_GAMEPAD;
+			game->start = true;
+			game->current_camera->near_plane = 7.5f;
+			SoundManager::getInstance()->playSound("plane", true);
+		}
 	}
 
-	if (getJoystickState(game->joystick).button[START_BUTTON])
-	{
-		current_controller = CONTROLLER_MODE_GAMEPAD;
-		game->start = true;
-		game->current_camera->near_plane = 7.5f;
-		SoundManager::getInstance()->playSound("plane", true);
-	}
+	
 
 	// GAME STARTED?
 	
@@ -153,12 +155,27 @@ void PlayerController::update(float seconds_elapsed)
 			controller_timer = 0;
 		}
 		
-		if (state.axis[4] > 0.1)
+		// WIN 10
+		/*if (state.axis[LEFT_TRIGGER] > 0.1)
 		{
 			speed *= 5;
 		}
 
-		if (state.axis[5] > 0.1)
+		if (state.axis[RIGHT_TRIGGER] > 0.1)
+		{
+			player->shoot();
+		}
+		else {
+			player->shootingtime = 0;
+		}*/
+
+		// WIN 7
+		if (state.axis[TRIGGERS] > 0.2)
+		{
+			speed *= 5;
+		}
+
+		if (state.axis[TRIGGERS] < -0.2)
 		{
 			player->shoot();
 		}

@@ -15,9 +15,9 @@
 #define IA true
 
 World* World::instance = NULL;
+Aircarrier* aircarrier = NULL;
 int enemycounter = 0;
 Ship* enemyShip = NULL;
-Aircarrier* aircarrier = NULL;
 
 World::World()
 {
@@ -55,7 +55,7 @@ void World::addPlayer()
 {
 	// PLAYER AIRPLANE ************************************************************************************
 
-	playerAir = new Airplane(worldInfo.playerModel, NULL);
+	playerAir = new Airplane(worldInfo.playerModel, false);
 	playerAir->setUid(0);
 	playerAir->setName("player");
 
@@ -104,8 +104,26 @@ void World::addPlayerConst()
 	ships.push_back(playerShip);
 
 	// initial zone
-	aircarrier = new Aircarrier();
+	aircarrier = new Aircarrier(0, 0);
 	root->addChild(aircarrier);
+
+	Aircarrier* ac = new Aircarrier(100, 200);
+	root->addChild(ac);
+
+	Aircarrier* ac2 = new Aircarrier(-100, 200);
+	root->addChild(ac2);
+
+	Airplane * plane_ac = new Airplane(WILDCAT, false, true, 1);
+
+	plane_ac->model = plane_ac->model * ac->model;
+	plane_ac->model.traslate(0, 17.53, -102.5);
+	root->addChild(plane_ac);
+
+	Airplane * plane_ac2 = new Airplane(P38, false, true, 1);
+
+	plane_ac2->model = plane_ac2->model * ac2->model;
+	plane_ac2->model.traslate(0, 17.6, -102.5);
+	root->addChild(plane_ac2);
 }
 
 void World::addWorldConst()
@@ -117,9 +135,17 @@ void World::addWorldConst()
 	sky->setName("sky");
 	sky->set("cielo.ASE", "data/textures/cielo.tga", "simple");
 	
-	EntityCollider* sea = new EntityCollider();
-	sea->setName("sea");
-	sea->set("agua.ASE", "data/textures/agua.tga", "water");
+	for (int i = -2; i < 2; i++)
+	{
+		for (int j = -2; j < 2; j++)
+		{
+			EntityCollider* sea = new EntityCollider();
+			sea->setName("sea");
+			sea->set("agua.ASE", "data/textures/agua.tga", "water");
+			sea->model.setTranslation(i * 10001, -10, j * 10001);
+			root->addChild(sea);
+		}
+	}
 
 	Clouds* clouds = new Clouds();
 	root->addChild(clouds);
@@ -144,9 +170,9 @@ void World::createReinforcements()
 		ss.str("");
 		ss << "ia_" << i;
 		enemyAir->setName(ss.str());
-		float x = 200 + rand() % 2000;
+		float x = 500 + rand() % 1500;
 		float y = 500 + rand() % 500;
-		float z = 200 + rand() % 2000;
+		float z = 500 + rand() % 1500;
 
 		enemyAir->model.setTranslation(x, y, z);
 		enemyAir->last_position = enemyAir->getPosition();
@@ -270,15 +296,22 @@ void World::reset()
 	airplanes.clear();
 	ships.clear();
 
-	// player
+	// player uid is 0
+	Entity* player = Entity::getEntity(0);
 
-	if (playerAir != NULL)
-		playerAir->destroy();
+	if (player != NULL)
+		player->destroy();
+
+	Entity* friendlyShip = Entity::getEntity(Airplane::PLAYER_SHIP);
+
 	if (playerShip != NULL)
 		playerShip->destroy();
-
+	
+	//
 	Entity::destroy_entities();
+	// 
 
+	// add some constants
 	playerShip = new Ship(false);
 	root->addChild(playerShip);
 	ships.push_back(playerShip);

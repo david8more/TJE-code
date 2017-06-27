@@ -29,8 +29,8 @@ Vector2 getDesktopSize( int display_index = 0 );
 std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
 
-//mapped as in SDLs
-
+//WIN 10
+/*
 enum XBOXpad
 {
 	//axis
@@ -61,6 +61,43 @@ enum HATState
 	HAT_RIGHT = 3,
 	HAT_DOWN = 1,
 	HAT_LEFT = 2,
+	HAT_RIGHTUP = (HAT_RIGHT | HAT_UP),
+	HAT_RIGHTDOWN = (HAT_RIGHT | HAT_DOWN),
+	HAT_LEFTUP = (HAT_LEFT | HAT_UP),
+	HAT_LEFTDOWN = (HAT_LEFT | HAT_DOWN)
+};*/
+
+//WIN 7
+
+enum XBOXpad
+{
+	//axis
+	LEFT_ANALOG_X = 0,
+	LEFT_ANALOG_Y = 1,
+	RIGHT_ANALOG_X = 3,
+	RIGHT_ANALOG_Y = 4,
+	TRIGGERS = 2, //both triggers share an axis (positive is right, negative is left trigger)
+
+	//buttons
+	A_BUTTON = 0,
+	B_BUTTON = 1,
+	X_BUTTON = 2,
+	Y_BUTTON = 3,
+	LB_BUTTON = 4,
+	RB_BUTTON = 5,
+	BACK_BUTTON = 6,
+	START_BUTTON = 7,
+	LEFT_ANALOG_BUTTON = 8,
+	RIGHT_ANALOG_BUTTON = 9
+};
+
+enum HATState
+{
+	HAT_CENTERED = 15,
+	HAT_UP = 19,
+	HAT_RIGHT = 17,
+	HAT_DOWN = 16,
+	HAT_LEFT = 18,
 	HAT_RIGHTUP = (HAT_RIGHT | HAT_UP),
 	HAT_RIGHTDOWN = (HAT_RIGHT | HAT_DOWN),
 	HAT_LEFTUP = (HAT_LEFT | HAT_UP),

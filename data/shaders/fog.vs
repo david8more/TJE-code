@@ -24,12 +24,17 @@ void main()
 	v_position = a_vertex;
 	v_world_position = (u_model * vec4( a_vertex, 1.0) ).xyz;
 	
-	//store the color in the varying var to use it from the pixel shader
-	v_color = a_color;
-
 	//store the texture coordinates
 	v_uv = a_uv;
 
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_mvp * vec4( a_vertex, 1.0 );
+
+	//store the color in the varying var to use it from the pixel shader
+	if(v_world_position.y > 390)
+		v_color = vec4(1.75, 1.75, 1.75, 1.0);
+	else if(v_world_position.y > 50)
+		v_color = vec4(0.3, 0.45, 0.3, 1.0);
+	else 
+		v_color = vec4(0.9, 0.9, 0.7, 1.0);
 }

@@ -13,22 +13,22 @@ uniform float u_time;
 
 void main()
 {
-	vec4 color = 0.5 * texture2D(u_texture, -v_world_position.xz * 0.001 + vec2(sin(u_time + 3.0) * 0.01, cos(u_time * 1.2) * 0.02));
-	color += 0.5 * texture2D(u_texture, v_world_position.xz * 0.001 + vec2(sin(u_time) * 0.01, cos(u_time * 1.2) * 0.02));
+	vec4 color = 0.5 * texture2D(u_texture, -v_world_position.xz * 0.001 + vec2(sin(u_time + 3.0) * 0.007, cos(u_time) * 0.007));
+	color += 0.5 * texture2D(u_texture, v_world_position.xz * 0.001 + vec2(sin(u_time) * 0.007, cos(u_time) * 0.007));
 
 	// coger textura
-	vec4 normal_map = texture2D(u_normal_texture, v_world_position.xz);
-
-	// pasar de -1 1 a 0 1
-	normal_map = normalize(normal_map * 0.5 + 0.5);
+	vec4 normal_map = texture2D(u_normal_texture, v_uv + vec2(sin(u_time) * 0.01 + 500, cos(u_time) * 0.01 + 500));
+	
+	// pasar de 0 1 a -1 1
+	normal_map = normal_map * 2;
+	normal_map = normal_map - 1.0;
 
 	// cambiar Y por Z
 
-	vec4 normal_z_map = vec4(normal_map.x, normal_map.z, normal_map.y, 1.0);
+	vec3 normal_z_map = vec3(normal_map.x, normal_map.z, normal_map.y);
 
-	vec3 N_M = normal_z_map.xyz;
-
-	vec3 N = normalize(v_normal);
+	vec3 N = (normal_z_map);
+	//vec3 N = v_normal;
 	vec3 E = normalize(v_world_position - u_camera_pos);
 	vec3 R = -reflect(E, N);
 
@@ -37,7 +37,7 @@ void main()
 	float pitch = asin(R.y) / 1.57079633;
 	vec2 uv_polar = vec2(yaw,abs(pitch));
 
-	float fresnel = clamp(1.0 - pow(-dot(N, E), 0.5), 0.0, 1.0);
+	float fresnel = clamp(1.0 - pow(-dot(N, E), 0.4), -1.0, 1.0);
 
 	vec4 sky_color = texture2DLod(u_sky_texture, uv_polar, 3.0);
 
@@ -48,8 +48,8 @@ void main()
 	color *= vec4(0.7, 0.7, 0.9, 1.0);
 
 	color = mix(color, fog_color, factor);
-
 	color = mix(color, sky_color, fresnel);
 
 	gl_FragColor = color;
+	//gl_FragColor = vec4(N, 1.0);
 }

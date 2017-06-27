@@ -34,7 +34,12 @@ Entity::~Entity()
 	if (it != s_Entities.end())
 		s_Entities[name] = NULL;
 
-	EntityCollider::remove(this); // quitarse del vector de static y dinamics SI ESTOY
+	auto ituid = s_EntitiesUID.find(uid);
+	if (ituid != s_EntitiesUID.end())
+		s_EntitiesUID[uid] = NULL;
+
+	// quitarse del vector de static y dinamics SI ESTOY
+	EntityCollider::remove(this);
 }
 
 void Entity::setName(std::string name)
@@ -92,7 +97,6 @@ void Entity::addChild(Entity * entity)
 
 void Entity::removeChild(Entity* entity)
 {
-
 	if (!children.size())
 		return;
 
@@ -105,7 +109,7 @@ void Entity::removeChild(Entity* entity)
 	entity->model = entity->model * this->getGlobalMatrix(); // tu posicion ahora es de mundo
 
 	// quitar hijos del hijo
-	for (int i = 0; i < entity->children.size(); i++)
+	/*for (int i = 0; i < entity->children.size(); i++)
 	{
 		Entity* son = entity->children[i];
 
@@ -115,7 +119,7 @@ void Entity::removeChild(Entity* entity)
 
 		entity->children.erase(it);
 		son->parent = NULL; // tu padre ya no soy yo
-	}
+	}*/
 }
 
 Matrix44 Entity::getGlobalMatrix()
@@ -396,14 +400,14 @@ void EntityCollider::remove(Entity* ent)
 
 void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 {
+	// IA shoots IA
 	if (uid > 1000 && b.author->uid > 1000)
 		return;
-	
-	if (uid == Airplane::PLAYER_SHIP)
-	{
-		if (!Game::instance->ffire_on)
-			return;
-	}
+	//
+
+	// player shoots friendly ship
+	if (b.author->name == "player" && uid == Airplane::PLAYER_SHIP && !Game::instance->ffire_on)
+		return;
 
 	life -= b.damage;
 	life = max(life, 0);
@@ -414,10 +418,12 @@ void EntityCollider::onBulletCollision(Vector3 collisionPoint, Bullet& b)
 	if (b.author == World::instance->playerAir)
 		Game::instance->score += b.damage;
 
-	Explosion::createExplosion(collisionPoint, 7.5);
+	Explosion::createExplosion(collisionPoint, 5.0);
 
-	if (!life) {
+	if (!life)
+	{
 		SoundManager::getInstance()->playSound("explosion", false);
+		Explosion::createExplosion(getPosition());
 		unboundController();
 		destroy();
 	}

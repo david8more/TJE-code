@@ -11,13 +11,14 @@ class Missile;
 class Airplane : public EntityCollider {
 public:
 
-	Airplane(int model, bool IA_PLANE, bool culling = true);
+	Airplane(int model, bool IA_PLANE, bool culling = true, int decoration = 0);
 	~Airplane();
 
 	IAController* controller;
 
 	int planeModel;
 	int visibility;
+	int decoration;
 
 	bool engine;
 	void engineOnOff();
@@ -85,7 +86,7 @@ public:
 	std::string texture2;
 	int materialTriangle;
 
-	Aircarrier();
+	Aircarrier(int i, int j);
 	~Aircarrier();
 
 	void set(const char * mesh, const char * texture1, const char* texture2, const char * shader);

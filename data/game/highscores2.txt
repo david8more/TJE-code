@@ -1,4 +1,7 @@
 *SCORE
+	12130
+
+*SCORE
 	1500
 
 *SCORE
@@ -10,5 +13,3 @@
 *SCORE
 	1200
 
-*SCORE
-	1100

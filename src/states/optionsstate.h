@@ -7,7 +7,6 @@
 #define FULLSCREEN 3
 #define GAMEMODE 4
 #define FRIENDLYFIRE 5
-#define BACK 6
 
 #include "../framework.h"
 #include "../texture.h"

@@ -1,4 +1,7 @@
 *SCORE
+	2640
+
+*SCORE
 	2500
 
 *SCORE
@@ -10,5 +13,3 @@
 *SCORE
 	2200
 
-*SCORE
-	2100

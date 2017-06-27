@@ -17,7 +17,6 @@
 #define OBJECTIVE 0
 #define KEYBOARD 1
 #define XBOX 2
-#define BACK 3
 
 float httimer = 0;
 int obj_part = 1;
@@ -110,7 +109,7 @@ void Howto::render() {
 		
 
 	// menu
-	const string submenu_items[] = { "Objetive", "Keyboard", "Xbox Controller", "Back" };
+	const string submenu_items[] = { "Objetive", "Keyboard", "Xbox Controller" };
 
 	int p = 0;
 
@@ -118,7 +117,7 @@ void Howto::render() {
 
 	Vector3 c;
 	std::stringstream ss;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {
 		// highlight current selection
 		if (i == currentSelection) c = Vector3(1.f, 1.f, 1.f);
 		else c = Vector3(0.25, 0.25, 0.25);
@@ -134,9 +133,6 @@ void Howto::render() {
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		case XBOX:
-			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
-			break;
-		default:
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 2.75);
 			break;
 		}
@@ -157,25 +153,25 @@ void Howto::update(double time_elapsed)
 
 	httimer += time_elapsed;
 
-	if (state.button[HAT_UP] && httimer > 0.1)
-	{
-		selectionUp();
-		httimer = 0;
-	}
-
-	if (state.button[HAT_DOWN] && httimer > 0.1)
+	if (state.axis[LEFT_ANALOG_Y] > 0.2 && httimer > 0.2)
 	{
 		selectionDown();
 		httimer = 0;
 	}
 
-	if (state.button[A_BUTTON] && httimer > 0.2)
+	if (state.axis[LEFT_ANALOG_Y] < -0.2 && httimer > 0.2)
 	{
+		selectionUp();
 		httimer = 0;
-		selectionChosen();
 	}
 
-	if (state.button[B_BUTTON] && httimer > 0.2)
+	if (state.button[A_BUTTON] && httimer > 0.2)
+	{
+		selectionChosen();
+		httimer = 0;
+	}
+
+	else if (state.button[B_BUTTON] && httimer > 0.2)
 	{
 		httimer = 0;
 		SManager->changeCurrentState(MenuState::getInstance(SManager));
@@ -186,7 +182,7 @@ void Howto::selectionUp()
 	currentSelection--;
 
 	if (currentSelection == -1)
-		currentSelection = 3;
+		currentSelection = 2;
 
 	if (game->effects_enabled)
 		SoundManager::getInstance()->playSound("move_menu", false);
@@ -195,7 +191,7 @@ void Howto::selectionUp()
 void Howto::selectionDown()
 {
 	currentSelection++;
-	if (currentSelection == 4)
+	if (currentSelection == 3)
 		currentSelection = 0;
 
 	if (game->effects_enabled)
@@ -206,9 +202,6 @@ void Howto::selectionChosen()
 {
 	if (game->effects_enabled)
 		SoundManager::getInstance()->playSound("move_menu", false);
-
-	if(currentSelection == BACK)
-		SManager->changeCurrentState(MenuState::getInstance(SManager));
 
 	if (currentSelection == OBJECTIVE)
 	{

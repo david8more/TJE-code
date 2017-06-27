@@ -56,7 +56,12 @@ void BulletManager::render()
 		bullets.vertices.push_back(current.position);
 		bullets.vertices.push_back(current.last_position);
 		
-		bullets.colors.push_back(Vector4(1.f, 1.f, 1.f, 1.f));
+		Vector4 color(1.f, 1.f, 1.f, 1.f);
+
+		if(current.type == 2)
+			color = Vector4(1.f, 0.f, 1.f, 1.f);
+
+		bullets.colors.push_back(color);
 		bullets.colors.push_back(Vector4(1.f, 1.f, 1.f, 0.0));
 	}
 

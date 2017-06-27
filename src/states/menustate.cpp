@@ -115,28 +115,29 @@ void MenuState::update(double time_elapsed)
 	
 	optimer += time_elapsed;
 
-	if (game->joystick == NULL || optimer < 0.1)
+	if (game->joystick == NULL)
 		return;
 
 	JoystickState state = getJoystickState(game->joystick);
 
-	if (state.button[HAT_UP])
-	{
-		selectionUp();
-		optimer = 0;
-	}
-
-	else if (state.button[HAT_DOWN])
+	if (state.axis[LEFT_ANALOG_Y] > 0.2 && optimer > 0.2)
 	{
 		selectionDown();
 		optimer = 0;
 	}
 
-	else if (state.button[A_BUTTON])
+	if (state.axis[LEFT_ANALOG_Y] < -0.2 && optimer > 0.2)
+	{
+		selectionUp();
+		optimer = 0;
+	}
+
+	if (state.button[A_BUTTON])
 	{
 		selectionChosen();
 		optimer = 0;
 	}
+
 }
 
 bool MenuState::inCurrentSelection(int selection) {

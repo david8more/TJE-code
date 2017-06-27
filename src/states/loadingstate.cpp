@@ -28,7 +28,7 @@ void LoadingState::onEnter()
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (DEBUG_TOGAME)
+	if (DEBUG_TOGAME && 0 )
 	{
 		SoundManager::getInstance()->stopSound("cinematic");
 		Load();

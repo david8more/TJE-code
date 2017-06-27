@@ -21,7 +21,7 @@ void main()
 	v_normal = (u_model * vec4( a_normal, 0.0) ).xyz;
 	
 	//calcule the vertex in object space
-	v_position = a_vertex * 100;
+	v_position = a_vertex;
 	v_world_position = (u_model * vec4( v_position, 1.0) ).xyz;
 	
 	//store the color in the varying var to use it from the pixel shader

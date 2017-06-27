@@ -57,7 +57,7 @@ void OptionsState::render() {
 	glDisable(GL_BLEND);
 
 	// menu
-	const string submenu_items[] = {"Music", "Music volume", "Effects", "Fullscreen", "Game mode", "Friendly fire", "Back"};
+	const string submenu_items[] = {"Music", "Music volume", "Effects", "Fullscreen", "Game mode", "Friendly fire"};
 
 	int N = submenu_items->size();
 
@@ -104,9 +104,6 @@ void OptionsState::render() {
 			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
 			drawText(game->window_width*0.35, game->window_height*0.35 + p, game->ffire_on ? "ENABLED" : "DISABLED", c, 3.0);
 			break;
-		case BACK:
-			drawText(game->window_width*0.1, game->window_height*0.35 + p, submenu_items[i], c, 3.0);
-			break;
 		}
 		p += 40;
 	}
@@ -125,19 +122,19 @@ void OptionsState::update(double seconds_elapsed) {
 
 	timer += seconds_elapsed;
 
-	if (state.button[HAT_UP] && timer > 0.1)
-	{
-		selectionUp();
-		timer = 0;
-	}
-
-	else if (state.button[HAT_DOWN] && timer > 0.1)
+	if (state.axis[LEFT_ANALOG_Y] > 0.2 && timer > 0.2)
 	{
 		selectionDown();
 		timer = 0;
 	}
 
-	else if (state.button[A_BUTTON] && timer > 0.2)
+	if (state.axis[LEFT_ANALOG_Y] < -0.2 && timer > 0.2)
+	{
+		selectionUp();
+		timer = 0;
+	}
+
+	if (state.button[A_BUTTON] && timer > 0.2)
 	{
 		selectionChosen();
 		timer = 0;
@@ -149,21 +146,33 @@ void OptionsState::update(double seconds_elapsed) {
 		SManager->changeCurrentState(MenuState::getInstance(SManager));
 	}
 
-	else if (state.button[HAT_LEFT] && timer > 0.2)
+	else if (state.axis[LEFT_ANALOG_X] > 0.2 && timer > 0.2)
+	{
+		timer = 0;
+		if (currentSelection == MUSIC_VOL)
+		{
+			upVol();
+		}
+		else if (currentSelection == GAMEMODE)
+		{
+			game->difficulty++;
+			if (game->difficulty == 4)
+				game->difficulty = 1;
+		}
+	}
+
+	else if (state.axis[LEFT_ANALOG_X] < -0.2 && timer > 0.2)
 	{
 		timer = 0;
 		if (currentSelection == MUSIC_VOL)
 		{
 			downVol();
 		}
-	}
-
-	else if (state.button[HAT_RIGHT] && timer > 0.2)
-	{
-		timer = 0;
-		if (currentSelection == MUSIC_VOL)
+		else if (currentSelection == GAMEMODE)
 		{
-			upVol();
+			game->difficulty++;
+			if (game->difficulty == 4)
+				game->difficulty = 1;
 		}
 	}
 
@@ -213,10 +222,6 @@ void OptionsState::onKeyPressed( SDL_KeyboardEvent event )
 		}
 		selectionChosen();
 		break;
-	case SDLK_RETURN:
-		if(currentSelection == BACK)
-			selectionChosen();
-		break;
 	}
 }
 
@@ -248,7 +253,7 @@ void OptionsState::selectionUp()
 {
 	currentSelection--;
 	if (currentSelection == -1)
-		currentSelection = 6;
+		currentSelection = 5;
 
 	if (game->effects_enabled)
 		SoundManager::getInstance()->playSound("move_menu", false);
@@ -257,7 +262,7 @@ void OptionsState::selectionUp()
 void OptionsState::selectionDown()
 {
 	currentSelection++;
-	if (currentSelection == 7)
+	if (currentSelection == 6)
 		currentSelection = 0;
 
 	if (game->effects_enabled)
@@ -295,6 +300,8 @@ void OptionsState::selectionChosen()
    		break;
 	case FRIENDLYFIRE:
 		game->ffire_on = !game->ffire_on;
+		break;
+	case GAMEMODE:
 		break;
 	default: // back to menu
 		SManager->changeCurrentState(MenuState::getInstance(SManager));

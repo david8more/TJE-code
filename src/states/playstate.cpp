@@ -48,7 +48,7 @@ void PlayState::init()
 
 	//create our camera
 	game->fixed_camera = new Camera();
-	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 0.01f, 50000.f);
+	game->fixed_camera->setPerspective(70.f, game->window_width / (float)game->window_height, 7.5f, 50000.f);
 
 	game->free_camera = new Camera(); //our global camera
 	game->free_camera->lookAt(Vector3(135, 50, -410), Vector3(0,0, 0), Vector3(0, 1, 0));
@@ -263,10 +263,10 @@ void PlayState::renderWorld(Camera * camera)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	Entity * sea = Entity::getEntity("sea");
+	/*Entity * sea = Entity::getEntity("sea");
 	sea->model.setIdentity();
 	sea->model.traslate(camera->eye.x, -10, camera->eye.z);
-	sea->render(camera);
+	sea->render(camera);*/
 
 	world->root->render(camera);
 	bManager->render();
@@ -315,7 +315,10 @@ void PlayState::renderGUI()
 	else
 	{
 		// crosshair
-		quad.createQuad(w * 0.5, h * 0.475, 50, 50, true);
+		if (current_view != CABINEVIEW)
+			quad.createQuad(w * 0.5, h * 0.475, 50, 50, true);
+		else
+			quad.createQuad(w * 0.5, h * 0.5, 50, 50, true);
 		Texture::Get(crosshair_tex.c_str())->bind();
 		quad.render(GL_TRIANGLES);
 		Texture::Get(crosshair_tex.c_str())->unbind();
@@ -470,7 +473,7 @@ void PlayState::renderGUI()
 				ss << "DEFEND: " << c->life;
 			else
 				ss << "ATTACK: " << c->life;
-			drawText(w * 0.07, h * 0.29 + i * h * 0.1, ss.str(), color, 2.25);
+			drawText(w * 0.07, h * 0.29 + i * h * 0.1, ss.str(), color, w * 0.00185);
 		}
 	}
 

@@ -8,6 +8,7 @@
 #include "../bass.h"
 #include "selectionstate.h"
 #include "playstate.h"
+#include "menustate.h"
 #include "../entity.h"
 #include "../world.h"
 #include "../extra/textparser.h"
@@ -115,7 +116,7 @@ void SelectionState::onEnter()
 
 	quad.createQuad(game->window_width * 0.5, game->window_height * 0.95, game->window_width, game->window_height * 0.1);
 
-	if (DEBUG_TOGAME && !DEBUG)
+	if (0 && !DEBUG)
 	{
 		selectionChosen();
 	}
@@ -233,29 +234,36 @@ void SelectionState::update(double time_elapsed)
 
 	JoystickState state = getJoystickState(game->joystick);
 
-	if (state.button[HAT_UP])
+	if (state.axis[LEFT_ANALOG_Y] > 0.2 && seltimer > 0.2)
 	{
-		seltimer = 0;
-		selectionUp();
-	}
-
-	else if (state.button[HAT_DOWN])
-	{
-		seltimer = 0;
 		selectionDown();
+		seltimer = 0;
 	}
 
-	else if (state.button[A_BUTTON])
+	if (state.axis[LEFT_ANALOG_Y] < -0.2 && seltimer > 0.2)
+	{
+		selectionUp();
+		seltimer = 0;
+	}
+
+	if (state.button[A_BUTTON] && seltimer > 0.2)
+	{
+		selectionChosen();
+		seltimer = 0;
+	}
+
+	else if (state.button[B_BUTTON] && seltimer > 0.2)
 	{
 		seltimer = 0;
-		selectionChosen();
+		SManager->changeCurrentState(MenuState::getInstance(SManager));
 	}
 
 	//std:cout << state.axis[LEFT_ANALOG_X] << std::endl;
 
-	if (state.axis[LEFT_ANALOG_X] > 0.2 || state.axis[LEFT_ANALOG_X] < -0.2)
+	// WIN 7
+	if (state.axis[TRIGGERS] > 0.2 || state.axis[TRIGGERS] < -0.2)
 	{
-		eMesh->model.rotateLocal(0.05f* speed, Vector3(0, state.axis[LEFT_ANALOG_X], 0));
+		eMesh->model.rotateLocal(0.05f* speed, Vector3(0, state.axis[TRIGGERS], 0));
 	}
 
 }
@@ -289,7 +297,7 @@ void SelectionState::selectionChosen()
 	world->worldInfo.playerModel = playerModel;
 	world->addPlayer();
 	world->addEnemies();
-	world->setGameMode();
+	//world->setGameMode();
 
 	SManager->changeCurrentState(PlayState::getInstance(SManager));
 }
@@ -304,7 +312,7 @@ void SelectionState::onKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_RETURN:
 		selectionChosen();
 		break;
-	case SDLK_1:
+	case SDLK_3:
 		Shader::ReloadAll();
 		break;
 	case SDLK_UP:
