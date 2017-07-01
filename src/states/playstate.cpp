@@ -134,6 +134,7 @@ void PlayState::render()
 		glEnable(GL_SCISSOR_TEST);
 		glViewport(w * 0.7, h * 0.4, 300, 200);
 
+		glClearColor(0.5, 0.7, 0.8, 1.0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		game->current_camera->set();
@@ -329,49 +330,56 @@ void PlayState::renderGUI()
 
 	Mesh energyBar;
 
-	energyBar.createBox(w*0.7 + h * 25 * 0.0075, h*0.9, h * 50 * 0.0075, 25);
+	// borde barra vida
+	energyBar.createBox(w * 0.96, h * 0.6 + h * 25 * 0.0075, 20, h * 50 * 0.0075);
 	energyBar.render(GL_LINES);
 
 	// fondo barra
 	float full = h * 50 * 0.0075;
 
-	energyBar.createQuad(w*0.7 + full * 0.5, h*0.9, full, 25);
+	energyBar.createQuad(w * 0.96, h * 0.6 + full * 0.5, 20, full);
 	glColor4f(0.f, 0.f, 0.f, 1.f);
 	energyBar.render(GL_TRIANGLES);
-
+	
+	// barra vida
+	
 	float f = (player->life / (float)player->max_life);
 	float energyWidth = f * h * 50 * 0.0075;
-	Vector3 ve(0.8, 0.8, 0.1);
+	Vector3 ve(0.95, 0.25, 0.25);
 
-	energyBar.createQuad(w*0.7 + energyWidth * 0.5, h*0.9, energyWidth, 25);
+	energyBar.createQuad(w * 0.96, h * 0.6 + energyWidth * 0.5 + (full - energyWidth), 20, energyWidth);
 	glColor4f(ve.x, ve.y, ve.z, 1.f);
 	energyBar.render(GL_TRIANGLES);
 
-	// Overheat bar
+	// fondo barra overheat
 	Mesh heatIndicator;
-	glColor4f(1.0, 1.0, 1.0, 1.f);
+	full = h * 50 * 0.0075;
 
-	float indicatorWidth = !player->shootingtime ? 5 : h * player->shootingtime * 0.0075;
-	float pRcolor = player->shootingtime / 50.f;
-	Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
-
-	heatIndicator.createBox(w*0.7 + h * 25 * 0.0075, h*0.93, h * 50 * 0.0075, 10);
-	heatIndicator.render(GL_LINES);
-
-	heatIndicator.createQuad(w*0.7 + indicatorWidth * 0.5, h*0.93, indicatorWidth, 10);
-	glColor4f(v.x, v.y, v.z, 1.f);
+	heatIndicator.createQuad(w * 0.98, h * 0.6 + full * 0.5, 10, full);
+	glColor4f(0.f, 0.f, 0.f, 1.f);
 	heatIndicator.render(GL_TRIANGLES);
 
-	// engine
-	ss.str("");
-	ss << (int)min(((float)player->shootingtime / 50) * 100, 100.f ) << "%";
-	drawText(w * 0.81, h * 0.95, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0); // % engine !!!
+	// Overheat bar
+	glColor4f(1.0, 1.0, 1.0, 1.f);
+	heatIndicator.createBox(w * 0.98, h * 0.6 + h * 25 * 0.0075, 10, h * 50 * 0.0075);
+	heatIndicator.render(GL_LINES);
+
+	for (int i = 0; i < player->shootingtime; i += 5)
+	{
+		heatIndicator.createQuad(w * 0.98, h * 0.962 - i * h * 0.0075, 10, h * 0.026);
+		float pRcolor = i / 50.f;
+		Vector3 v(pRcolor, 1.f - pRcolor, 0.f);
+
+		glColor4f(v.x, v.y, v.z, 1.f);
+		heatIndicator.render(GL_TRIANGLES);
+	}
 
 	// energy
+
 	ss.str("");
 	ss << player->life;
-	drawText(w * 0.81, h * 0.89, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0);
-
+	drawText(w * 0.945, h * 0.55, ss.str(), Vector3(1.f, 1.f, 1.f), 2.0);
+	
 	if (player->overused)
 	{
 		drawText(w * 0.25, h * 0.935, "--ALERT-- ENGINE OVERHEAT: COOLING SYSTEM", Vector3(1.f, 0.f, 0.f), 2.f);
@@ -436,11 +444,32 @@ void PlayState::renderGUI()
 	for (int i = 0; i < player->torpedosLeft; i++)
 	{
 		Mesh torpedo;
-		torpedo.createQuad(w * 0.91, h * 0.83 + i * 20, h * 0.075, h * 0.075);
+		torpedo.createQuad(w * 0.91, h * 0.65 + i * 20, h * 0.075, h * 0.075);
 		etor->bind();
 		torpedo.render(GL_TRIANGLES);
 		etor->unbind();
 	}
+
+	// powerups
+	Mesh powerup_active;
+
+	if (PowerUp::damageTaken)
+	{
+		powerup_active.createQuad(w * 0.92, h * 0.75, h * 0.05, h * 0.05, true);
+		Texture::Get("data/textures/damage.tga")->bind();
+		powerup_active.render(GL_TRIANGLES);
+		Texture::Get("data/textures/damage.tga")->unbind();
+	}
+	if (PowerUp::ninjaTaken)
+	{
+		powerup_active.createQuad(w * 0.92, h * 0.82, h * 0.05, h * 0.05, true);
+		Texture::Get("data/textures/ninja.tga")->bind();
+		powerup_active.render(GL_TRIANGLES);
+		Texture::Get("data/textures/ninja.tga")->unbind();
+	}
+	
+
+	// barcos
 
 	Mesh lifes_box;
 	lifes_box.createQuad(w * 0.12, h * 0.4, w * 0.17, h * 0.05);

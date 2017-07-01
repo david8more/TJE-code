@@ -29,13 +29,15 @@ Airplane::Airplane(int model, bool ia, bool culling, int decoration)
 	EntityCollider* wh_right = new EntityCollider();
 	wh_right->setName("right wheel");
 	wh_right->set("spitfire_wheel_right.ASE", "data/textures/spitfire.tga", "plane");
-
+	
 	EntityCollider* wh_left = new EntityCollider();
 	wh_left->setName("left wheel");
 	wh_left->set("spitfire_wheel_left.ASE", "data/textures/spitfire.tga", "plane");
 
 	Helix* helix = new Helix();
 	helix->setName("helix");
+	Helix* helix2 = new Helix();
+	helix2->setName("helix_2");
 
 	if (model == SPITFIRE)
 	{
@@ -44,11 +46,11 @@ Airplane::Airplane(int model, bool ia, bool culling, int decoration)
 
 		wh_right->model.setTranslation(-0.82, -0.58, 0.16);
 		wh_right->model.rotateLocal(90.0 * DEG2RAD, Vector3(0, 0, -1));
-		this->addChild(wh_right);
+		addChild(wh_right);
 
 		wh_left->model.setTranslation(0.82, -0.58, 0.16);
 		wh_left->model.rotateLocal(90.0 * DEG2RAD, Vector3(0, 0, 1));
-		this->addChild(wh_left);
+		addChild(wh_left);
 
 		setLife(100);
 		cadence = 70.0 + random() * 10;;
@@ -61,8 +63,6 @@ Airplane::Airplane(int model, bool ia, bool culling, int decoration)
 		set("p38.ASE", "data/textures/p38.tga", "p38");
 		helix->model.setTranslation(2.44f, 0.f, 2.85f);
 
-		Helix* helix2 = new Helix();
-		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.44f, 0.f, 2.85f);
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		addChild(helix2);
@@ -89,8 +89,6 @@ Airplane::Airplane(int model, bool ia, bool culling, int decoration)
 		set("bomber_axis.ASE", "data/textures/bomber_axis.tga", "plane");
 		helix->model.setTranslation(2.65f, -0.88f, 4.65f);
 
-		Helix* helix2 = new Helix();
-		helix2->setName("helix_2");
 		helix2->model.setTranslation(-2.65f, -0.88f, 4.65f);
 		helix2->model.rotateLocal(180.0 * DEG2RAD, Vector3(0, 1, 0));
 		addChild(helix2);
@@ -113,6 +111,8 @@ Airplane::Airplane(int model, bool ia, bool culling, int decoration)
 	wheels_rotation = 0;
 	last_shoot = 0;
 	visibility = 1000;
+	is_ia = ia;
+
 	//m60 init
 	timer = shootingtime = 0;
 	overused = false;
@@ -152,6 +152,9 @@ void Airplane::set(const char * meshf, const char * texturef, const char * shade
 	mesh = meshf;
 	texture = texturef;
 
+	originals[0] = meshf;
+	originals[1] = texturef;
+
 	std::string shader_string(shaderf);
 	std::string fs = "data/shaders/" + shader_string + ".fs";
 	std::string vs = "data/shaders/" + shader_string + ".vs";
@@ -168,7 +171,27 @@ void Airplane::render(Camera * camera)
 
 	Mesh* mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling) return;
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && culling)
+		return;
+
+	Vector3 toPlane = pos - camera->eye;
+	float distToPlane = toPlane.length();
+
+	if (distToPlane > 1500)
+	{
+		this->mesh = "spitfire_low_flat.ASE";
+		this->texture = "data/textures/spitfire_low_flat.tga";
+	}
+	else if (distToPlane > 1000)
+	{
+		this->mesh = "spitfire_low.ASE";
+	}
+	else
+	{
+		this->mesh = originals[0];
+		this->texture = originals[1];
+	}
+
 
 	shader->enable();
 	shader->setMatrix44("u_model", m);
@@ -177,7 +200,8 @@ void Airplane::render(Camera * camera)
 	mesh->render(GL_TRIANGLES, shader);
 	shader->disable();
 
-	for (int i = 0; i < this->children.size(); i++) {
+	for (int i = 0; i < this->children.size(); i++)
+	{
 		this->children[i]->render(camera);
 	}
 }
@@ -997,6 +1021,9 @@ void Clouds::render(Camera* camera)
 // POWER UPS
 // *************************************************************************
 
+bool PowerUp::damageTaken = false;
+bool PowerUp::ninjaTaken = false;
+
 PowerUp::PowerUp(const std::string&  type)
 {
 	setName(type);
@@ -1052,7 +1079,8 @@ void PowerUp::execute()
 {
 	if (uid == PowerUp::DAMAGE)
 	{
-		std::cout << "DAMAGE x2" << std::endl;
+		damageTaken = true;
+		//std::cout << "DAMAGE x2" << std::endl;
 		World::instance->playerAir->damageM60 *= 2;
 		destroy();
 		return;
@@ -1060,18 +1088,25 @@ void PowerUp::execute()
 
 	else if (uid == PowerUp::NINJA)
 	{
-		std::cout << "NINJA" << std::endl;
+		ninjaTaken = true;
+		//std::cout << "NINJA" << std::endl;
 		World::instance->playerAir->visibility = 125;
 		destroy();
 		return;
 	}
 	else if (uid == PowerUp::BOMB)
 	{
-		std::cout << "BOMB" << std::endl;
+		//std::cout << "BOMB" << std::endl;
 		destroy();
 		World::instance->atomic_enabled = true;
 		return;
 	}
+}
+
+void PowerUp::reset()
+{
+	damageTaken = false;
+	ninjaTaken = false;
 }
 
 void PowerUp::update(float elapsed_time)

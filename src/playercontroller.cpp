@@ -63,8 +63,8 @@ void PlayerController::update(float seconds_elapsed)
 		}
 
 		//async input to move the camera around
-		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 5; //move faster with left shift
-		if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
+		if (game->keystate[SDL_SCANCODE_LSHIFT]) speed *= 2; //move faster with left shift
+		//if (game->keystate[SDL_SCANCODE_RSHIFT]) speed *= 50; //move mega faster with right shift
 
 		if (game->keystate[SDL_SCANCODE_W] || game->keystate[SDL_SCANCODE_UP])
 			moveY(-1.f, seconds_elapsed, speed);
@@ -137,7 +137,9 @@ void PlayerController::update(float seconds_elapsed)
 
 		if (state.button[Y_BUTTON] && controller_timer > 0.25)
 		{
-			playstate->current_view = playstate->current_view ? FULLVIEW : CABINEVIEW;
+			playstate->current_view++;
+			if (playstate->current_view > SHOOTERVIEW)
+				playstate->current_view = FULLVIEW;
 			playstate->setView();
 			controller_timer = 0;
 		}
@@ -154,25 +156,29 @@ void PlayerController::update(float seconds_elapsed)
 			player->torpedoShoot();
 			controller_timer = 0;
 		}
+
+		// COOPERATIVE
+		if (game->keystate[SDL_SCANCODE_R])
+			player->rear_shoot();
 		
 		// WIN 10
-		/*if (state.axis[LEFT_TRIGGER] > 0.1)
+		if (state.axis[LEFT_TRIGGER] > 0.2)
 		{
-			speed *= 5;
+			speed *= 2;
 		}
 
-		if (state.axis[RIGHT_TRIGGER] > 0.1)
+		if (state.axis[RIGHT_TRIGGER] > 0.2)
 		{
 			player->shoot();
 		}
 		else {
 			player->shootingtime = 0;
-		}*/
+		}
 
 		// WIN 7
-		if (state.axis[TRIGGERS] > 0.2)
+		/*if (state.axis[TRIGGERS] > 0.2)
 		{
-			speed *= 5;
+			speed *= 2;
 		}
 
 		if (state.axis[TRIGGERS] < -0.2)
@@ -181,7 +187,7 @@ void PlayerController::update(float seconds_elapsed)
 		}
 		else {
 			player->shootingtime = 0;
-		}
+		}*/
 		
 	}
 

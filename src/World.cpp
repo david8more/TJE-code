@@ -29,7 +29,7 @@ World::World()
 	playerShip = NULL;
 
 	atomic_enabled = false;
-	time_to_explode = 15;
+	time_to_explode = 30;
 }
 
 World::~World()
@@ -299,7 +299,7 @@ void World::reset()
 	// player uid is 0
 	Entity* player = Entity::getEntity(0);
 
-	if (player != NULL)
+	if(player != NULL)
 		player->destroy();
 
 	Entity* friendlyShip = Entity::getEntity(Airplane::PLAYER_SHIP);
@@ -321,4 +321,5 @@ void World::reset()
 	Game::instance->start = false;
 	Game::instance->loseWin = LOSE;
 	Game::instance->score = 0;
+	PowerUp::reset();
 }

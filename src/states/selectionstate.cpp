@@ -261,10 +261,10 @@ void SelectionState::update(double time_elapsed)
 	//std:cout << state.axis[LEFT_ANALOG_X] << std::endl;
 
 	// WIN 7
-	if (state.axis[TRIGGERS] > 0.2 || state.axis[TRIGGERS] < -0.2)
+	/*if (state.axis[TRIGGERS] > 0.2 || state.axis[TRIGGERS] < -0.2)
 	{
 		eMesh->model.rotateLocal(0.05f* speed, Vector3(0, state.axis[TRIGGERS], 0));
-	}
+	}*/
 
 }
 

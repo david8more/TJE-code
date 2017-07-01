@@ -132,7 +132,7 @@ void MenuState::update(double time_elapsed)
 		optimer = 0;
 	}
 
-	if (state.button[A_BUTTON])
+	if (state.button[A_BUTTON] && optimer > 0.2)
 	{
 		selectionChosen();
 		optimer = 0;

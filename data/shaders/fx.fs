@@ -24,5 +24,10 @@ void main()
 	color = mix(color, text*dusk, 1 - time_t);
 	color = mix(color, text*night, 1 - time_t);
 
+	vec2 uv = v_uv;
+	float vigneting = 1.0 - length(uv - vec3(0.5)) + 0.15;
+
+	color.xyz *= pow(vigneting, 1.5);
+
 	gl_FragColor = color;
 }

@@ -70,6 +70,9 @@ public:
 	bool depthTest;
 	bool depthMask;
 
+	// IA airplanes
+	bool is_ia;
+
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void renderDifMaterials(Camera* camera, unsigned int begin, unsigned int end, const char * texture);

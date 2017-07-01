@@ -30,7 +30,7 @@ std::vector<std::string>& split(const std::string &s, char delim, std::vector<st
 std::vector<std::string> split(const std::string &s, char delim);
 
 //WIN 10
-/*
+
 enum XBOXpad
 {
 	//axis
@@ -65,11 +65,11 @@ enum HATState
 	HAT_RIGHTDOWN = (HAT_RIGHT | HAT_DOWN),
 	HAT_LEFTUP = (HAT_LEFT | HAT_UP),
 	HAT_LEFTDOWN = (HAT_LEFT | HAT_DOWN)
-};*/
+};
 
 //WIN 7
 
-enum XBOXpad
+/*enum XBOXpad
 {
 	//axis
 	LEFT_ANALOG_X = 0,
@@ -102,7 +102,7 @@ enum HATState
 	HAT_RIGHTDOWN = (HAT_RIGHT | HAT_DOWN),
 	HAT_LEFTUP = (HAT_LEFT | HAT_UP),
 	HAT_LEFTDOWN = (HAT_LEFT | HAT_DOWN)
-};
+};*/
 
 struct JoystickState
 {

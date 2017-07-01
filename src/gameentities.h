@@ -38,6 +38,10 @@ public:
 
 	Torpedo* torpedos[2];
 
+	// 0 mesh
+	// 1 texture
+	std::string originals[2];
+
 	void set(const char * mesh, const char * texture, const char * shader);
 	void render(Camera * camera);
 	void update(float elapsed_time);
@@ -163,11 +167,13 @@ public:
 	PowerUp(const std::string&  type);
 	~PowerUp();
 
-	std::string state;
+	static bool damageTaken;
+	static bool ninjaTaken;
 
 	void set(const char * mesh, const char * texture, const char * shader);
 	void update(float elapsed_time);
 	void execute();
+	static void reset();
 	void onCollision(EntityCollider* collided_with);
 
 	enum {

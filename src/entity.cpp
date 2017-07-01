@@ -167,6 +167,7 @@ EntityMesh::EntityMesh(bool frust_culling)
 	alpha = false;
 	depthTest = true;
 	depthMask = true;
+	is_ia = false;
 }
 EntityMesh::~EntityMesh() {}
 
@@ -190,9 +191,9 @@ void EntityMesh::render(Camera * camera)
 	Vector3 center = Mesh::Get(mesh.c_str())->header.center;
 	Vector3 pos = m * center;
 
-	Mesh* mesh = Mesh::Get(this->mesh.c_str());
+	Mesh * mesh = Mesh::Get(this->mesh.c_str());
 
-	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && this->culling)
+	if (!camera->testSphereInFrustum(pos, mesh->header.radius) && culling)
 		return;
 
 	if (alpha)
