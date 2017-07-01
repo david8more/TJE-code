@@ -3,39 +3,39 @@
 
 	o INTRODUCCION
 
-IN THE SKY es un juego de aviones basado en la batalla de Gran BretaÒa, dentro del perÌodo
-de la segunda guerra mundial, en el cual Alemania se disponÌa a invadir la isla brit·nica.
+IN THE SKY es un juego de aviones basado en la batalla de Gran Breta√±a, dentro del per√≠odo
+de la segunda guerra mundial, en el cual Alemania se dispon√≠a a invadir la isla brit√°nica.
 
-DespuÈs de la inclusiÛn del ministro Churchill, los brit·nicos est·n m·s motivados que nunca
-a defender sus tierras. AquÌ es donde el juego comienza, en 1940.
+Despu√©s de la inclusi√≥n del ministro Churchill, los brit√°nicos est√°n m√°s motivados que nunca
+a defender sus tierras. Aqu√≠ es donde el juego comienza, en 1940.
 
 	o OBJETIVO
 
-La misiÛn es clara, derrotar a los alemanes. Ellos disponen de un barco bombardero el cual
-hay que eliminar para completar el juego. Hay que tener en cuenta la guardia aÈrea de los 
+La misi√≥n es clara, derrotar a los alemanes. Ellos disponen de un barco bombardero el cual
+hay que eliminar para completar el juego. Hay que tener en cuenta la guardia a√©rea de los 
 alemanes, la cual se va reforzando cada cierto tiempo. 
 
 	o DIFICULTAD
 
-Se podr· elegir entre 3 modos: Baby, Skilled y Insane. Cada vez deber·s luchar contra m·s 
+Se podr√° elegir entre 3 modos: Baby, Skilled y Insane. Cada vez deber√°s luchar contra m√°s 
 enemigos y con menos recursos.
 
 	o POWER UPS
 
-En la isla brit·nica hay escondidas algunas ayudas que pueden ayudarte a completar tu misiÛn,
-lo ˙nico que tienes que hacer es explorar, pero vigila, el tiempo es oro.
+En la isla brit√°nica hay escondidas algunas ayudas que pueden ayudarte a completar tu misi√≥n,
+lo √∫nico que tienes que hacer es explorar, pero vigila, el tiempo es oro.
 
 	o CONTROLES
 
-Puedes utilizar tu teclado o un mando XBOX para pilotar tu aviÛn. Adem·s de las funciones ya
-descritas en el juego, podr·s:
+Puedes utilizar tu teclado o un mando XBOX para pilotar tu avi√≥n. Adem√°s de las funciones ya
+descritas en el juego, podr√°s:
 
-	_ Mover el aviÛn con el ratÛn pulsando la rueda	
-	_ InformaciÛn de entidades IA: Pulsando la tecla (i)
+	_ Mover el avi√≥n con el rat√≥n pulsando la rueda	
+	_ Informaci√≥n de entidades IA: Pulsando la tecla (i)
 	_ Pausar el juego: Pulsando la tecla (p)
-	_ Introducir cÛdigos secretos en windowed screen: Pulsando la tecla (h)
+	_ Introducir c√≥digos secretos en windowed screen: Pulsando la tecla (h)
 		"god"	
-		DaÒo m·ximo
+		Da√±o m√°ximo
 		"machine"
 		Cadencia imposible
 
@@ -45,11 +45,11 @@ descritas en el juego, podr·s:
 
 		Hiper velocidad
 
-Resto de controles descritos en el juego.
+Resto de controles descritos en el juego. Para jugar, asegurate de tener todos los archivos en la misma carpeta. Los dll y la carpeta data no pueden faltar.
 
 	o AUTORES
 
-Alejandro RodrÌguez Corrales
+Alejandro Rodr√≠guez Corrales
 David Moreno Esteban
 
-# Jocs ElectrÚnics 2017
+# Jocs Electr√≤nics 2017
