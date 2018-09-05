@@ -49,7 +49,7 @@ Resto de controles descritos en el juego. Para jugar, asegurate de tener todos l
 
 	o AUTORES
 
-Alejandro Rodríguez Corrales
-David Moreno Esteban
+Alejandro Rodríguez Corrales (@jxarco on Github)
+David Moreno Esteban (@david8more on Github)
 
 # Jocs Electrònics 2017
